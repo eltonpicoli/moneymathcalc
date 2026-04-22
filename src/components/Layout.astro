@@ -115,14 +115,12 @@ const globalSchema = JSON.stringify({
     </>
   )}
 
-  <!-- Google AdSense — activate after approval -->
-  <!--
-  <script
-    async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-    crossorigin="anonymous">
-  </script>
-  -->
+  <!-- Google AdSense -->
+  {import.meta.env.PROD && (
+    <script is:inline async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4222487972398347"
+      crossorigin="anonymous"></script>
+  )}
 </head>
 <body class="min-h-screen flex flex-col bg-white text-gray-900 font-sans antialiased">
   <slot name="header" />
