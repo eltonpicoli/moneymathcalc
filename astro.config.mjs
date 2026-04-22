@@ -14,7 +14,9 @@ export default defineConfig({
       priority: 0.7,
     }),
   ],
+  trailingSlash: 'never',
   build: {
+    format: 'file',
     inlineStylesheets: 'auto',
   },
   compressHTML: true,
