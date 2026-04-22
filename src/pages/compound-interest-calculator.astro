@@ -1,0 +1,541 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const title = "Compound Interest Calculator — MoneyMathCalc";
+const description = "Calculate compound interest growth with monthly contributions. See how daily, monthly, or annual compounding affects your investment. Free tool with amortization table.";
+const canonical = "https://moneymathcalc.com/compound-interest-calculator";
+
+const schema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Compound Interest Calculator",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "url": canonical,
+      "description": description
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moneymathcalc.com" },
+        { "@type": "ListItem", "position": 2, "name": "Compound Interest Calculator", "item": canonical }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is compound interest?", "acceptedAnswer": { "@type": "Answer", "text": "Compound interest is interest calculated on both the principal and previously earned interest. Unlike simple interest, it grows exponentially over time because your gains generate their own gains — often called 'interest on interest.'" } },
+        { "@type": "Question", "name": "How much will $10,000 grow in 20 years at 7%?", "acceptedAnswer": { "@type": "Answer", "text": "With $10,000 initial investment, $200/month contributions, and 7% annual return compounded monthly, you'd have approximately $144,626 after 20 years — with $58,000 contributed and $86,626 earned in interest." } },
+        { "@type": "Question", "name": "What is the Rule of 72?", "acceptedAnswer": { "@type": "Answer", "text": "The Rule of 72 estimates how long it takes money to double: divide 72 by the annual interest rate. At 7%, money doubles approximately every 10.3 years (72 ÷ 7 = 10.3). It's a quick mental math shortcut — not exact but very close." } },
+        { "@type": "Question", "name": "Does compounding frequency really matter?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, but less than most people think at typical rates. Daily compounding yields slightly more than monthly, which yields more than annual. On $10,000 at 7% over 20 years: daily = $40,088 vs monthly = $40,025 vs annually = $38,697. The rate matters far more than frequency." } },
+        { "@type": "Question", "name": "What is the best compounding frequency?", "acceptedAnswer": { "@type": "Answer", "text": "Daily compounding gives the highest return, but the difference is small. Most high-yield savings accounts and money market funds compound daily. Most long-term investments like index funds and 401(k)s compound based on price appreciation, effectively daily." } },
+        { "@type": "Question", "name": "How do monthly contributions affect compound growth?", "acceptedAnswer": { "@type": "Answer", "text": "Monthly contributions dramatically accelerate growth. Adding $200/month to a $10,000 investment at 7% over 20 years triples the final balance (from ~$40,000 to ~$144,600). Consistency matters more than the contribution amount — small amounts added early beat large amounts added late." } },
+        { "@type": "Question", "name": "What rate of return should I use for long-term investing?", "acceptedAnswer": { "@type": "Answer", "text": "The S&P 500 has historically returned about 10% annually before inflation, or roughly 7% after inflation. For conservative planning, financial planners often use 6–7% for diversified equity portfolios. Bonds average 3–4%. Always account for inflation when projecting purchasing power." } }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={schema} />
+  </Fragment>
+
+  <Header slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-primary-600 transition">Home</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">Compound Interest Calculator</span>
+    </nav>
+
+    <!-- Hero -->
+    <div class="mb-6">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Compound Interest Calculator</h1>
+      <p class="text-gray-500">See how your money grows with the power of compounding. Add monthly contributions and watch interest build on interest.</p>
+    </div>
+
+    <!-- Calculator -->
+    <section>
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- Inputs -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-5">Your Investment</h2>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="principal">Initial Investment</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="principal" type="text" inputmode="numeric" value="10,000"
+                  class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="monthly-contrib">Monthly Contribution</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="monthly-contrib" type="text" inputmode="numeric" value="200"
+                  class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="rate">Annual Interest Rate</label>
+              <div class="relative">
+                <input id="rate" type="text" inputmode="decimal" value="7"
+                  class="w-full pl-4 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="years">Time Period</label>
+              <div class="relative">
+                <input id="years" type="text" inputmode="numeric" value="20"
+                  class="w-full pl-4 pr-16 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">years</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="freq">Compounding Frequency</label>
+              <select id="freq" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white">
+                <option value="daily">Daily</option>
+                <option value="monthly" selected>Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="annually">Annually</option>
+              </select>
+            </div>
+
+            <button id="btn-calc"
+              class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-colors">
+              Calculate
+            </button>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col">
+          <h2 class="text-xl font-semibold text-gray-900 mb-5">Results</h2>
+
+          <div class="bg-accent-50 rounded-xl p-5 mb-4 text-center">
+            <p class="text-sm text-gray-600 mb-1">Future Balance</p>
+            <p id="final-balance" class="text-4xl font-bold text-accent-600 font-mono">$144,626</p>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="bg-gray-50 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-500 mb-1">Total Invested</p>
+              <p id="total-contributions" class="text-lg font-semibold text-gray-900 font-mono">$58,000</p>
+            </div>
+            <div class="bg-blue-50 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-500 mb-1">Interest Earned</p>
+              <p id="total-interest" class="text-lg font-semibold text-primary-600 font-mono">$86,626</p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-500 mb-1">Return on Investment</p>
+              <p id="roi" class="text-lg font-semibold text-gray-900">149.4%</p>
+            </div>
+          </div>
+
+          <!-- Rule of 72 -->
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+            <p class="text-sm text-gray-700">📐 <strong>Rule of 72:</strong> At <span id="r72-rate">7</span>%, your money doubles every <span id="r72-years" class="font-semibold">10.3</span> years.</p>
+          </div>
+
+          <!-- Pie -->
+          <div class="flex items-center gap-4 mt-auto">
+            <div id="pie-chart" class="w-28 h-28 flex-shrink-0"></div>
+            <div id="pie-legend" class="flex-1 space-y-1.5 text-sm"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex flex-wrap gap-3 mt-4">
+        <button id="btn-share" class="px-5 py-2 bg-white border border-gray-300 hover:border-primary-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+          🔗 Share Result
+        </button>
+        <button id="btn-pdf" class="px-5 py-2 bg-white border border-gray-300 hover:border-primary-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+          📄 Save as PDF
+        </button>
+        <button id="btn-reset" class="px-5 py-2 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+          ↺ Reset
+        </button>
+      </div>
+      <p class="text-xs text-gray-400 mt-2">For educational purposes only. Past returns do not guarantee future results.</p>
+      </div>
+    </section>
+
+    <!-- Power of Time -->
+    <section class="mb-4">
+      <h2 class="text-xl font-semibold text-gray-900 mb-3">⏰ Power of Time</h2>
+      <p class="text-sm text-gray-500 mb-4">See what 5 more (or fewer) years of compounding means with your current inputs.</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-accent-50 border border-accent-200 rounded-xl p-5">
+          <p class="text-sm text-gray-600 mb-1">Start <strong>5 years earlier</strong> (<span id="pot-years-plus">25</span> years total)</p>
+          <p id="pot-balance-plus" class="text-3xl font-bold text-accent-600 font-mono mb-1">$219,330</p>
+          <p id="pot-diff-plus" class="text-sm text-accent-700 font-medium">+$74,704 more than your current plan</p>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-xl p-5">
+          <p class="text-sm text-gray-600 mb-1">Start <strong>5 years later</strong> (<span id="pot-years-minus">15</span> years total)</p>
+          <p id="pot-balance-minus" class="text-3xl font-bold text-red-600 font-mono mb-1">$91,870</p>
+          <p id="pot-diff-minus" class="text-sm text-red-700 font-medium">-$52,756 less than your current plan</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Chart -->
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Growth Over Time</h2>
+        <div id="growth-chart" class="w-full overflow-x-auto"></div>
+      </div>
+    </section>
+
+    <!-- Amortization Table -->
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-gray-900">Year-by-Year Breakdown</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 text-left text-gray-500 text-xs uppercase tracking-wide">
+                <th class="pb-2 pr-4">Year</th>
+                <th class="pb-2 pr-4 text-right">Year Contrib.</th>
+                <th class="pb-2 pr-4 text-right">Year Interest</th>
+                <th class="pb-2 pr-4 text-right">Total Invested</th>
+                <th class="pb-2 text-right">Balance</th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-gray-100 font-mono"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <AdSlot id="in-article-1" />
+
+    <!-- Educational Content -->
+    <section class="py-8">
+      <div class="prose prose-gray max-w-none">
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">How to Use This Compound Interest Calculator</h2>
+        <p class="text-gray-700 mb-4">
+          Enter your <strong>initial investment</strong> — the lump sum you're starting with. If you're starting from zero, enter $0. Then set your <strong>monthly contribution</strong>, the amount you'll add every month going forward. Enter the <strong>annual interest rate</strong> you expect to earn, and the <strong>time period</strong> in years.
+        </p>
+        <p class="text-gray-700 mb-4">
+          Choose your <strong>compounding frequency</strong>: daily, monthly, quarterly, or annually. Most savings accounts and money market funds compound daily. CDs typically compound daily or monthly. For stock market investments, monthly is a reasonable approximation.
+        </p>
+        <p class="text-gray-700 mb-6">
+          Hit <strong>Calculate</strong> and you'll instantly see your projected balance, total contributions, and interest earned. The <strong>Power of Time</strong> cards show what happens if you start 5 years earlier or later — a powerful reminder that time is your most valuable financial asset.
+        </p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">How Compound Interest Is Calculated</h2>
+        <p class="text-gray-700 mb-4">
+          The compound interest formula for a lump sum is: <strong>A = P(1 + r/n)^(nt)</strong>, where P is the principal, r is the annual rate, n is the compounding periods per year, and t is years. But most real-world investing involves regular contributions, so the full formula adds a future value of annuity component.
+        </p>
+        <p class="text-gray-700 mb-4">
+          For monthly contributions, each $200 you add is also compounded from the moment it enters your account. The calculation simulates each month: apply interest to the current balance, then add your contribution. This means earlier contributions grow the most — your very first $200 earns 20 years of compounding, while your last $200 earns one month.
+        </p>
+        <p class="text-gray-700 mb-4">
+          The effective monthly rate depends on compounding frequency:
+        </p>
+        <ul class="list-disc pl-6 text-gray-700 mb-6 space-y-1">
+          <li><strong>Daily:</strong> (1 + r/365)^(365/12) − 1</li>
+          <li><strong>Monthly:</strong> r/12</li>
+          <li><strong>Quarterly:</strong> (1 + r/4)^(1/3) − 1</li>
+          <li><strong>Annually:</strong> (1 + r)^(1/12) − 1</li>
+        </ul>
+        <p class="text-gray-700 mb-6">
+          On $10,000 at 7% for 20 years with no contributions: daily compounding yields $40,088; monthly yields $40,025; annually yields $38,697. The frequency difference is real but modest — the rate and time period matter far more.
+        </p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Understanding Your Results</h2>
+        <p class="text-gray-700 mb-4">
+          <strong>Future Balance</strong> is the total projected value of your investment at the end of the period — your contributions plus all interest earned. <strong>Total Invested</strong> is the sum of your initial deposit plus all monthly contributions. <strong>Interest Earned</strong> is the difference — money created by compounding rather than saved.
+        </p>
+        <p class="text-gray-700 mb-4">
+          The <strong>Return on Investment (ROI)</strong> shows interest earned as a percentage of total contributions. An ROI of 149% means for every dollar you invested, compounding generated an additional $1.49 — you more than doubled your money in pure earnings.
+        </p>
+        <p class="text-gray-700 mb-4">
+          The <strong>Rule of 72</strong> gives you a quick sanity check: divide 72 by your annual rate. At 7%, money doubles every 10.3 years. At 10%, every 7.2 years. At 4%, every 18 years. Use it to quickly estimate whether a rate seems reasonable for your goal.
+        </p>
+        <p class="text-gray-700 mb-6">
+          The <strong>year-by-year table</strong> shows how your balance builds. Notice that early years show more growth from contributions, while later years show interest earning more than contributions — that's the compounding effect accelerating.
+        </p>
+
+      </div>
+    </section>
+
+    <AdSlot id="in-article-2" />
+
+    <!-- FAQ -->
+    <section class="py-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <div class="space-y-4">
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">What is compound interest?</h3>
+          <p class="text-gray-600 text-sm">Compound interest is interest calculated on both the principal and previously earned interest. Unlike simple interest — which only applies to your original deposit — compound interest grows exponentially because each period's gains become the base for the next period's calculation. It's often called "interest on interest," and it's the foundation of long-term wealth building.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">How much will $10,000 grow in 20 years at 7%?</h3>
+          <p class="text-gray-600 text-sm">With $10,000 initial investment, $200/month contributions, and 7% annual return compounded monthly, you'd have approximately $144,626 after 20 years — with $58,000 contributed and $86,626 earned in interest. Without contributions (just the initial $10k), it grows to about $40,025.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">What is the Rule of 72?</h3>
+          <p class="text-gray-600 text-sm">The Rule of 72 estimates how long money takes to double: divide 72 by the annual interest rate. At 7%, money doubles approximately every 10.3 years (72 ÷ 7 = 10.3). At 10%, every 7.2 years. It's a quick mental math shortcut — not mathematically exact but very accurate for rates between 6% and 10%.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">Does compounding frequency really matter?</h3>
+          <p class="text-gray-600 text-sm">Yes, but less than most people think at typical rates. Daily compounding yields slightly more than monthly, which yields more than annual. On $10,000 at 7% over 20 years: daily = $40,088 vs monthly = $40,025 vs annually = $38,697. The difference is less than $400. The rate and time period matter far more than compounding frequency.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">What is the best compounding frequency?</h3>
+          <p class="text-gray-600 text-sm">Daily compounding gives the highest return, but the difference is small at typical rates. Most high-yield savings accounts and money market funds compound daily. CDs may compound daily, monthly, or quarterly — the APY (Annual Percentage Yield) already accounts for this. When comparing accounts, use APY rather than APR for a true comparison.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">How do monthly contributions affect compound growth?</h3>
+          <p class="text-gray-600 text-sm">Monthly contributions dramatically accelerate growth. Adding $200/month to a $10,000 investment at 7% over 20 years triples the final balance (from ~$40,000 to ~$144,600). Consistency matters more than the amount — $100/month started at 25 beats $300/month started at 35, because you gain 10 extra years of compounding on every early contribution.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">What rate of return should I use for long-term investing?</h3>
+          <p class="text-gray-600 text-sm">The S&P 500 has historically returned about 10% annually before inflation, or roughly 7% after inflation. For conservative planning, financial planners often use 6–7% for diversified equity portfolios and 3–4% for bonds. High-yield savings accounts currently offer 4–5%. Always account for inflation to understand actual purchasing power growth.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Related Calculators -->
+    <section class="py-8 border-t border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Related Calculators</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="/investment-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">📈</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Investment Calculator</p>
+        </a>
+        <a href="/retirement-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">🏖️</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Retirement Calculator</p>
+        </a>
+        <a href="/loan-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">🏦</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Loan Calculator</p>
+        </a>
+        <a href="/mortgage-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">🏠</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Mortgage Calculator</p>
+        </a>
+      </div>
+    </section>
+
+    <AdSlot id="bottom" />
+  </div>
+
+  <Footer slot="footer" />
+</Layout>
+
+<script>
+  import {
+    calculateCompoundGrowth,
+    formatCurrency,
+  } from '../lib/calculations';
+  import {
+    generateDualLineChart,
+    generatePieChart,
+    generatePieLegend,
+  } from '../lib/chart-utils';
+  import {
+    $, parseDollar, parseDecimal, normalizeDecimalInput,
+    formatDollarInput, setText, setHtml, showToast,
+  } from '../lib/calc-helpers';
+  import { addPdfFooter } from '../lib/pdf-footer';
+
+  const DEFAULTS = {
+    principal: 10000,
+    contrib: 200,
+    rate: 7,
+    years: 20,
+    freq: 'monthly' as const,
+  };
+
+  function readInputs() {
+    return {
+      principal: parseDollar('principal'),
+      contrib: parseDollar('monthly-contrib'),
+      rate: parseDecimal('rate'),
+      years: parseInt(($('years') as HTMLInputElement)?.value || '20', 10),
+      freq: (($('freq') as HTMLSelectElement)?.value || 'monthly') as any,
+    };
+  }
+
+  function calculate() {
+    const { principal, contrib, rate, years, freq } = readInputs();
+
+    const result = calculateCompoundGrowth({
+      principal, monthlyContribution: contrib,
+      annualRate: rate, years,
+      compoundingFrequency: freq,
+    });
+
+    // Main results
+    setText('final-balance', formatCurrency(result.finalBalance));
+    setText('total-contributions', formatCurrency(result.totalContributions));
+    setText('total-interest', formatCurrency(result.totalInterest));
+    const roi = result.totalContributions > 0
+      ? ((result.totalInterest / result.totalContributions) * 100).toFixed(1)
+      : '0.0';
+    setText('roi', `${roi}%`);
+
+    // Rule of 72
+    setText('r72-rate', String(rate));
+    setText('r72-years', rate > 0 ? (72 / rate).toFixed(1) : '—');
+
+    // Power of Time
+    const plusYears = years + 5;
+    const minusYears = Math.max(1, years - 5);
+    const plus = calculateCompoundGrowth({ principal, monthlyContribution: contrib, annualRate: rate, years: plusYears, compoundingFrequency: freq });
+    const minus = calculateCompoundGrowth({ principal, monthlyContribution: contrib, annualRate: rate, years: minusYears, compoundingFrequency: freq });
+
+    setText('pot-years-plus', String(plusYears));
+    setText('pot-years-minus', String(minusYears));
+    setText('pot-balance-plus', formatCurrency(plus.finalBalance));
+    setText('pot-balance-minus', formatCurrency(minus.finalBalance));
+    const diffPlus = plus.finalBalance - result.finalBalance;
+    const diffMinus = result.finalBalance - minus.finalBalance;
+    setText('pot-diff-plus', `+${formatCurrency(diffPlus)} more than your current plan`);
+    setText('pot-diff-minus', `-${formatCurrency(diffMinus)} less than your current plan`);
+
+    // Pie chart
+    const pieSegs = [
+      { label: 'Total Invested', value: result.totalContributions, color: '#9CA3AF' },
+      { label: 'Interest Earned', value: result.totalInterest, color: '#0052CC' },
+    ];
+    setHtml('pie-chart', generatePieChart(pieSegs));
+    setHtml('pie-legend', generatePieLegend(pieSegs, result.finalBalance));
+
+    // Dual line chart
+    const line1 = result.yearByYear.map(r => ({ x: r.year, y: r.totalContributions }));
+    const line2 = result.yearByYear.map(r => ({ x: r.year, y: r.balance }));
+    setHtml('growth-chart', generateDualLineChart(line1, line2, {
+      label1: 'Principal Invested',
+      label2: 'Total Balance',
+    }));
+
+    // Table
+    const tbody = $('table-body');
+    if (tbody) {
+      tbody.innerHTML = result.yearByYear.map(row => `
+        <tr class="hover:bg-gray-50">
+          <td class="py-2 pr-4 text-gray-600">Year ${row.year}</td>
+          <td class="py-2 pr-4 text-right text-gray-700">${formatCurrency(row.yearlyContribution)}</td>
+          <td class="py-2 pr-4 text-right text-primary-600">${formatCurrency(row.yearlyInterest)}</td>
+          <td class="py-2 pr-4 text-right text-gray-600">${formatCurrency(row.totalContributions)}</td>
+          <td class="py-2 text-right font-semibold text-gray-900">${formatCurrency(row.balance)}</td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  // Auto-recalc on blur
+  ['principal', 'monthly-contrib', 'rate', 'years'].forEach(id => {
+    const el = $(id) as HTMLInputElement | null;
+    el?.addEventListener('blur', () => {
+      if (id === 'rate' || id === 'years') normalizeDecimalInput(id, 2);
+      else formatDollarInput(id);
+      calculate();
+    });
+    el?.addEventListener('keydown', e => { if ((e as KeyboardEvent).key === 'Enter') calculate(); });
+  });
+  $('freq')?.addEventListener('change', calculate);
+  $('btn-calc')?.addEventListener('click', calculate);
+
+  // Share
+  $('btn-share')?.addEventListener('click', () => {
+    const { principal, contrib, rate, years, freq } = readInputs();
+    const url = new URL(window.location.href);
+    url.searchParams.set('principal', String(principal));
+    url.searchParams.set('contrib', String(contrib));
+    url.searchParams.set('rate', String(rate));
+    url.searchParams.set('years', String(years));
+    url.searchParams.set('freq', freq);
+    history.replaceState(null, '', url.toString());
+    navigator.clipboard.writeText(url.toString()).then(() => showToast('Link copied to clipboard!'));
+  });
+
+  // PDF
+  $('btn-pdf')?.addEventListener('click', async () => {
+    const { jsPDF } = await import('jspdf');
+    const { principal, contrib, rate, years } = readInputs();
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Compound Interest Calculator', 14, 20);
+    doc.setFontSize(11);
+    doc.text(`Initial Investment: ${formatCurrency(principal)}`, 14, 35);
+    doc.text(`Monthly Contribution: ${formatCurrency(contrib)}`, 14, 43);
+    doc.text(`Annual Rate: ${rate}%   Years: ${years}`, 14, 51);
+    const res = calculateCompoundGrowth({
+      principal, monthlyContribution: contrib, annualRate: rate, years,
+      compoundingFrequency: 'monthly',
+    });
+    doc.setFontSize(13);
+    doc.text(`Future Balance: ${formatCurrency(res.finalBalance)}`, 14, 65);
+    doc.text(`Total Invested: ${formatCurrency(res.totalContributions)}`, 14, 73);
+    doc.text(`Interest Earned: ${formatCurrency(res.totalInterest)}`, 14, 81);
+    doc.setFontSize(10);
+    let y = 95;
+    doc.text('Year   Contributions   Interest   Balance', 14, y);
+    y += 6;
+    for (const row of res.yearByYear) {
+      doc.text(`${String(row.year).padEnd(7)} ${formatCurrency(row.totalContributions).padEnd(16)} ${formatCurrency(row.totalInterest).padEnd(12)} ${formatCurrency(row.balance)}`, 14, y);
+      y += 6;
+      if (y > 270) { doc.addPage(); y = 20; }
+    }
+    await addPdfFooter(doc, window.location.href, 'Compound Interest Calculation');
+    doc.save('compound-interest.pdf');
+  });
+
+  // Reset
+  $('btn-reset')?.addEventListener('click', () => {
+    ($('principal') as HTMLInputElement).value = '10,000';
+    ($('monthly-contrib') as HTMLInputElement).value = '200';
+    ($('rate') as HTMLInputElement).value = '7';
+    ($('years') as HTMLInputElement).value = '20';
+    ($('freq') as HTMLSelectElement).value = 'monthly';
+    history.replaceState(null, '', window.location.pathname);
+    calculate();
+  });
+
+  // URL params on load
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('principal')) ($('principal') as HTMLInputElement).value = Number(p.get('principal')).toLocaleString('en-US');
+  if (p.get('contrib')) ($('monthly-contrib') as HTMLInputElement).value = p.get('contrib')!;
+  if (p.get('rate')) ($('rate') as HTMLInputElement).value = p.get('rate')!;
+  if (p.get('years')) ($('years') as HTMLInputElement).value = p.get('years')!;
+  if (p.get('freq')) ($('freq') as HTMLSelectElement).value = p.get('freq')!;
+
+  calculate();
+</script>

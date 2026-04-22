@@ -1,0 +1,756 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const title = "Salary Calculator — Hourly to Annual Pay Converter";
+const description = "Convert hourly wage to annual salary instantly. Calculate weekly, biweekly, monthly pay. Compare your wage to US living wage and income percentiles.";
+const canonical = "https://moneymathcalc.com/salary-calculator";
+
+const schemaMarkup = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Salary Calculator",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Web",
+      "url": canonical,
+      "description": description,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moneymathcalc.com" },
+        { "@type": "ListItem", "position": 2, "name": "Salary Calculator", "item": canonical }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I convert hourly wage to annual salary?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Multiply your hourly rate by the number of hours worked per week, then multiply by 52 weeks. For a standard 40-hour week: hourly × 40 × 52. At $25/hr that equals $52,000 per year before taxes." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is considered a good hourly wage in the US?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The US living wage for a single adult with no children is approximately $25.02/hour as of 2024 (MIT Living Wage Calculator). The federal minimum wage is $7.25/hr, though many states have higher minimums. The median US worker earns about $22.83/hr ($47,490/yr)." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much is $50,000 a year per hour?",
+          "acceptedAnswer": { "@type": "Answer", "text": "$50,000 per year equals approximately $24.04 per hour based on a standard 40-hour workweek and 52 weeks. This assumes 2,080 working hours annually with no unpaid time off." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between gross and net salary?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Gross salary is your total pay before any deductions. Net salary (take-home pay) is what remains after federal taxes, state taxes, Social Security (6.2%), Medicare (1.45%), health insurance, and retirement contributions are deducted." }
+        },
+        {
+          "@type": "Question",
+          "name": "How many working hours are in a year?",
+          "acceptedAnswer": { "@type": "Answer", "text": "A standard work year contains 2,080 hours (40 hrs/week × 52 weeks). Excluding 10 federal holidays, the number drops to 2,000 hours. Part-time workers at 20 hrs/week log 1,040 hours annually." }
+        },
+        {
+          "@type": "Question",
+          "name": "What does biweekly pay mean?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Biweekly pay means you receive a paycheck every two weeks — 26 paychecks per year. Semi-monthly pay (24 paychecks/year) is different: it comes twice per month on fixed dates like the 1st and 15th." }
+        },
+        {
+          "@type": "Question",
+          "name": "How is overtime pay calculated?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Federal law (FLSA) requires overtime pay at 1.5× your regular hourly rate for hours worked beyond 40 in a workweek. Some states (like California) also mandate daily overtime after 8 hours. Salaried exempt employees are typically not eligible for overtime." }
+        }
+      ]
+    }
+  ]
+});
+
+// Default values for SSR preview
+const defaultHourly = 25;
+const defaultHours = 40;
+const defaultDays = 5;
+const defaultWeeks = 52;
+const annualSalary = defaultHourly * defaultHours * defaultDays * (defaultWeeks / defaultDays);
+// Correct: hourly * hours_per_day * days_per_week * weeks_per_year
+const annualCalc = defaultHourly * defaultHours * defaultWeeks;
+const monthlyCalc = annualCalc / 12;
+const semiMonthlyCalc = annualCalc / 24;
+const biweeklyCalc = annualCalc / 26;
+const weeklyCalc = annualCalc / defaultWeeks;
+const dailyCalc = weeklyCalc / defaultDays;
+---
+
+<Layout title={title} description={description} canonical={canonical} schemaMarkup={schemaMarkup}>
+  <Header slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-blue-600">Home</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">Salary Calculator</span>
+    </nav>
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Salary Calculator</h1>
+    <p class="text-gray-600 mb-6">Convert hourly, daily, weekly, or annual pay — and see how your wage stacks up.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- Calculator -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6">
+
+          <h2 class="text-lg font-semibold text-gray-900 mb-5">Enter Your Pay</h2>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <!-- Wage input -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Wage</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="hourlyWage" type="text" inputmode="decimal" value="25.00"
+                  class="w-full pl-7 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900" />
+              </div>
+            </div>
+
+            <!-- Hours per week -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Hours per Week</label>
+              <input id="hoursPerWeek" type="number" min="1" max="168" value="40"
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900" />
+            </div>
+
+            <!-- Days per week -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Days per Week</label>
+              <input id="daysPerWeek" type="number" min="1" max="7" value="5"
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900" />
+            </div>
+
+            <!-- Weeks per year -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Weeks per Year</label>
+              <input id="weeksPerYear" type="number" min="1" max="52" value="52"
+                class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900" />
+            </div>
+          </div>
+
+          <!-- Overtime (advanced) -->
+          <details class="mb-4">
+            <summary class="text-sm text-blue-600 font-medium cursor-pointer hover:text-blue-700 select-none">+ Advanced: Overtime &amp; Vacation</summary>
+            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Overtime Hours / Week</label>
+                <input id="overtimeHours" type="number" min="0" max="40" value="0"
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                <p class="text-xs text-gray-500 mt-1">Paid at 1.5× regular rate</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Vacation Days / Year</label>
+                <input id="vacationDays" type="number" min="0" max="365" value="10"
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                <p class="text-xs text-gray-500 mt-1">Reduces total working days</p>
+              </div>
+            </div>
+          </details>
+
+          <button id="calcBtn"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+            Calculate Salary
+          </button>
+          <div class="flex flex-wrap gap-3 mt-3">
+            <button id="shareBtn2" class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary-400 hover:text-primary-600 transition">
+              🔗 Share Result
+            </button>
+            <button id="btn-pdf2" class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary-600 hover:text-primary-600 transition">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="14" height="14"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+              Save as PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Results: Pay Frequency Breakdown -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Pay by Period</h2>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-gray-200">
+                  <th class="text-left py-2 text-gray-600 font-medium">Pay Period</th>
+                  <th class="text-right py-2 text-gray-600 font-medium">Gross Pay</th>
+                  <th class="text-right py-2 text-gray-600 font-medium">Hours</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 text-gray-700 font-medium">Hourly</td>
+                  <td id="res-hourly" class="py-3 text-right font-mono text-gray-900 font-semibold">$25.00</td>
+                  <td id="res-hourly-h" class="py-3 text-right text-gray-500">1</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 text-gray-700">Daily</td>
+                  <td id="res-daily" class="py-3 text-right font-mono text-gray-900">$200.00</td>
+                  <td id="res-daily-h" class="py-3 text-right text-gray-500">8</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 text-gray-700">Weekly</td>
+                  <td id="res-weekly" class="py-3 text-right font-mono text-gray-900">$1,000.00</td>
+                  <td id="res-weekly-h" class="py-3 text-right text-gray-500">40</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 text-gray-700">Biweekly <span class="text-xs text-gray-400">(26×/yr)</span></td>
+                  <td id="res-biweekly" class="py-3 text-right font-mono text-gray-900">$2,000.00</td>
+                  <td id="res-biweekly-h" class="py-3 text-right text-gray-500">80</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 text-gray-700">Semi-Monthly <span class="text-xs text-gray-400">(24×/yr)</span></td>
+                  <td id="res-semimonthly" class="py-3 text-right font-mono text-gray-900">$2,166.67</td>
+                  <td id="res-semimonthly-h" class="py-3 text-right text-gray-500">87</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 text-gray-700">Monthly</td>
+                  <td id="res-monthly" class="py-3 text-right font-mono text-gray-900">$4,333.33</td>
+                  <td id="res-monthly-h" class="py-3 text-right text-gray-500">173</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 text-gray-700">Quarterly</td>
+                  <td id="res-quarterly" class="py-3 text-right font-mono text-gray-900">$13,000.00</td>
+                  <td id="res-quarterly-h" class="py-3 text-right text-gray-500">520</td>
+                </tr>
+                <tr class="bg-blue-50 border-t-2 border-blue-200">
+                  <td class="py-3 text-blue-900 font-bold">Annual</td>
+                  <td id="res-annual" class="py-3 text-right font-mono text-blue-900 font-bold text-lg">$52,000.00</td>
+                  <td id="res-annual-h" class="py-3 text-right text-blue-700 font-medium">2,080</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Living Wage Comparison -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Living Wage Comparison</h2>
+
+          <div class="mb-4">
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-gray-600">Your hourly wage</span>
+              <span id="cmp-your-wage" class="font-semibold text-gray-900">$25.00/hr</span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-3 mb-3">
+              <div id="cmp-bar" class="bg-blue-500 h-3 rounded-full transition-all duration-500" style="width: 50%"></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                <div class="text-red-700 font-bold">$7.25/hr</div>
+                <div class="text-red-600 text-xs">Federal Minimum</div>
+              </div>
+              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
+                <div class="text-yellow-700 font-bold">$22.83/hr</div>
+                <div class="text-yellow-600 text-xs">US Median (BLS 2024)</div>
+              </div>
+              <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                <div class="text-green-700 font-bold">$25.02/hr</div>
+                <div class="text-green-600 text-xs">Living Wage (MIT 2024)</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="wage-context" class="text-sm text-gray-600 p-3 bg-gray-50 rounded-lg">
+            Your wage of <strong id="ctx-wage">$25.00/hr</strong> is <strong id="ctx-pct" class="text-blue-700">above the median US wage</strong> of $22.83/hr and meets the MIT living wage benchmark of $25.02/hr for a single adult.
+          </div>
+        </div>
+
+        <!-- Income Percentile -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-2">US Income Percentile</h2>
+          <p class="text-sm text-gray-500 mb-4">Based on individual annual earnings (BLS/Census 2024 data)</p>
+
+          <div class="flex items-center gap-4 mb-4">
+            <div class="text-center">
+              <div id="percentile-num" class="text-4xl font-bold font-mono text-blue-600">~55th</div>
+              <div class="text-sm text-gray-500">Percentile</div>
+            </div>
+            <div class="flex-1 text-sm text-gray-600">
+              <span id="percentile-desc">At <strong>$52,000/yr</strong>, you earn more than approximately <strong>55%</strong> of US individual wage earners.</span>
+            </div>
+          </div>
+
+          <!-- Percentile scale markers -->
+          <div class="relative">
+            <div class="w-full bg-gray-100 rounded-full h-4">
+              <div id="percentile-bar" class="bg-gradient-to-r from-blue-400 to-blue-600 h-4 rounded-full transition-all duration-500" style="width: 55%"></div>
+            </div>
+            <div class="flex justify-between text-xs text-gray-400 mt-1">
+              <span>0%</span>
+              <span>25th: $30k</span>
+              <span>50th: $47k</span>
+              <span>75th: $72k</span>
+              <span>99th: $200k+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ad slot -->
+        <div class="bg-gray-100 border border-dashed border-gray-300 rounded-xl p-4 text-center text-gray-400 text-sm mb-6" data-ad-slot="in-article-1">
+          Advertisement
+        </div>
+
+        <!-- Educational content -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6 prose prose-gray max-w-none">
+          <h2 class="text-xl font-bold text-gray-900 mb-3">How to Convert Hourly Wage to Annual Salary</h2>
+          <p class="text-gray-700">
+            Converting your hourly rate to an annual salary is straightforward math — but the details matter. The standard formula assumes 52 weeks, 40 hours per week, and no unpaid time off. That gives you <strong>2,080 working hours per year</strong> as your baseline.
+          </p>
+          <p class="text-gray-700">
+            For example, at $25/hr: $25 × 40 hrs × 52 weeks = <strong>$52,000/year</strong>. If you take 2 weeks of unpaid vacation, your effective annual earnings drop to $25 × 40 × 50 = $50,000.
+          </p>
+
+          <h3 class="text-lg font-semibold text-gray-900 mt-5 mb-2">The 7 Standard Pay Periods</h3>
+          <p class="text-gray-700">US employers pay workers on one of these schedules:</p>
+          <ol class="list-decimal pl-5 text-gray-700 space-y-1">
+            <li><strong>Weekly</strong> — 52 paychecks per year, common in construction and retail</li>
+            <li><strong>Biweekly</strong> — 26 paychecks per year, the most common in the US (43% of workers)</li>
+            <li><strong>Semi-monthly</strong> — 24 paychecks per year, on fixed dates (1st and 15th)</li>
+            <li><strong>Monthly</strong> — 12 paychecks per year, common in Europe and for some executive roles</li>
+          </ol>
+          <p class="text-gray-700 mt-2">
+            The practical difference: biweekly workers get 2 "three-paycheck months" per year — months where three paydays fall within the calendar month. This can feel like a windfall but it's not extra money, just timing.
+          </p>
+
+          <h2 class="text-xl font-bold text-gray-900 mt-6 mb-3">Gross vs. Net Salary: What You Actually Take Home</h2>
+          <p class="text-gray-700">
+            Your gross salary is what this calculator shows. Your <em>net</em> salary — what hits your bank account — is significantly less. For a single adult earning $52,000, typical deductions include:
+          </p>
+          <ul class="list-disc pl-5 text-gray-700 space-y-1">
+            <li>Federal income tax: approximately $4,798 (after standard deduction)</li>
+            <li>Social Security: $3,224 (6.2% of gross)</li>
+            <li>Medicare: $754 (1.45% of gross)</li>
+            <li>State income tax: varies from $0 (Texas, Florida) to 5%+ in California</li>
+          </ul>
+          <p class="text-gray-700 mt-2">
+            After these deductions, a $52,000 gross salary results in roughly $42,000–$44,000 in take-home pay depending on your state. Use our <a href="/income-tax-calculator" class="text-blue-600 hover:underline">Income Tax Calculator</a> for a precise breakdown.
+          </p>
+
+          <h2 class="text-xl font-bold text-gray-900 mt-6 mb-3">What Is a Living Wage?</h2>
+          <p class="text-gray-700">
+            The MIT Living Wage Calculator estimates the minimum hourly wage needed to cover basic expenses without relying on public assistance. As of 2024, the living wage for a single adult with no children in the US is <strong>$25.02/hour</strong> ($52,041/year before taxes).
+          </p>
+          <p class="text-gray-700">
+            This is significantly higher than the federal minimum wage of $7.25/hour — a rate that hasn't changed since 2009. Many states have enacted higher minimums: California leads at $16/hr statewide, with some cities like San Francisco at $18.67/hr.
+          </p>
+          <p class="text-gray-700">
+            The living wage rises sharply with family size. A single adult with one child needs approximately <strong>$46.73/hr</strong> to cover housing, childcare, food, healthcare, and transportation in a major metro area.
+          </p>
+
+          <h2 class="text-xl font-bold text-gray-900 mt-6 mb-3">US Income Percentiles (2024)</h2>
+          <p class="text-gray-700">
+            How does your salary compare to other Americans? According to Bureau of Labor Statistics and US Census data:
+          </p>
+          <table class="w-full text-sm border border-gray-200 rounded-lg overflow-hidden mt-2">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="text-left p-3 font-semibold text-gray-700">Percentile</th>
+                <th class="text-right p-3 font-semibold text-gray-700">Annual Income</th>
+                <th class="text-right p-3 font-semibold text-gray-700">Hourly Equivalent</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr><td class="p-3">10th</td><td class="p-3 text-right font-mono">$15,000</td><td class="p-3 text-right font-mono">$7.21/hr</td></tr>
+              <tr><td class="p-3">25th</td><td class="p-3 text-right font-mono">$30,000</td><td class="p-3 text-right font-mono">$14.42/hr</td></tr>
+              <tr class="bg-yellow-50"><td class="p-3 font-medium">50th (Median)</td><td class="p-3 text-right font-mono font-medium">$47,490</td><td class="p-3 text-right font-mono font-medium">$22.83/hr</td></tr>
+              <tr><td class="p-3">75th</td><td class="p-3 text-right font-mono">$72,000</td><td class="p-3 text-right font-mono">$34.62/hr</td></tr>
+              <tr><td class="p-3">90th</td><td class="p-3 text-right font-mono">$110,000</td><td class="p-3 text-right font-mono">$52.88/hr</td></tr>
+              <tr><td class="p-3">95th</td><td class="p-3 text-right font-mono">$150,000</td><td class="p-3 text-right font-mono">$72.12/hr</td></tr>
+              <tr><td class="p-3">99th</td><td class="p-3 text-right font-mono">$250,000+</td><td class="p-3 text-right font-mono">$120.19/hr</td></tr>
+            </tbody>
+          </table>
+          <p class="text-xs text-gray-400 mt-1">Source: Bureau of Labor Statistics Occupational Employment Statistics, US Census ACS 2024</p>
+
+          <h2 class="text-xl font-bold text-gray-900 mt-6 mb-3">Overtime Pay Rules</h2>
+          <p class="text-gray-700">
+            Under the Fair Labor Standards Act (FLSA), non-exempt employees must receive <strong>1.5× their regular hourly rate</strong> for all hours worked beyond 40 in a workweek. "Salaried exempt" employees — typically those earning over $684/week in professional, administrative, or executive roles — are not legally entitled to overtime.
+          </p>
+          <p class="text-gray-700">
+            A few states go further. California requires overtime after 8 hours in a single workday. Alaska and Nevada also have daily overtime requirements. If you work consistent overtime, your effective hourly rate and annual salary increase meaningfully — our calculator accounts for this in the advanced section.
+          </p>
+        </div>
+
+        <!-- Ad slot 2 -->
+        <div class="bg-gray-100 border border-dashed border-gray-300 rounded-xl p-4 text-center text-gray-400 text-sm mb-6" data-ad-slot="in-article-2">
+          Advertisement
+        </div>
+
+        <!-- FAQs -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+          <div class="space-y-5">
+
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">How do I convert hourly wage to annual salary?</h3>
+              <p class="text-gray-600 text-sm">Multiply your hourly rate by hours per week, then by 52 weeks. For a standard 40-hour week: hourly × 40 × 52. At $25/hr that equals $52,000 per year before taxes.</p>
+            </div>
+
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">What is considered a good hourly wage in the US?</h3>
+              <p class="text-gray-600 text-sm">The US living wage for a single adult is approximately $25.02/hour (MIT, 2024). The federal minimum is $7.25/hr. The median US worker earns about $22.83/hr ($47,490/yr) according to BLS data.</p>
+            </div>
+
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">How much is $50,000 a year per hour?</h3>
+              <p class="text-gray-600 text-sm">$50,000 per year equals approximately $24.04 per hour based on a standard 40-hour workweek and 52 weeks. This assumes 2,080 working hours annually with no unpaid time off.</p>
+            </div>
+
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">What is the difference between gross and net salary?</h3>
+              <p class="text-gray-600 text-sm">Gross salary is total pay before deductions. Net salary is take-home pay after federal taxes, state taxes, Social Security (6.2%), Medicare (1.45%), and benefit deductions.</p>
+            </div>
+
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">How many working hours are in a year?</h3>
+              <p class="text-gray-600 text-sm">A standard work year has 2,080 hours (40 hrs/week × 52 weeks). Excluding 10 federal holidays, it's 2,000 hours. Part-time at 20 hrs/week yields 1,040 hours annually.</p>
+            </div>
+
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">What does biweekly pay mean?</h3>
+              <p class="text-gray-600 text-sm">Biweekly means every two weeks — 26 paychecks per year. Semi-monthly (24/year) arrives on fixed dates like the 1st and 15th. They sound similar but can create budgeting differences.</p>
+            </div>
+
+            <div>
+              <h3 class="font-semibold text-gray-900 mb-1">How is overtime pay calculated?</h3>
+              <p class="text-gray-600 text-sm">Federal law (FLSA) requires overtime at 1.5× your regular rate for hours beyond 40/week. California also requires daily overtime after 8 hours. Salaried exempt employees typically don't qualify.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar -->
+      <div class="lg:col-span-1 space-y-6">
+
+        <!-- Quick stats -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">Your Salary Summary</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600 text-sm">Annual</span>
+              <span id="side-annual" class="font-mono font-bold text-blue-700 text-sm">$52,000</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600 text-sm">Monthly</span>
+              <span id="side-monthly" class="font-mono text-gray-900 text-sm">$4,333</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600 text-sm">Biweekly</span>
+              <span id="side-biweekly" class="font-mono text-gray-900 text-sm">$2,000</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600 text-sm">Weekly</span>
+              <span id="side-weekly" class="font-mono text-gray-900 text-sm">$1,000</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600 text-sm">Daily</span>
+              <span id="side-daily" class="font-mono text-gray-900 text-sm">$200</span>
+            </div>
+            <div class="border-t border-gray-100 pt-3 flex justify-between">
+              <span class="text-gray-600 text-sm">Work Hours / Year</span>
+              <span id="side-hours" class="font-mono text-gray-900 text-sm">2,080</span>
+            </div>
+          </div>
+          <button id="shareBtn"
+            class="mt-4 w-full border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-2 px-4 rounded-lg text-sm transition-colors">
+            Share Result
+          </button>
+          <button id="btn-pdf"
+            class="mt-2 w-full flex items-center justify-center gap-2 border border-gray-300 text-gray-700 hover:border-primary-600 hover:text-primary-600 font-medium py-2 px-4 rounded-lg text-sm transition-colors">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="14" height="14"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+            Save as PDF
+          </button>
+        </div>
+
+        <!-- Ad -->
+        <div class="bg-gray-100 border border-dashed border-gray-300 rounded-xl p-4 text-center text-gray-400 text-sm" data-ad-slot="sidebar">
+          Advertisement
+        </div>
+
+        <!-- Related Calculators -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">Related Calculators</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/income-tax-calculator" class="text-blue-600 hover:text-blue-700 hover:underline">→ Income Tax Calculator</a></li>
+            <li><a href="/mortgage-calculator" class="text-blue-600 hover:text-blue-700 hover:underline">→ Mortgage Calculator</a></li>
+            <li><a href="/retirement-calculator" class="text-blue-600 hover:text-blue-700 hover:underline">→ Retirement Calculator</a></li>
+            <li><a href="/loan-calculator" class="text-blue-600 hover:text-blue-700 hover:underline">→ Loan Calculator</a></li>
+            <li><a href="/compound-interest-calculator" class="text-blue-600 hover:text-blue-700 hover:underline">→ Compound Interest Calculator</a></li>
+          </ul>
+        </div>
+
+        <!-- Bottom Ad -->
+        <div class="bg-gray-100 border border-dashed border-gray-300 rounded-xl p-4 text-center text-gray-400 text-sm" data-ad-slot="bottom">
+          Advertisement
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <Footer slot="footer" />
+</Layout>
+
+<script>
+  import { $, parseDollar, parseDecimal, setText } from '/src/lib/calc-helpers.ts';
+  import { addPdfFooter } from '../lib/pdf-footer';
+
+  const fmt = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtShort = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const fmtNum = (n) => Math.round(n).toLocaleString('en-US');
+
+  // Income percentile lookup (individual earnings, US 2024, BLS/Census data)
+  function getPercentile(annualIncome) {
+    const brackets = [
+      { max: 5000, pct: 5 },
+      { max: 10000, pct: 10 },
+      { max: 15000, pct: 16 },
+      { max: 20000, pct: 22 },
+      { max: 25000, pct: 29 },
+      { max: 30000, pct: 35 },
+      { max: 35000, pct: 41 },
+      { max: 40000, pct: 46 },
+      { max: 47490, pct: 50 },
+      { max: 55000, pct: 56 },
+      { max: 65000, pct: 63 },
+      { max: 72000, pct: 67 },
+      { max: 80000, pct: 72 },
+      { max: 90000, pct: 76 },
+      { max: 100000, pct: 80 },
+      { max: 110000, pct: 83 },
+      { max: 125000, pct: 87 },
+      { max: 150000, pct: 91 },
+      { max: 200000, pct: 95 },
+      { max: 250000, pct: 98 },
+      { max: Infinity, pct: 99 },
+    ];
+    for (const b of brackets) {
+      if (annualIncome <= b.max) return b.pct;
+    }
+    return 99;
+  }
+
+  function recalculate() {
+    const hourly = parseDollar('hourlyWage') || 0;
+    const hpw = parseFloat($('hoursPerWeek').value) || 40;
+    const dpw = parseFloat($('daysPerWeek').value) || 5;
+    const wpy = parseFloat($('weeksPerYear').value) || 52;
+    const otHours = parseFloat($('overtimeHours').value) || 0;
+    const vacDays = parseFloat($('vacationDays').value) || 0;
+
+    const regularHours = hpw;
+    const workingWeeks = wpy;
+    const workingDays = dpw * workingWeeks - vacDays;
+    const hpd = hpw / dpw;
+
+    // Annual: regular + overtime
+    const regularWeekly = hourly * regularHours;
+    const overtimeWeekly = otHours * hourly * 1.5;
+    const weeklyPay = regularWeekly + overtimeWeekly;
+
+    const annualPay = weeklyPay * workingWeeks - (vacDays * hpd * hourly);
+    const totalAnnualHours = hpw * workingWeeks - (vacDays * hpd);
+
+    const dailyPay = workingDays > 0 ? annualPay / workingDays : hourly * hpd;
+    const weeklyPayFinal = workingWeeks > 0 ? annualPay / workingWeeks : weeklyPay;
+    const biweeklyPay = annualPay / 26;
+    const semiMonthlyPay = annualPay / 24;
+    const monthlyPay = annualPay / 12;
+    const quarterlyPay = annualPay / 4;
+
+    // Update table
+    setText('res-hourly', fmt(hourly));
+    setText('res-hourly-h', '1');
+    setText('res-daily', fmt(dailyPay));
+    setText('res-daily-h', fmtNum(hpd));
+    setText('res-weekly', fmt(weeklyPayFinal));
+    setText('res-weekly-h', fmtNum(hpw));
+    setText('res-biweekly', fmt(biweeklyPay));
+    setText('res-biweekly-h', fmtNum(hpw * 2));
+    setText('res-semimonthly', fmt(semiMonthlyPay));
+    setText('res-semimonthly-h', fmtNum(Math.round(totalAnnualHours / 24)));
+    setText('res-monthly', fmt(monthlyPay));
+    setText('res-monthly-h', fmtNum(Math.round(totalAnnualHours / 12)));
+    setText('res-quarterly', fmt(quarterlyPay));
+    setText('res-quarterly-h', fmtNum(Math.round(totalAnnualHours / 4)));
+    setText('res-annual', fmt(annualPay));
+    setText('res-annual-h', fmtNum(Math.round(totalAnnualHours)));
+
+    // Sidebar
+    setText('side-annual', fmtShort(annualPay));
+    setText('side-monthly', fmtShort(monthlyPay));
+    setText('side-biweekly', fmtShort(biweeklyPay));
+    setText('side-weekly', fmtShort(weeklyPayFinal));
+    setText('side-daily', fmtShort(dailyPay));
+    setText('side-hours', fmtNum(Math.round(totalAnnualHours)));
+
+    // Living wage comparison
+    setText('cmp-your-wage', fmt(hourly) + '/hr');
+    const maxWage = 60;
+    const barPct = Math.min(100, (hourly / maxWage) * 100);
+    const barEl = document.getElementById('cmp-bar');
+    if (barEl) barEl.style.width = barPct + '%';
+
+    // Context text
+    setText('ctx-wage', fmt(hourly) + '/hr');
+    const ctxPctEl = document.getElementById('ctx-pct');
+    if (ctxPctEl) {
+      if (hourly < 7.25) {
+        ctxPctEl.textContent = 'below the federal minimum wage';
+        ctxPctEl.className = 'text-red-600 font-semibold';
+      } else if (hourly < 22.83) {
+        ctxPctEl.textContent = 'below the US median wage';
+        ctxPctEl.className = 'text-yellow-600 font-semibold';
+      } else if (hourly < 25.02) {
+        ctxPctEl.textContent = 'above the US median but below the MIT living wage';
+        ctxPctEl.className = 'text-yellow-700 font-semibold';
+      } else {
+        ctxPctEl.textContent = 'above the MIT living wage benchmark';
+        ctxPctEl.className = 'text-green-700 font-semibold';
+      }
+    }
+
+    // Percentile
+    const pct = getPercentile(annualPay);
+    setText('percentile-num', `~${pct}th`);
+    setText('percentile-desc', `At ${fmtShort(annualPay)}/yr, you earn more than approximately ${pct}% of US individual wage earners.`);
+    const pBar = document.getElementById('percentile-bar');
+    if (pBar) pBar.style.width = pct + '%';
+
+    // Update URL
+    const url = new URL(window.location.href);
+    url.searchParams.set('w', hourly.toFixed(2));
+    url.searchParams.set('h', hpw);
+    url.searchParams.set('d', dpw);
+    url.searchParams.set('wpy', wpy);
+    window.history.replaceState({}, '', url.toString());
+  }
+
+  // Load from URL params
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('w')) {
+    const hourlyEl = $('hourlyWage');
+    if (hourlyEl) { hourlyEl.value = parseFloat(params.get('w')).toFixed(2); }
+  }
+  if (params.get('h')) { const el = $('hoursPerWeek'); if (el) el.value = params.get('h'); }
+  if (params.get('d')) { const el = $('daysPerWeek'); if (el) el.value = params.get('d'); }
+  if (params.get('wpy')) { const el = $('weeksPerYear'); if (el) el.value = params.get('wpy'); }
+
+  // Events
+  $('calcBtn')?.addEventListener('click', recalculate);
+  ['hourlyWage','hoursPerWeek','daysPerWeek','weeksPerYear','overtimeHours','vacationDays'].forEach(id => {
+    $( id)?.addEventListener('blur', recalculate);
+    $(id)?.addEventListener('change', recalculate);
+  });
+
+  function doShare() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      ['shareBtn', 'shareBtn2'].forEach(id => {
+        const b = $(id); if (!b) return;
+        const orig = b.textContent;
+        b.textContent = 'Link Copied!';
+        setTimeout(() => { b.textContent = orig; }, 2000);
+      });
+    });
+  }
+  $('shareBtn')?.addEventListener('click', doShare);
+  $('shareBtn2')?.addEventListener('click', doShare);
+  $('btn-pdf2')?.addEventListener('click', () => $('btn-pdf')?.click());
+
+  // Dollar input formatting — format after recalculate fires on blur
+  $('hourlyWage')?.addEventListener('blur', () => {
+    const val = parseDollar('hourlyWage');
+    const el = $('hourlyWage');
+    if (!isNaN(val) && el) el.value = val.toFixed(2);
+  });
+
+  // PDF Export
+  $('btn-pdf')?.addEventListener('click', async () => {
+    const btn = $('btn-pdf') as HTMLButtonElement | null;
+    if (btn) btn.textContent = 'Generating…';
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+      const hourly = parseDollar('hourlyWage') || 0;
+      const hpw    = parseFloat(($('hoursPerWeek') as HTMLInputElement)?.value) || 40;
+      const dpw    = parseFloat(($('daysPerWeek') as HTMLInputElement)?.value) || 5;
+      const wpy    = parseFloat(($('weeksPerYear') as HTMLInputElement)?.value) || 52;
+      const otHours = parseFloat(($('overtimeHours') as HTMLInputElement)?.value) || 0;
+      const vacDays = parseFloat(($('vacationDays') as HTMLInputElement)?.value) || 0;
+      const hpd = hpw / dpw;
+      const workingDays = dpw * wpy - vacDays;
+      const weeklyPay = hourly * hpw + otHours * hourly * 1.5;
+      const annualPay = weeklyPay * wpy - (vacDays * hpd * hourly);
+      const totalAnnualHours = hpw * wpy - (vacDays * hpd);
+      const dailyPay    = workingDays > 0 ? annualPay / workingDays : hourly * hpd;
+      const weeklyFinal = wpy > 0 ? annualPay / wpy : weeklyPay;
+      const biweekly    = annualPay / 26;
+      const semiMonthly = annualPay / 24;
+      const monthly     = annualPay / 12;
+      const quarterly   = annualPay / 4;
+      const pct         = getPercentile(annualPay);
+
+      doc.setFontSize(20); doc.setTextColor(0, 82, 204);
+      doc.text('Salary Calculation', 20, 25);
+      doc.setFontSize(9); doc.setTextColor(120, 120, 120);
+      doc.text('MoneyMathCalc.com  —  Free Financial Calculators', 20, 33);
+      doc.text(`Generated: ${dateStr}`, 20, 39);
+
+      let y = 52;
+      doc.setFontSize(12); doc.setTextColor(30, 30, 30); doc.text('Your Work Details', 20, y); y += 8; doc.setFontSize(10);
+      ([['Hourly Wage', fmt(hourly)], ['Hours Per Week', `${hpw}`], ['Days Per Week', `${dpw}`],
+        ['Weeks Per Year', `${wpy}`], ['Vacation Days', `${vacDays}`],
+        ...(otHours > 0 ? [['Weekly Overtime Hours', `${otHours}`]] : [])] as [string,string][]).forEach(([l,v]) => {
+        doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 90, y); y += 7;
+      });
+
+      y += 4; doc.setFontSize(12); doc.text('Salary Conversion Table', 20, y); y += 8;
+      doc.setFontSize(9); doc.setTextColor(120,120,120);
+      ['Pay Period', 'Amount', 'Hours Worked'].forEach((h,i) => doc.text(h,[20,95,155][i], y));
+      y += 4; doc.setDrawColor(200,200,200); doc.line(20, y, 190, y); y += 4; doc.setTextColor(30,30,30);
+      doc.setFontSize(10);
+      ([['Hourly', fmt(hourly), '1'],
+        ['Daily', fmt(dailyPay), fmtNum(hpd)],
+        ['Weekly', fmt(weeklyFinal), fmtNum(hpw)],
+        ['Biweekly', fmt(biweekly), fmtNum(hpw * 2)],
+        ['Semi-Monthly', fmt(semiMonthly), fmtNum(Math.round(totalAnnualHours / 24))],
+        ['Monthly', fmt(monthly), fmtNum(Math.round(totalAnnualHours / 12))],
+        ['Quarterly', fmt(quarterly), fmtNum(Math.round(totalAnnualHours / 4))],
+        ['Annual', fmt(annualPay), fmtNum(Math.round(totalAnnualHours))]] as [string,string,string][]).forEach(([period,amount,hours]) => {
+        doc.setTextColor(100,100,100); doc.text(period+':', 20, y);
+        doc.setTextColor(30,30,30); doc.text(amount, 95, y); doc.text(hours, 155, y); y += 7;
+      });
+
+      y += 6;
+      doc.setFontSize(12); doc.setTextColor(30,30,30); doc.text('Income Context', 20, y); y += 8; doc.setFontSize(10);
+      const contextLines: [string, string][] = [
+        ['Annual Income', fmt(annualPay)],
+        ['US Income Percentile', `~${pct}th percentile`],
+        ['vs. US Median Wage ($22.83/hr)', hourly >= 22.83 ? 'Above median' : 'Below median'],
+        ['vs. MIT Living Wage ($25.02/hr)', hourly >= 25.02 ? 'Above living wage' : 'Below living wage'],
+      ];
+      contextLines.forEach(([l,v]) => {
+        doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 100, y); y += 7;
+      });
+
+      await addPdfFooter(doc, window.location.href, 'Salary Calculation');
+      doc.save('salary-calculation.pdf');
+    } finally {
+      if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="14" height="14"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg> Save as PDF';
+    }
+  });
+
+  recalculate();
+</script>

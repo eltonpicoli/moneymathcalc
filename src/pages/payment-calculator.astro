@@ -1,0 +1,816 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import AdSlot from '../components/AdSlot.astro';
+import Icon from '../components/Icon.astro';
+import {
+  calculateLoanPayment,
+  calculateMaxLoan,
+  generateLoanPeriodSchedule,
+  generateLoanAmortizationByYear,
+  getPayoffDate,
+  formatCurrency,
+  type LoanParams,
+  type YearlyRow,
+  type AmortizationRow,
+} from '../lib/calculations';
+import { generatePieChart, generateLineChart, generatePieLegend } from '../lib/chart-utils';
+
+// Mode A defaults: Loan Amount → Payment
+const DEFAULTS_A: LoanParams = { principal: 15000, annualRate: 9, years: 4, frequency: 'monthly' };
+const initA      = calculateLoanPayment(DEFAULTS_A);
+const initYearlyA = generateLoanAmortizationByYear(DEFAULTS_A);
+
+// Mode B defaults: Payment → Max Loan Amount
+const DEFAULTS_B = { monthlyPayment: 400, annualRate: 9, years: 4 };
+const initMaxLoan = calculateMaxLoan(DEFAULTS_B.monthlyPayment, DEFAULTS_B.annualRate, DEFAULTS_B.years);
+const initB_loanParams: LoanParams = { principal: initMaxLoan, annualRate: DEFAULTS_B.annualRate, years: DEFAULTS_B.years, frequency: 'monthly' };
+const initYearlyB = generateLoanAmortizationByYear(initB_loanParams);
+
+// SSR render for Mode A (default)
+const initPieSegmentsA = [
+  { label: 'Principal', value: DEFAULTS_A.principal, color: '#0052CC' },
+  { label: 'Interest',  value: initA.totalInterest,  color: '#00B876' },
+];
+const initPieSvgA    = generatePieChart(initPieSegmentsA);
+const initPieLegendA = generatePieLegend(initPieSegmentsA, initA.totalPaid);
+const initLinePointsA = initYearlyA.map((r, i) => ({ x: i + 1, y: r.endingBalance }));
+const initLineSvgA    = generateLineChart(initLinePointsA, { formatY: (v: number) => `$${Math.round(v / 1000)}k` });
+
+const title       = 'Payment Calculator — Solve for Payment or Loan Amount | MoneyMathCalc';
+const description = 'Calculate your monthly payment for any loan, or find the maximum loan amount you can afford given a target payment. Free payment calculator with amortization.';
+
+const faqs = [
+  {
+    q: 'When should I use "How much will my payment be?" vs "How much can I borrow?"',
+    a: 'Use Mode A when you already know the loan amount and want to confirm the payment fits your budget — for example, after a lender quotes you a loan. Use Mode B when you\'re shopping and know your ceiling: "I can afford $400/month — how much can I borrow?" Mode B is especially useful for car and personal loan shopping, letting you set a budget before you find the product.',
+  },
+  {
+    q: 'What debt-to-income ratio do lenders use for loan approval?',
+    a: 'Most lenders look at your back-end DTI: total monthly debt payments divided by gross monthly income. The threshold varies by loan type: conventional mortgages allow up to 43–45%, FHA mortgages up to 50% with compensating factors, personal and auto loans typically 36–43%. A DTI above 43% signals to most lenders that you\'re overleveraged. If your DTI is high, Mode B can help you find a loan amount that keeps you within the threshold.',
+  },
+  {
+    q: 'What is the difference between APR and interest rate?',
+    a: 'The interest rate is the base cost of borrowing — what this calculator uses to determine your payment. APR (Annual Percentage Rate) includes the interest rate plus fees (origination, closing costs, etc.) amortized over the loan. APR is always higher than or equal to the interest rate, and it\'s the number to compare across lenders. When entering a rate here, use the APR if you want to see the true effective cost including fees.',
+  },
+  {
+    q: 'Does getting pre-qualified or pre-approved affect my credit score?',
+    a: 'Pre-qualification uses a soft inquiry — no credit score impact. Pre-approval uses a hard inquiry, which typically drops your score 2–5 points temporarily. For shopping purposes, FICO treats multiple hard inquiries for the same loan type within 14–45 days as a single inquiry. So rate-shopping with 3–4 lenders in a two-week window causes no more score damage than applying once. Use this calculator to filter to realistic offers before any hard inquiries.',
+  },
+  {
+    q: 'How do I compare loan offers from different lenders?',
+    a: 'Compare three numbers: APR (total cost including fees), monthly payment, and total of payments. A lower monthly payment often means a longer term — which can cost more total. A slightly higher rate with no origination fee can be cheaper overall than a lower rate with a 2–3% origination fee. Use Mode A to calculate the payment for each lender\'s quoted rate and term, then compare total payments side by side.',
+  },
+  {
+    q: 'What happens if I can only make minimum payments on a loan?',
+    a: 'With installment loans (personal, auto, mortgage), your minimum payment IS the calculated payment — there\'s no "minimum payment trap" like with credit cards. You must pay the full amount each period. Missing payments triggers late fees and credit score damage. If you\'re concerned about affordability, use Mode B to back-calculate a loan amount that produces a payment you\'re certain you can make even in a lean month.',
+  },
+  {
+    q: 'Can I use this calculator for any type of fixed-rate loan?',
+    a: 'Yes — mortgages, personal loans, auto loans, student loans, home equity loans, and any other fixed-rate installment debt. The underlying formula is identical across all fixed-rate loan types. Variable-rate loans are different: the payment adjusts when the rate changes, so this calculator only shows the payment at the initial rate. For variable loans, use the initial rate to estimate your starting payment.',
+  },
+];
+
+const schema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'SoftwareApplication',
+      name: 'Payment Calculator',
+      applicationCategory: 'FinanceApplication',
+      description: 'Free payment calculator: find your monthly payment for any loan, or calculate the maximum loan amount based on a target monthly payment.',
+      url: 'https://moneymathcalc.com/payment-calculator',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      operatingSystem: 'Web Browser',
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+    {
+      '@type': 'HowTo',
+      name: 'How to use the Payment Calculator',
+      step: [
+        { '@type': 'HowToStep', position: 1, name: 'Choose a mode', text: 'Select whether you want to calculate a payment or a loan amount.' },
+        { '@type': 'HowToStep', position: 2, name: 'Enter your values', text: 'Input loan amount or target payment, then set the term and interest rate.' },
+        { '@type': 'HowToStep', position: 3, name: 'Review your results', text: 'See your payment (or max loan), total interest, and amortization schedule.' },
+      ],
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home',  item: 'https://moneymathcalc.com/' },
+        { '@type': 'ListItem', position: 2, name: 'Loans', item: 'https://moneymathcalc.com/loan-calculator' },
+        { '@type': 'ListItem', position: 3, name: 'Payment Calculator', item: 'https://moneymathcalc.com/payment-calculator' },
+      ],
+    },
+  ],
+});
+
+const inputClass = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent';
+const labelClass = 'block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1';
+---
+
+<Layout title={title} description={description} schemaMarkup={schema}>
+  <Header slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-primary-600 transition">Home</a>
+      <span>/</span>
+      <a href="/loan-calculator" class="hover:text-primary-600 transition">Loans</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">Payment Calculator</span>
+    </nav>
+
+    <!-- Page heading -->
+    <div class="mb-6">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Payment Calculator</h1>
+      <p class="text-gray-500">Calculate a monthly payment or find the maximum loan amount you can afford — two tools in one.</p>
+    </div>
+
+    <!-- Tip banner -->
+    <div class="bg-primary-50 border border-primary-600/20 rounded-xl px-5 py-3 mb-6 flex items-center gap-3">
+      <Icon name="zap" size={18} class="text-primary-600 flex-shrink-0" />
+      <p class="text-sm text-primary-700">
+        <strong>Tip:</strong> Use this when shopping for a loan — confirm a payment fits your budget, or find what you qualify for based on a target monthly amount.
+      </p>
+    </div>
+
+    <!-- ====================================================================
+         MODE TOGGLE
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6">
+
+      <!-- Tab header -->
+      <div class="flex border-b border-gray-200">
+        <button id="tab-a"
+          class="flex-1 px-6 py-4 text-sm font-semibold text-primary-600 border-b-2 border-primary-600 transition"
+          aria-selected="true">
+          <span class="flex items-center justify-center gap-2">
+            <Icon name="calculator" size={16} />
+            How much will my payment be?
+          </span>
+        </button>
+        <button id="tab-b"
+          class="flex-1 px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition"
+          aria-selected="false">
+          <span class="flex items-center justify-center gap-2">
+            <Icon name="dollar-sign" size={16} />
+            How much can I borrow?
+          </span>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+          <!-- ── MODE A INPUTS ──────────────────────────────────── -->
+          <div id="section-a" class="space-y-4">
+            <div>
+              <label for="a-inp-amount" class={labelClass}>Loan Amount</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
+                <input id="a-inp-amount" type="text" value="15,000" class={`${inputClass} pl-6`} inputmode="numeric" />
+              </div>
+            </div>
+            <div>
+              <label for="a-inp-term" class={labelClass}>Loan Term (years)</label>
+              <div class="relative">
+                <input id="a-inp-term" type="text" inputmode="numeric" value="4" class={`${inputClass} pr-16`} />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">years</span>
+              </div>
+            </div>
+            <div>
+              <label for="a-inp-rate" class={labelClass}>Interest Rate</label>
+              <div class="relative">
+                <input id="a-inp-rate" type="text" inputmode="decimal" value="9.00" class={`${inputClass} pr-6`} />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
+              </div>
+            </div>
+            <button id="a-btn-calculate" type="button"
+              class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg transition text-sm mt-2">
+              Calculate Payment
+            </button>
+          </div>
+
+          <!-- ── MODE B INPUTS ──────────────────────────────────── -->
+          <div id="section-b" class="hidden space-y-4">
+            <div>
+              <label for="b-inp-payment" class={labelClass}>Monthly Payment (max I can afford)</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
+                <input id="b-inp-payment" type="text" value="400" class={`${inputClass} pl-6`} inputmode="numeric" />
+              </div>
+            </div>
+            <div>
+              <label for="b-inp-term" class={labelClass}>Loan Term (years)</label>
+              <div class="relative">
+                <input id="b-inp-term" type="text" inputmode="numeric" value="4" class={`${inputClass} pr-16`} />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">years</span>
+              </div>
+            </div>
+            <div>
+              <label for="b-inp-rate" class={labelClass}>Interest Rate</label>
+              <div class="relative">
+                <input id="b-inp-rate" type="text" inputmode="decimal" value="9.00" class={`${inputClass} pr-6`} />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
+              </div>
+            </div>
+            <button id="b-btn-calculate" type="button"
+              class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg transition text-sm mt-2">
+              Calculate Max Loan
+            </button>
+          </div>
+
+          <!-- ── RESULTS (shared, dynamic labels) ──────────────── -->
+          <div class="space-y-5">
+
+            <!-- Hero result -->
+            <div class="bg-primary-50 rounded-xl p-5">
+              <p id="r-hero-label" class="text-xs font-semibold text-primary-600 uppercase tracking-wide mb-1">Monthly Payment</p>
+              <p id="r-hero-value" class="font-mono text-4xl font-bold text-primary-600">{formatCurrency(initA.paymentAmount)}</p>
+              <p id="r-hero-sub" class="text-xs text-gray-500 mt-1">Fixed for the life of the loan</p>
+            </div>
+
+            <!-- Pie chart -->
+            <div class="grid grid-cols-2 gap-4 items-center">
+              <div id="pie-container" class="w-full max-w-[160px] mx-auto">
+                <Fragment set:html={initPieSvgA} />
+              </div>
+              <div id="pie-legend" class="space-y-2">
+                <Fragment set:html={initPieLegendA} />
+              </div>
+            </div>
+
+            <!-- Breakdown -->
+            <div class="space-y-2 text-sm border-t border-gray-100 pt-4">
+              <div class="flex justify-between">
+                <span id="r-line1-label" class="text-gray-600">Loan Amount</span>
+                <span id="r-line1-value" class="font-medium font-mono">{formatCurrency(DEFAULTS_A.principal)}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total Interest</span>
+                <span id="r-total-interest" class="font-medium font-mono text-warning-500">{formatCurrency(initA.totalInterest)}</span>
+              </div>
+              <div class="flex justify-between border-t border-gray-100 pt-2">
+                <span class="text-gray-700 font-medium">Total of Payments</span>
+                <span id="r-total-paid" class="font-semibold font-mono">{formatCurrency(initA.totalPaid)}</span>
+              </div>
+            </div>
+
+            <!-- Summary stats -->
+            <div class="grid grid-cols-2 gap-3 border-t border-gray-100 pt-4">
+              <div class="text-center">
+                <p class="text-xs text-gray-400 mb-1">Total Periods</p>
+                <p id="r-total-periods" class="text-sm font-semibold font-mono text-gray-900">{initA.totalPeriods}</p>
+              </div>
+              <div class="text-center">
+                <p class="text-xs text-gray-400 mb-1">Payoff Date</p>
+                <p id="r-payoff" class="text-sm font-semibold text-gray-900">—</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons + disclaimer -->
+    <div class="flex flex-wrap items-center gap-3 mb-2">
+      <button id="btn-share" type="button"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary-600 hover:text-primary-600 transition">
+        <Icon name="trending-up" size={16} />Share Result
+      </button>
+      <button id="btn-pdf" type="button"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary-600 hover:text-primary-600 transition">
+        <Icon name="file-text" size={16} />Save as PDF
+      </button>
+      <button id="btn-reset" type="button"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-gray-400 transition">
+        <Icon name="x" size={16} />Reset
+      </button>
+    </div>
+    <p class="text-xs text-gray-400 mb-8">Results are estimates for educational purposes. Not financial advice. <a href="/disclaimer" class="underline hover:text-gray-600">See disclaimer</a>.</p>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none z-50"></div>
+
+    <!-- ====================================================================
+         AMORTIZATION SECTION
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Amortization Schedule</h2>
+
+      <div id="line-container" class="w-full mb-6 overflow-x-auto">
+        <Fragment set:html={initLineSvgA} />
+      </div>
+
+      <div class="flex items-center gap-2 mb-4">
+        <button id="btn-year-view" class="px-3 py-1.5 rounded-md text-sm font-medium bg-primary-600 text-white transition">Year View</button>
+        <button id="btn-month-view" class="px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">Month View</button>
+      </div>
+
+      <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr id="amort-headers">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Year</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Payment</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Principal</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Interest</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Balance</th>
+            </tr>
+          </thead>
+          <tbody id="amort-tbody" class="divide-y divide-gray-100">
+            {initYearlyA.map(row => (
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-700">{row.year}</td>
+                <td class="px-4 py-3 text-right font-mono text-gray-700">{formatCurrency(row.totalPayment)}</td>
+                <td class="px-4 py-3 text-right font-mono text-gray-700">{formatCurrency(row.totalPrincipal)}</td>
+                <td class="px-4 py-3 text-right font-mono text-gray-700">{formatCurrency(row.totalInterest)}</td>
+                <td class="px-4 py-3 text-right font-mono font-medium text-gray-900">{formatCurrency(row.endingBalance)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button id="btn-show-all" type="button" class="hidden mt-3 text-sm text-primary-600 hover:text-primary-700 font-medium transition"></button>
+    </div>
+
+    <!-- Ad slot 1 -->
+    <AdSlot id="in-article-1" class="my-8" />
+
+    <!-- ====================================================================
+         EDUCATIONAL CONTENT
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8 prose prose-gray max-w-none">
+
+      <h2 class="text-2xl font-bold text-gray-900 not-prose mb-4">How to Use This Payment Calculator</h2>
+      <p>This calculator has two modes, and switching between them takes one click. Use whichever fits your situation — both use the same underlying loan math and give you a full amortization schedule.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Mode A: "How much will my payment be?"</h3>
+      <p>You know the loan amount. Enter the principal, term, and rate — and you'll see the exact monthly payment, total interest, and full amortization schedule. This is the mode to use when you've received a loan offer or are modeling a specific amount. Example: a $15,000 personal loan at 9% for 4 years comes out to <strong>$373/month</strong>, with $2,904 in total interest.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Mode B: "How much can I borrow?"</h3>
+      <p>You know your budget. Enter the monthly payment you can afford, your expected rate, and the term — and the calculator tells you the maximum loan amount that fits. Example: if you can handle $400/month at 9% for 4 years, you can borrow up to <strong>~$16,073</strong>. This is the mode to use before shopping — it anchors your search to what you can realistically afford rather than stretching toward what's available.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Practical tips for both modes</h3>
+      <p>The interest rate matters more than most people expect. On a $15,000 loan for 4 years, the difference between 7% and 13% is $44/month — and nearly $2,100 in total interest. Before committing, try the rate your bank quotes, then check rates at a credit union (typically 1–2% lower) and an online lender. Enter all three into Mode A to see exactly how much each option costs.</p>
+
+      <h2 class="text-2xl font-bold text-gray-900 not-prose mt-10 mb-4">How the Inverse Formula Works (Mode B)</h2>
+      <p>Mode B uses the mathematical inverse of the standard amortization formula. Where Mode A solves for M (monthly payment) given P (principal), Mode B solves for P given M:</p>
+
+      <div class="bg-gray-50 rounded-xl p-5 my-6 not-prose font-mono text-sm text-gray-800">
+        <div>Mode A → M = P × [r(1 + r)^n] ÷ [(1 + r)^n − 1]</div>
+        <div class="mt-2">Mode B → P = M × [(1 + r)^n − 1] ÷ [r × (1 + r)^n]</div>
+      </div>
+
+      <p>Both formulas use the same variables: P = principal, M = monthly payment, r = monthly interest rate (annual ÷ 12 ÷ 100), n = total months. The results are mathematically exact — if you take the Mode B max loan amount and run it through Mode A with the same rate and term, you'll get back the exact payment you entered.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Why the term dramatically changes the max loan</h3>
+      <p>At $400/month and 9% interest, the max loan amount changes dramatically with term length:</p>
+      <ul class="space-y-1 my-4 list-disc list-inside">
+        <li>24 months: ~$8,700 max</li>
+        <li>36 months: ~$12,600 max</li>
+        <li>48 months: ~$16,073 max</li>
+        <li>60 months: ~$19,200 max</li>
+      </ul>
+      <p>The longer term lets you borrow more for the same payment — but increases total interest paid. The sweet spot is generally the shortest term you can afford, because borrowing power and interest savings both favor it.</p>
+
+      <h2 class="text-2xl font-bold text-gray-900 not-prose mt-10 mb-4">Debt-to-Income and Affordability</h2>
+      <p>Lenders evaluate loan applications using your debt-to-income ratio (DTI): total monthly debt payments divided by gross monthly income. To calculate yours: add up all monthly debt obligations (rent/mortgage, car payments, student loans, credit card minimums) and divide by your pre-tax monthly income.</p>
+
+      <p class="mt-4">Most personal and auto lenders want your total DTI below 36–43%. If you earn $5,000/month (gross) and already have $1,200 in monthly debt payments, your current DTI is 24%. Adding a $400/month loan brings it to 32% — still within most lenders' comfort zone. Exceeding 43% makes approval harder and rates higher. Mode B is a practical tool for finding the loan amount that keeps your DTI in a healthy range.</p>
+    </div>
+
+    <!-- Ad slot 2 -->
+    <AdSlot id="in-article-2" class="my-8" />
+
+    <!-- FAQ -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <div class="space-y-6">
+        {faqs.map(faq => (
+          <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+            <h3 class="text-base font-semibold text-gray-900 mb-2">{faq.q}</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">{faq.a}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Related calculators -->
+    <div class="mb-8">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Related Calculators</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { href: '/mortgage-calculator',     label: 'Mortgage Calculator',     desc: 'Home loans with taxes & insurance.',  iconName: 'home' as const },
+          { href: '/loan-calculator',         label: 'Loan Calculator',         desc: 'Personal loans, any amount or term.', iconName: 'credit-card' as const },
+          { href: '/auto-loan-calculator',    label: 'Auto Loan Calculator',    desc: 'Car payment with taxes and fees.',    iconName: 'car' as const },
+          { href: '/amortization-calculator', label: 'Amortization Calculator', desc: 'Full schedule with extra payments.',  iconName: 'calendar' as const },
+        ].map(c => (
+          <a href={c.href}
+            class="flex flex-col p-4 bg-white border border-gray-200 rounded-xl hover:border-primary-600 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-150">
+            <span class="text-primary-600 mb-2"><Icon name={c.iconName} size={20} /></span>
+            <p class="text-sm font-semibold text-gray-900 mb-1">{c.label}</p>
+            <p class="text-xs text-gray-500">{c.desc}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <AdSlot id="bottom" class="my-8" />
+
+  </div>
+
+  <Footer slot="footer" />
+</Layout>
+
+<script>
+import {
+  calculateLoanPayment,
+  calculateMaxLoan,
+  generateLoanPeriodSchedule,
+  generateLoanAmortizationByYear,
+  getPayoffDate,
+  formatCurrency,
+  type LoanParams,
+  type YearlyRow,
+  type AmortizationRow,
+} from '../lib/calculations';
+import { generatePieChart, generateLineChart, generatePieLegend } from '../lib/chart-utils';
+import {
+  $, parseDollar, parseDecimal, normalizeDecimalInput,
+  formatDollarInput, setText, setHtml, showEl, showToast,
+} from '../lib/calc-helpers';
+import { addPdfFooter } from '../lib/pdf-footer';
+
+// ── State ────────────────────────────────────────────────────────────────────
+
+type Mode = 'a' | 'b';
+let currentMode: Mode = 'a';
+
+const DEFAULTS_A: LoanParams = { principal: 15000, annualRate: 9, years: 4, frequency: 'monthly' };
+const DEFAULTS_B = { monthlyPayment: 400, annualRate: 9, years: 4 };
+
+let currentSchedule: AmortizationRow[] = [];
+let currentYearly:   YearlyRow[]       = [];
+
+// Current result fields (mode-agnostic for rendering)
+let heroValue    = 0;
+let line1Value   = 0;
+let totalInterest = 0;
+let totalPaid    = 0;
+let totalPeriods = 0;
+let currentPrincipal = 0;
+
+let showMonthly = false;
+let showAll     = false;
+
+// ── Mode switching ────────────────────────────────────────────────────────────
+
+function switchMode(mode: Mode): void {
+  currentMode = mode;
+  showMonthly = false;
+  showAll     = false;
+
+  // Tabs
+  const tabA = $('tab-a') as HTMLButtonElement | null;
+  const tabB = $('tab-b') as HTMLButtonElement | null;
+  if (tabA && tabB) {
+    if (mode === 'a') {
+      tabA.className = tabA.className.replace('text-gray-500 hover:text-gray-700 border-transparent','text-primary-600 border-primary-600');
+      tabB.className = tabB.className.replace('text-primary-600 border-primary-600','text-gray-500 hover:text-gray-700 border-transparent');
+    } else {
+      tabB.className = tabB.className.replace('text-gray-500 hover:text-gray-700 border-transparent','text-primary-600 border-primary-600');
+      tabA.className = tabA.className.replace('text-primary-600 border-primary-600','text-gray-500 hover:text-gray-700 border-transparent');
+    }
+    tabA.setAttribute('aria-selected', String(mode === 'a'));
+    tabB.setAttribute('aria-selected', String(mode === 'b'));
+  }
+
+  showEl('section-a', mode === 'a');
+  showEl('section-b', mode === 'b');
+
+  recalculate();
+}
+
+// ── Read inputs ───────────────────────────────────────────────────────────────
+
+function readModeA(): LoanParams {
+  return {
+    principal:  parseDollar('a-inp-amount'),
+    annualRate: parseDecimal('a-inp-rate') || DEFAULTS_A.annualRate,
+    years:      parseInt((document.getElementById('a-inp-term') as HTMLInputElement)?.value) || DEFAULTS_A.years,
+    frequency:  'monthly',
+  };
+}
+
+function readModeB(): { monthlyPayment: number; annualRate: number; years: number } {
+  return {
+    monthlyPayment: parseDollar('b-inp-payment'),
+    annualRate:     parseDecimal('b-inp-rate') || DEFAULTS_B.annualRate,
+    years:          parseInt((document.getElementById('b-inp-term') as HTMLInputElement)?.value) || DEFAULTS_B.years,
+  };
+}
+
+// ── Core calculation ──────────────────────────────────────────────────────────
+
+function recalculate(): void {
+  if (currentMode === 'a') {
+    const p = readModeA();
+    const r = calculateLoanPayment(p);
+    currentSchedule   = generateLoanPeriodSchedule(p);
+    currentYearly     = generateLoanAmortizationByYear(p);
+    heroValue         = r.paymentAmount;
+    line1Value        = p.principal;
+    totalInterest     = r.totalInterest;
+    totalPaid         = r.totalPaid;
+    totalPeriods      = r.totalPeriods;
+    currentPrincipal  = p.principal;
+    setText('r-hero-label', 'Monthly Payment');
+    setText('r-hero-sub',   'Fixed for the life of the loan');
+    setText('r-line1-label', 'Loan Amount');
+  } else {
+    const { monthlyPayment, annualRate, years } = readModeB();
+    const maxLoan = calculateMaxLoan(monthlyPayment, annualRate, years);
+    const lp: LoanParams = { principal: maxLoan, annualRate, years, frequency: 'monthly' };
+    const r = calculateLoanPayment(lp);
+    currentSchedule   = generateLoanPeriodSchedule(lp);
+    currentYearly     = generateLoanAmortizationByYear(lp);
+    heroValue         = maxLoan;
+    line1Value        = monthlyPayment;
+    totalInterest     = r.totalInterest;
+    totalPaid         = r.totalPaid;
+    totalPeriods      = r.totalPeriods;
+    currentPrincipal  = maxLoan;
+    setText('r-hero-label', 'Max Loan Amount');
+    setText('r-hero-sub',   'At your target payment and rate');
+    setText('r-line1-label', 'Monthly Payment');
+  }
+
+  renderResults();
+  renderCharts();
+  renderTable();
+  updateURL();
+}
+
+// ── Rendering ─────────────────────────────────────────────────────────────────
+
+function renderResults(): void {
+  setText('r-hero-value',     formatCurrency(heroValue));
+  setText('r-line1-value',    formatCurrency(line1Value));
+  setText('r-total-interest', formatCurrency(totalInterest));
+  setText('r-total-paid',     formatCurrency(totalPaid));
+  setText('r-total-periods',  String(totalPeriods));
+
+  const years = currentMode === 'a'
+    ? (parseInt((document.getElementById('a-inp-term') as HTMLInputElement)?.value) || DEFAULTS_A.years)
+    : (parseInt((document.getElementById('b-inp-term') as HTMLInputElement)?.value) || DEFAULTS_B.years);
+  setText('r-payoff', getPayoffDate(new Date(), years));
+}
+
+function renderCharts(): void {
+  const segments = [
+    { label: 'Principal', value: currentPrincipal, color: '#0052CC' },
+    { label: 'Interest',  value: totalInterest,    color: '#00B876' },
+  ];
+  setHtml('pie-container', generatePieChart(segments));
+  setHtml('pie-legend',    generatePieLegend(segments, totalPaid));
+  const linePoints = currentYearly.map((r, i) => ({ x: i + 1, y: r.endingBalance }));
+  setHtml('line-container', generateLineChart(linePoints, { formatY: (v) => `$${Math.round(v / 1000)}k` }));
+}
+
+function renderTable(): void {
+  const isYearly = !showMonthly;
+  const rows     = isYearly ? currentYearly : currentSchedule;
+  const pageSize = isYearly ? 10 : 12;
+  const visible  = showAll ? rows : rows.slice(0, pageSize);
+
+  const headerEl = $('amort-headers');
+  if (headerEl) {
+    const col1 = isYearly ? 'Year' : 'Month';
+    headerEl.innerHTML = [col1, 'Payment', 'Principal', 'Interest', 'Balance'].map(h =>
+      `<th class="px-4 py-3 text-${h === col1 ? 'left' : 'right'} text-xs font-semibold text-gray-500 uppercase tracking-wide">${h}</th>`
+    ).join('');
+  }
+
+  const tbody = $('amort-tbody');
+  if (tbody) {
+    tbody.innerHTML = visible.map((row: any) => {
+      const col1 = isYearly ? row.year : row.month;
+      const pmt  = isYearly ? row.totalPayment  : row.payment;
+      const prin = isYearly ? row.totalPrincipal : row.principal;
+      const int  = isYearly ? row.totalInterest  : row.interest;
+      const bal  = isYearly ? row.endingBalance  : row.balance;
+      return `<tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 text-gray-700">${col1}</td>
+        <td class="px-4 py-3 text-right font-mono text-gray-700">${formatCurrency(pmt)}</td>
+        <td class="px-4 py-3 text-right font-mono text-gray-700">${formatCurrency(prin)}</td>
+        <td class="px-4 py-3 text-right font-mono text-gray-700">${formatCurrency(int)}</td>
+        <td class="px-4 py-3 text-right font-mono font-medium text-gray-900">${formatCurrency(bal)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  const showAllBtn = $('btn-show-all');
+  if (showAllBtn) {
+    const total = rows.length;
+    const label = isYearly ? 'years' : 'months';
+    if (total > pageSize && !showAll) {
+      showAllBtn.textContent = `Show all ${total} ${label} →`;
+      showAllBtn.classList.remove('hidden');
+    } else if (showAll) {
+      showAllBtn.textContent = 'Show less ↑';
+      showAllBtn.classList.remove('hidden');
+    } else {
+      showAllBtn.classList.add('hidden');
+    }
+  }
+}
+
+// ── URL share ─────────────────────────────────────────────────────────────────
+
+function updateURL(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set('mode', currentMode);
+  if (currentMode === 'a') {
+    url.searchParams.set('amt',  String(parseDollar('a-inp-amount')));
+    url.searchParams.set('rate', String(parseDecimal('a-inp-rate')));
+    url.searchParams.set('term', (document.getElementById('a-inp-term') as HTMLInputElement)?.value || '4');
+    url.searchParams.delete('pmt');
+  } else {
+    url.searchParams.set('pmt',  String(parseDollar('b-inp-payment')));
+    url.searchParams.set('rate', String(parseDecimal('b-inp-rate')));
+    url.searchParams.set('term', (document.getElementById('b-inp-term') as HTMLInputElement)?.value || '4');
+    url.searchParams.delete('amt');
+  }
+  history.replaceState(null, '', url.toString());
+}
+
+function readURLParams(): void {
+  const p = new URLSearchParams(window.location.search);
+  const mode = (p.get('mode') ?? 'a') as Mode;
+  if (mode === 'b') {
+    const pmt  = Number(p.get('pmt'))  || DEFAULTS_B.monthlyPayment;
+    const rate = Number(p.get('rate')) || DEFAULTS_B.annualRate;
+    const term = Number(p.get('term')) || DEFAULTS_B.years;
+    (document.getElementById('b-inp-payment') as HTMLInputElement).value = pmt.toLocaleString('en-US');
+    (document.getElementById('b-inp-rate')    as HTMLInputElement).value = String(rate);
+    (document.getElementById('b-inp-term')    as HTMLInputElement).value = String(term);
+    switchMode('b');
+  } else if (p.has('amt')) {
+    const amt  = Number(p.get('amt'))  || DEFAULTS_A.principal;
+    const rate = Number(p.get('rate')) || DEFAULTS_A.annualRate;
+    const term = Number(p.get('term')) || DEFAULTS_A.years;
+    (document.getElementById('a-inp-amount') as HTMLInputElement).value = amt.toLocaleString('en-US');
+    (document.getElementById('a-inp-rate')   as HTMLInputElement).value = String(rate);
+    (document.getElementById('a-inp-term')   as HTMLInputElement).value = String(term);
+    recalculate();
+  }
+}
+
+// ── PDF ───────────────────────────────────────────────────────────────────────
+
+async function savePDF(): Promise<void> {
+  const btn = $('btn-pdf') as HTMLButtonElement | null;
+  if (btn) btn.textContent = 'Generating…';
+  try {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    const modeLabel = currentMode === 'a' ? 'Payment Calculation' : 'Max Loan Calculation';
+    doc.setFontSize(20); doc.setTextColor(0, 82, 204); doc.text(modeLabel, 20, 25);
+    doc.setFontSize(9);  doc.setTextColor(120, 120, 120);
+    doc.text('MoneyMathCalc.com  —  Free Financial Calculators', 20, 33);
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, 20, 39);
+    doc.setFontSize(12); doc.setTextColor(30, 30, 30); doc.text('Results', 20, 52);
+    doc.setFontSize(10);
+    let y = 60;
+    const heroLabel = currentMode === 'a' ? 'Monthly Payment' : 'Max Loan Amount';
+    const line1Label = currentMode === 'a' ? 'Loan Amount' : 'Monthly Payment';
+    [[heroLabel, formatCurrency(heroValue)],
+     [line1Label, formatCurrency(line1Value)],
+     ['Total Interest', formatCurrency(totalInterest)],
+     ['Total of Payments', formatCurrency(totalPaid)]].forEach(([l, v]) => {
+      doc.setTextColor(100, 100, 100); doc.text(l + ':', 20, y);
+      doc.setTextColor(30, 30, 30); doc.text(v, 100, y); y += 8;
+    });
+    y += 6;
+    doc.setFontSize(12); doc.text('Amortization Schedule (Annual)', 20, y); y += 8;
+    doc.setFontSize(9); doc.setTextColor(120, 120, 120);
+    ['Year','Payment','Principal','Interest','Balance'].forEach((h, i) => doc.text(h, [20,50,85,120,155][i], y));
+    y += 5; doc.setDrawColor(200,200,200); doc.line(20, y, 190, y); y += 4;
+    doc.setTextColor(30, 30, 30);
+    currentYearly.forEach(row => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      [row.year, formatCurrency(row.totalPayment), formatCurrency(row.totalPrincipal),
+       formatCurrency(row.totalInterest), formatCurrency(row.endingBalance)].forEach((v, i) => {
+        doc.text(String(v), [20,50,85,120,155][i], y);
+      }); y += 7;
+    });
+    await addPdfFooter(doc, window.location.href, 'Payment Calculation');
+    doc.save('payment-calculation.pdf');
+  } finally {
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg> Save as PDF';
+  }
+}
+
+// ── Event setup ───────────────────────────────────────────────────────────────
+
+function setup(): void {
+  // Tab switching
+  $('tab-a')?.addEventListener('click', () => { if (currentMode !== 'a') switchMode('a'); });
+  $('tab-b')?.addEventListener('click', () => { if (currentMode !== 'b') switchMode('b'); });
+
+  // Mode A events
+  document.getElementById('a-inp-amount')?.addEventListener('blur', () => {
+    formatDollarInput('a-inp-amount'); recalculate();
+  });
+  document.getElementById('a-inp-rate')?.addEventListener('blur', () => {
+    normalizeDecimalInput('a-inp-rate', 2); recalculate();
+  });
+  ['a-inp-rate','a-inp-term'].forEach(id =>
+    document.getElementById(id)?.addEventListener('change', () => recalculate()));
+  document.getElementById('a-inp-term')?.addEventListener('blur', () => recalculate());
+  $('a-btn-calculate')?.addEventListener('click', () => {
+    formatDollarInput('a-inp-amount');
+    normalizeDecimalInput('a-inp-rate', 2);
+    recalculate();
+  });
+
+  // Mode B events
+  document.getElementById('b-inp-payment')?.addEventListener('blur', () => {
+    formatDollarInput('b-inp-payment'); recalculate();
+  });
+  document.getElementById('b-inp-rate')?.addEventListener('blur', () => {
+    normalizeDecimalInput('b-inp-rate', 2); recalculate();
+  });
+  ['b-inp-rate','b-inp-term'].forEach(id =>
+    document.getElementById(id)?.addEventListener('change', () => recalculate()));
+  document.getElementById('b-inp-term')?.addEventListener('blur', () => recalculate());
+  $('b-btn-calculate')?.addEventListener('click', () => {
+    formatDollarInput('b-inp-payment');
+    normalizeDecimalInput('b-inp-rate', 2);
+    recalculate();
+  });
+
+  // Shared buttons
+  $('btn-reset')?.addEventListener('click', () => {
+    if (currentMode === 'a') {
+      (document.getElementById('a-inp-amount') as HTMLInputElement).value = (15000).toLocaleString('en-US');
+      (document.getElementById('a-inp-rate')   as HTMLInputElement).value = '9.00';
+      (document.getElementById('a-inp-term')   as HTMLInputElement).value = '4';
+    } else {
+      (document.getElementById('b-inp-payment') as HTMLInputElement).value = '400';
+      (document.getElementById('b-inp-rate')    as HTMLInputElement).value = '9.00';
+      (document.getElementById('b-inp-term')    as HTMLInputElement).value = '4';
+    }
+    recalculate();
+  });
+
+  $('btn-share')?.addEventListener('click', () => {
+    updateURL();
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => showToast('Link copied to clipboard!'))
+      .catch(() => showToast('Copy the URL from your address bar.'));
+  });
+
+  $('btn-pdf')?.addEventListener('click', () => savePDF());
+
+  $('btn-year-view')?.addEventListener('click', () => {
+    if (showMonthly) {
+      showMonthly = false; showAll = false;
+      $('btn-year-view')?.classList.replace('text-gray-700','text-white');
+      $('btn-year-view')?.classList.replace('hover:bg-gray-100','bg-primary-600');
+      $('btn-month-view')?.classList.replace('text-white','text-gray-700');
+      $('btn-month-view')?.classList.replace('bg-primary-600','hover:bg-gray-100');
+      renderTable();
+    }
+  });
+
+  $('btn-month-view')?.addEventListener('click', () => {
+    if (!showMonthly) {
+      showMonthly = true; showAll = false;
+      $('btn-month-view')?.classList.replace('text-gray-700','text-white');
+      $('btn-month-view')?.classList.replace('hover:bg-gray-100','bg-primary-600');
+      $('btn-year-view')?.classList.replace('text-white','text-gray-700');
+      $('btn-year-view')?.classList.replace('bg-primary-600','hover:bg-gray-100');
+      renderTable();
+    }
+  });
+
+  $('btn-show-all')?.addEventListener('click', () => { showAll = !showAll; renderTable(); });
+
+  readURLParams();
+  recalculate();
+}
+
+setup();
+</script>

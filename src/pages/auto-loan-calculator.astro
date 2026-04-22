@@ -1,0 +1,914 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import AdSlot from '../components/AdSlot.astro';
+import Icon from '../components/Icon.astro';
+import {
+  calculateAutoLoan,
+  calculateMaxLoan,
+  generateLoanPeriodSchedule,
+  generateLoanAmortizationByYear,
+  getPayoffDate,
+  formatCurrency,
+  type AutoLoanParams,
+  type AutoLoanResult,
+  type LoanParams,
+  type YearlyRow,
+  type AmortizationRow,
+} from '../lib/calculations';
+import { generatePieChart, generateLineChart, generatePieLegend } from '../lib/chart-utils';
+
+const DEFAULTS: AutoLoanParams = {
+  vehiclePrice: 35000,
+  downPayment:  5000,
+  tradeIn:      0,
+  termMonths:   60,
+  annualRate:   7.5,
+  salesTaxRate: 6,
+  otherFees:    500,
+};
+
+const init = calculateAutoLoan(DEFAULTS);
+const initLoanParams: LoanParams = {
+  principal:  init.loanAmount,
+  annualRate: DEFAULTS.annualRate,
+  years:      DEFAULTS.termMonths / 12,
+  frequency:  'monthly',
+};
+const initSchedule = generateLoanPeriodSchedule(initLoanParams);
+const initYearly   = generateLoanAmortizationByYear(initLoanParams);
+const initPayoff   = getPayoffDate(new Date(), DEFAULTS.termMonths / 12);
+
+const initPieSegments = [
+  { label: 'Loan Amount', value: init.loanAmount,    color: '#0052CC' },
+  { label: 'Interest',    value: init.totalInterest, color: '#00B876' },
+];
+const initPieSvg    = generatePieChart(initPieSegments);
+const initPieLegend = generatePieLegend(initPieSegments, init.totalPaid);
+
+const initLinePoints = initYearly.map((r, i) => ({ x: i + 1, y: r.endingBalance }));
+const initLineSvg    = generateLineChart(initLinePoints, {
+  formatY: (v: number) => `$${Math.round(v / 1000)}k`,
+});
+
+const title       = 'Auto Loan Calculator — Car Payment with Taxes & Fees | MoneyMathCalc';
+const description = 'Calculate your monthly car payment including sales tax, fees, and trade-in value. Free auto loan calculator with full amortization schedule.';
+
+const faqs = [
+  {
+    q: 'How much car can I afford based on my income?',
+    a: 'Most financial experts recommend keeping your monthly car payment below 10% of your take-home pay. If you bring home $5,000/month after taxes, that\'s $500/month maximum for the car payment alone — before insurance, fuel, and maintenance. A broader rule is keeping total transportation costs (payment + insurance + gas) below 20% of take-home. At $500/month, 7.5% for 60 months, you could finance roughly $24,700.',
+  },
+  {
+    q: 'What is the average auto loan interest rate in 2026?',
+    a: 'According to Experian, the average new car loan rate in 2026 is around 7%–8% for well-qualified buyers (720+ credit score), and 10%–14% for near-prime borrowers (620–719). Used car loans run 2%–3% higher on average. Credit unions consistently offer rates 1%–2% below banks. The difference between 6% and 10% on a $32,000 loan over 60 months is about $65/month and over $3,900 in total interest.',
+  },
+  {
+    q: 'How does a trade-in affect my auto loan and taxes?',
+    a: 'In most U.S. states, sales tax is applied to the vehicle price minus the trade-in value — not the full purchase price. On a $35,000 car with a $5,000 trade-in and 6% sales tax, you pay tax on $30,000 ($1,800) instead of the full $35,000 ($2,100) — saving $300 in tax. A few states (like Michigan and Virginia) don\'t offer the trade-in sales tax credit, so rules vary. This calculator assumes the common trade-in tax credit.',
+  },
+  {
+    q: 'Is a 72-month or 84-month auto loan a bad idea?',
+    a: 'Longer terms lower monthly payments but significantly increase total cost and risk. A $32,000 loan at 7.5% for 60 months costs $3,900 in interest; at 84 months, the same loan costs $5,600 — nearly $1,700 more. Worse, you\'ll be underwater (owe more than the car is worth) for most of the loan. If you can\'t afford a vehicle on a 60-month loan, it\'s usually a sign the vehicle is out of budget, not that you need a longer term.',
+  },
+  {
+    q: 'What is gap insurance and do I need it?',
+    a: 'GAP (Guaranteed Asset Protection) insurance pays the difference between what you owe on your loan and what your car is worth if it\'s totaled or stolen. New cars lose 15%–20% of value in year one, but your loan balance drops more slowly — so early in the loan you\'re typically "underwater." GAP coverage costs $20–$40/month through a dealer, or $5–$10/month added to your auto insurance policy. It\'s worth considering for long-term loans or low down payments.',
+  },
+  {
+    q: 'Can I refinance my auto loan to get a lower payment?',
+    a: 'Yes — and auto refinancing is often underused. If your credit score has improved since you bought the car, or market rates have dropped, refinancing can save real money. On a $25,000 balance at 10%, refinancing to 7% saves about $75/month and $1,800 total over a remaining 24-month term. The process is simple: most lenders offer refinancing in minutes online, with no prepayment penalty on the original loan. Best results come in the first 2 years of the loan.',
+  },
+  {
+    q: 'Should I lease or buy a car?',
+    a: 'Leasing offers lower monthly payments — typically 20%–30% less than buying — but you\'re paying to use the car, not own it. At lease end, you have no asset and start the payment cycle again. Buying costs more monthly but builds equity and ends with no payment. The math generally favors buying if you keep the car 5+ years. Leasing makes sense if you want a new car every 3 years, drive under 12,000 miles/year, and value the lower payment over long-term ownership.',
+  },
+];
+
+const schema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'SoftwareApplication',
+      name: 'Auto Loan Calculator',
+      applicationCategory: 'FinanceApplication',
+      description: 'Free auto loan calculator with sales tax, trade-in value, fees, and full amortization schedule.',
+      url: 'https://moneymathcalc.com/auto-loan-calculator',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      operatingSystem: 'Web Browser',
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+    {
+      '@type': 'HowTo',
+      name: 'How to use the Auto Loan Calculator',
+      step: [
+        { '@type': 'HowToStep', position: 1, name: 'Enter vehicle price', text: 'Type the purchase price of the vehicle.' },
+        { '@type': 'HowToStep', position: 2, name: 'Add down payment and trade-in', text: 'Enter your down payment and the value of any trade-in vehicle.' },
+        { '@type': 'HowToStep', position: 3, name: 'Choose loan term', text: 'Select the loan term in months (24–84).' },
+        { '@type': 'HowToStep', position: 4, name: 'Enter interest rate', text: 'Use the rate you\'ve been quoted or the current average.' },
+        { '@type': 'HowToStep', position: 5, name: 'Review results', text: 'See your monthly payment and full cost breakdown instantly.' },
+      ],
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home',  item: 'https://moneymathcalc.com/' },
+        { '@type': 'ListItem', position: 2, name: 'Loans', item: 'https://moneymathcalc.com/loan-calculator' },
+        { '@type': 'ListItem', position: 3, name: 'Auto Loan Calculator', item: 'https://moneymathcalc.com/auto-loan-calculator' },
+      ],
+    },
+  ],
+});
+
+const inputClass = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent';
+const labelClass = 'block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1';
+---
+
+<Layout title={title} description={description} schemaMarkup={schema}>
+  <Header slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-primary-600 transition">Home</a>
+      <span>/</span>
+      <a href="/loan-calculator" class="hover:text-primary-600 transition">Loans</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">Auto Loan Calculator</span>
+    </nav>
+
+    <!-- Page heading -->
+    <div class="mb-6">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Auto Loan Calculator</h1>
+      <p class="text-gray-500">Calculate your monthly car payment including sales tax, trade-in, and fees. Results update instantly.</p>
+    </div>
+
+    <!-- Tip banner -->
+    <div class="bg-accent-50 border border-accent-500/20 rounded-xl px-5 py-3 mb-6 flex items-center gap-3">
+      <Icon name="target" size={18} class="text-accent-500 flex-shrink-0" />
+      <p class="text-sm text-gray-700">
+        <strong>Expert tip:</strong> Most financial advisors recommend keeping your monthly car payment below <strong>10% of your take-home pay</strong> — including insurance, it shouldn't exceed 15–20%.
+      </p>
+    </div>
+
+    <!-- ====================================================================
+         CALCULATOR CARD
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6">
+      <div class="bg-primary-600 rounded-t-2xl px-6 py-4">
+        <p class="text-white/90 text-sm font-medium">Enter your vehicle details below — results update as you type.</p>
+      </div>
+
+      <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+          <!-- ── INPUTS ─────────────────────────────────────────── -->
+          <div class="space-y-4">
+
+            <!-- Vehicle Price -->
+            <div>
+              <label for="inp-price" class={labelClass}>Vehicle Price</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
+                <input id="inp-price" type="text" value="35,000" class={`${inputClass} pl-6`} inputmode="numeric" />
+              </div>
+            </div>
+
+            <!-- Down Payment -->
+            <div>
+              <label for="inp-down" class={labelClass}>Down Payment</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
+                <input id="inp-down" type="text" value="5,000" class={`${inputClass} pl-6`} inputmode="numeric" />
+              </div>
+            </div>
+
+            <!-- Trade-in Value -->
+            <div>
+              <label for="inp-tradein" class={labelClass}>Trade-in Value</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
+                <input id="inp-tradein" type="text" value="0" class={`${inputClass} pl-6`} inputmode="numeric" />
+              </div>
+            </div>
+
+            <!-- Loan Term -->
+            <div>
+              <label for="inp-term" class={labelClass}>Loan Term</label>
+              <select id="inp-term" class={inputClass}>
+                <option value="24">24 months (2 years)</option>
+                <option value="36">36 months (3 years)</option>
+                <option value="48">48 months (4 years)</option>
+                <option value="60" selected>60 months (5 years)</option>
+                <option value="72">72 months (6 years)</option>
+                <option value="84">84 months (7 years)</option>
+              </select>
+            </div>
+
+            <!-- Interest Rate -->
+            <div>
+              <label for="inp-rate" class={labelClass}>Interest Rate</label>
+              <div class="relative">
+                <input id="inp-rate" type="text" inputmode="decimal" value="7.50" class={`${inputClass} pr-6`} />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">Avg new car rate: 7–8% APR for 720+ credit score (Experian, 2026)</p>
+            </div>
+
+            <!-- Advanced toggle -->
+            <div>
+              <button id="btn-advanced" type="button"
+                class="flex items-center gap-1.5 text-sm text-primary-600 font-medium hover:text-primary-700 transition"
+                aria-expanded="false">
+                <Icon name="chevron-down" size={16} id="adv-chevron" />
+                Show advanced options
+              </button>
+            </div>
+
+            <!-- Advanced section -->
+            <div id="advanced-section" class="hidden space-y-4 pt-2 border-t border-gray-100">
+
+              <!-- Sales Tax -->
+              <div>
+                <label for="inp-tax" class={labelClass}>Sales Tax Rate</label>
+                <div class="relative">
+                  <input id="inp-tax" type="text" inputmode="decimal" value="6.00" class={`${inputClass} pr-6`} />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Varies by state. Applied to (vehicle price − trade-in). Adjust for your location.</p>
+              </div>
+
+              <!-- Other Fees -->
+              <div>
+                <label for="inp-fees" class={labelClass}>Other Fees (doc, title, registration)</label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
+                  <input id="inp-fees" type="text" value="500" class={`${inputClass} pl-6`} inputmode="numeric" />
+                </div>
+              </div>
+
+              <!-- Start Date -->
+              <div>
+                <label for="inp-start" class={labelClass}>First Payment Date</label>
+                <input id="inp-start" type="month" class={inputClass} />
+              </div>
+
+            </div>
+
+            <!-- Calculate button -->
+            <button id="btn-calculate" type="button"
+              class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg transition text-sm mt-2">
+              Calculate
+            </button>
+
+          </div>
+
+          <!-- ── RESULTS ─────────────────────────────────────────── -->
+          <div class="space-y-5">
+
+            <!-- Monthly Payment hero -->
+            <div class="bg-primary-50 rounded-xl p-5">
+              <p class="text-xs font-semibold text-primary-600 uppercase tracking-wide mb-1">Monthly Payment</p>
+              <p id="r-payment" class="font-mono text-4xl font-bold text-primary-600">{formatCurrency(init.monthlyPayment)}</p>
+              <p class="text-xs text-gray-500 mt-1">Fixed for the life of the loan</p>
+            </div>
+
+            <!-- Loan amount breakdown -->
+            <div class="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Loan Amount Breakdown</p>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Vehicle Price</span>
+                <span id="r-vehicle-price" class="font-mono">{formatCurrency(DEFAULTS.vehiclePrice)}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">− Down Payment</span>
+                <span id="r-down" class="font-mono text-danger-500">−{formatCurrency(DEFAULTS.downPayment)}</span>
+              </div>
+              <div id="r-tradein-row" class="flex justify-between hidden">
+                <span class="text-gray-600">− Trade-in Value</span>
+                <span id="r-tradein" class="font-mono text-danger-500">−{formatCurrency(DEFAULTS.tradeIn)}</span>
+              </div>
+              <div id="r-tax-row" class="flex justify-between">
+                <span class="text-gray-600">+ Sales Tax</span>
+                <span id="r-tax-amount" class="font-mono">{formatCurrency(init.salesTaxAmount)}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">+ Fees</span>
+                <span id="r-fees" class="font-mono">{formatCurrency(DEFAULTS.otherFees)}</span>
+              </div>
+              <div class="flex justify-between border-t border-gray-200 pt-2 font-medium">
+                <span class="text-gray-700">Total Loan Amount</span>
+                <span id="r-loan-amount" class="font-mono font-semibold">{formatCurrency(init.loanAmount)}</span>
+              </div>
+            </div>
+
+            <!-- Pie chart -->
+            <div class="grid grid-cols-2 gap-4 items-center">
+              <div id="pie-container" class="w-full max-w-[160px] mx-auto">
+                <Fragment set:html={initPieSvg} />
+              </div>
+              <div id="pie-legend" class="space-y-2">
+                <Fragment set:html={initPieLegend} />
+              </div>
+            </div>
+
+            <!-- Summary stats -->
+            <div class="grid grid-cols-3 gap-3 border-t border-gray-100 pt-4">
+              <div class="text-center">
+                <p class="text-xs text-gray-400 mb-1">Total Interest</p>
+                <p id="r-total-interest" class="text-sm font-semibold font-mono text-warning-500">{formatCurrency(init.totalInterest)}</p>
+              </div>
+              <div class="text-center">
+                <p class="text-xs text-gray-400 mb-1">Total of Payments</p>
+                <p id="r-total-paid" class="text-sm font-semibold font-mono text-gray-900">{formatCurrency(init.totalPaid)}</p>
+              </div>
+              <div class="text-center">
+                <p class="text-xs text-gray-400 mb-1">Payoff Date</p>
+                <p id="r-payoff" class="text-sm font-semibold text-gray-900">{initPayoff}</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         PRICE FROM PAYMENT (collapsible)
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6">
+      <button id="btn-pfp-toggle" type="button"
+        class="w-full flex items-center justify-between px-6 py-4 text-left group" aria-expanded="false">
+        <div class="flex items-center gap-3">
+          <Icon name="calculator" size={18} class="text-primary-600" />
+          <div>
+            <p class="text-sm font-semibold text-gray-900">Price from Payment</p>
+            <p class="text-xs text-gray-500">How much can I borrow if I can pay $X/month?</p>
+          </div>
+        </div>
+        <Icon name="chevron-down" size={16} class="text-gray-400 group-hover:text-primary-600 transition" id="pfp-chevron" />
+      </button>
+
+      <div id="pfp-section" class="hidden border-t border-gray-100 px-6 pb-6 pt-4">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+          <div>
+            <label for="pfp-payment" class={labelClass}>Monthly Payment ($)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+              <input id="pfp-payment" type="text" value="500" class={`${inputClass} pl-6`} inputmode="numeric" />
+            </div>
+          </div>
+          <div>
+            <label for="pfp-term" class={labelClass}>Term</label>
+            <select id="pfp-term" class={inputClass}>
+              <option value="24">24 mo</option>
+              <option value="36">36 mo</option>
+              <option value="48">48 mo</option>
+              <option value="60" selected>60 mo</option>
+              <option value="72">72 mo</option>
+              <option value="84">84 mo</option>
+            </select>
+          </div>
+          <div>
+            <label for="pfp-rate" class={labelClass}>Rate (%)</label>
+            <input id="pfp-rate" type="text" inputmode="decimal" value="7.50" class={inputClass} />
+          </div>
+          <button id="btn-pfp-calc" type="button"
+            class="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition">
+            Calculate
+          </button>
+        </div>
+        <div id="pfp-result" class="mt-4 hidden">
+          <div class="bg-primary-50 rounded-xl p-4">
+            <p class="text-xs font-semibold text-primary-600 uppercase tracking-wide mb-1">Max Loan Amount</p>
+            <p id="pfp-max-loan" class="font-mono text-2xl font-bold text-primary-600">—</p>
+            <p class="text-xs text-gray-500 mt-1">Add your down payment and trade-in to estimate total vehicle budget.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons + disclaimer -->
+    <div class="flex flex-wrap items-center gap-3 mb-2">
+      <button id="btn-share" type="button"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary-600 hover:text-primary-600 transition">
+        <Icon name="trending-up" size={16} />Share Result
+      </button>
+      <button id="btn-pdf" type="button"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary-600 hover:text-primary-600 transition">
+        <Icon name="file-text" size={16} />Save as PDF
+      </button>
+      <button id="btn-reset" type="button"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-gray-400 transition">
+        <Icon name="x" size={16} />Reset
+      </button>
+    </div>
+    <p class="text-xs text-gray-400 mb-8">Results are estimates for educational purposes. Not financial advice. <a href="/disclaimer" class="underline hover:text-gray-600">See disclaimer</a>.</p>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none z-50"></div>
+
+    <!-- ====================================================================
+         AMORTIZATION SECTION
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Amortization Schedule</h2>
+
+      <div id="line-container" class="w-full mb-6 overflow-x-auto">
+        <Fragment set:html={initLineSvg} />
+      </div>
+
+      <div class="flex items-center gap-2 mb-4">
+        <button id="btn-year-view" class="px-3 py-1.5 rounded-md text-sm font-medium bg-primary-600 text-white transition">Year View</button>
+        <button id="btn-month-view" class="px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">Month View</button>
+      </div>
+
+      <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr id="amort-headers">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Year</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Payment</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Principal</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Interest</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Balance</th>
+            </tr>
+          </thead>
+          <tbody id="amort-tbody" class="divide-y divide-gray-100">
+            {initYearly.map(row => (
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-700">{row.year}</td>
+                <td class="px-4 py-3 text-right font-mono text-gray-700">{formatCurrency(row.totalPayment)}</td>
+                <td class="px-4 py-3 text-right font-mono text-gray-700">{formatCurrency(row.totalPrincipal)}</td>
+                <td class="px-4 py-3 text-right font-mono text-gray-700">{formatCurrency(row.totalInterest)}</td>
+                <td class="px-4 py-3 text-right font-mono font-medium text-gray-900">{formatCurrency(row.endingBalance)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button id="btn-show-all" type="button" class="hidden mt-3 text-sm text-primary-600 hover:text-primary-700 font-medium transition"></button>
+    </div>
+
+    <!-- Ad slot 1 -->
+    <AdSlot id="in-article-1" class="my-8" />
+
+    <!-- ====================================================================
+         EDUCATIONAL CONTENT
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8 prose prose-gray max-w-none">
+
+      <h2 class="text-2xl font-bold text-gray-900 not-prose mb-4">How to Use This Auto Loan Calculator</h2>
+      <p>This calculator shows your real monthly car payment — not just the sticker price divided by months, but the actual amount that includes sales tax, dealer fees, and your trade-in. Enter your numbers and results update instantly.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">1. Enter the vehicle price</h3>
+      <p>Use the out-the-door price, the sticker price, or the amount you're negotiating. The U.S. median new car price in 2026 is approximately $48,000, but our default of $35,000 reflects a common purchase point for new compact and midsize vehicles. The calculator works for any amount — new or used.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">2. Set your down payment and trade-in</h3>
+      <p>Both reduce how much you finance. A down payment is cash you put in upfront. A trade-in is money the dealer credits against your purchase. They're financially equivalent — but they differ for sales tax purposes. In most states, tax is calculated on the vehicle price minus the trade-in value, making a trade-in slightly more tax-efficient than cash in some situations.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">3. Choose your loan term</h3>
+      <p>Auto loans typically run 24 to 84 months. The sweet spot for most buyers is 48–60 months — short enough to avoid being seriously underwater, long enough to keep payments manageable. A 60-month loan at 7.5% on $32,000 costs about $640/month. The same loan at 84 months drops to $490/month but costs $1,700 more in total interest and keeps you in debt 2 years longer.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">4. Add sales tax and fees</h3>
+      <p>Click <strong>Show advanced options</strong> to include sales tax and dealer fees in your financed amount. These are real costs most calculators ignore. On a $35,000 car with 6% sales tax and $500 in fees, you're actually financing about $32,600 — nearly $2,600 more than the price minus your down payment alone. The default 6% reflects the national median; actual rates range from 0% (Montana, Oregon, and a few others) to over 10% in some cities.</p>
+
+      <h2 class="text-2xl font-bold text-gray-900 not-prose mt-10 mb-4">How Auto Loan Payments Are Calculated</h2>
+      <p>Auto loans use the same standard amortization formula as any fixed-rate loan. Your payment is the same each month — what changes is the split between interest and principal reduction.</p>
+
+      <div class="bg-gray-50 rounded-xl p-5 my-6 not-prose font-mono text-sm text-gray-800">
+        M = P × [r(1 + r)^n] ÷ [(1 + r)^n − 1]
+      </div>
+
+      <p>The key for auto loans is that <strong>P (principal) includes more than just the car price</strong>. The actual loan amount is:</p>
+      <ul class="space-y-1 my-4 list-disc list-inside">
+        <li>(Vehicle price − down payment − trade-in) = base financed amount</li>
+        <li>+ Sales tax on (vehicle price − trade-in)</li>
+        <li>+ Dealer and government fees</li>
+        <li>= Total amount financed (P in the formula)</li>
+      </ul>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">A worked example</h3>
+      <p>For a $35,000 car, $5,000 down, no trade-in, 60 months at 7.5%, with 6% sales tax and $500 fees:</p>
+      <ul class="space-y-1 my-4 list-disc list-inside">
+        <li>Sales tax: $35,000 × 6% = $2,100</li>
+        <li>Loan amount: $30,000 + $2,100 + $500 = <strong>$32,600</strong></li>
+        <li>Monthly rate: 7.5% ÷ 12 = 0.625%</li>
+        <li>Monthly payment: <strong>~$652/month</strong></li>
+        <li>Total interest: approximately <strong>$6,520 over 5 years</strong></li>
+      </ul>
+
+      <h2 class="text-2xl font-bold text-gray-900 not-prose mt-10 mb-4">Understanding Your Results</h2>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Monthly Payment</h3>
+      <p>This is the fixed amount due every month. Your lender will report this payment to credit bureaus — consistent on-time payments improve your credit score over the life of the loan. Budget for this plus insurance (typically $100–$250/month), fuel, and maintenance (roughly $100/month for a new car) to get your true monthly transportation cost.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Total Loan Amount</h3>
+      <p>This is what you're actually financing — after down payment and trade-in credit, plus tax and fees. This number often surprises buyers who assume they're financing just the negotiated price. A $35,000 car with 6% tax and $500 in fees means you're financing $32,600, not $30,000. Knowing this upfront is essential for accurate payment planning.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Total Interest and Total Paid</h3>
+      <p>Total interest is the true cost of financing. On $32,600 at 7.5% for 5 years, you pay about $6,520 in interest — effectively paying $39,120 for a $35,000 car. The same loan at 84 months reduces the monthly payment by $160 but increases total interest to $8,200. The amortization schedule below shows exactly how each payment is allocated month by month.</p>
+    </div>
+
+    <!-- Ad slot 2 -->
+    <AdSlot id="in-article-2" class="my-8" />
+
+    <!-- FAQ -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <div class="space-y-6">
+        {faqs.map(faq => (
+          <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+            <h3 class="text-base font-semibold text-gray-900 mb-2">{faq.q}</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">{faq.a}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Related calculators -->
+    <div class="mb-8">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Related Calculators</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { href: '/mortgage-calculator',     label: 'Mortgage Calculator',     desc: 'Home loans with taxes & insurance.',  iconName: 'home' as const },
+          { href: '/loan-calculator',         label: 'Loan Calculator',         desc: 'Personal loans, any amount or term.', iconName: 'credit-card' as const },
+          { href: '/amortization-calculator', label: 'Amortization Calculator', desc: 'Full schedule with extra payments.',   iconName: 'calendar' as const },
+          { href: '/payment-calculator',      label: 'Payment Calculator',      desc: 'Solve for any loan variable.',        iconName: 'calculator' as const },
+        ].map(c => (
+          <a href={c.href}
+            class="flex flex-col p-4 bg-white border border-gray-200 rounded-xl hover:border-primary-600 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-150">
+            <span class="text-primary-600 mb-2"><Icon name={c.iconName} size={20} /></span>
+            <p class="text-sm font-semibold text-gray-900 mb-1">{c.label}</p>
+            <p class="text-xs text-gray-500">{c.desc}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <AdSlot id="bottom" class="my-8" />
+
+  </div>
+
+  <Footer slot="footer" />
+</Layout>
+
+<script>
+import {
+  calculateAutoLoan,
+  calculateMaxLoan,
+  generateLoanPeriodSchedule,
+  generateLoanAmortizationByYear,
+  getPayoffDate,
+  formatCurrency,
+  type AutoLoanParams,
+  type LoanParams,
+  type YearlyRow,
+  type AmortizationRow,
+} from '../lib/calculations';
+import { generatePieChart, generateLineChart, generatePieLegend } from '../lib/chart-utils';
+import {
+  $, parseDollar, parseDecimal, normalizeDecimalInput,
+  formatDollarInput, setText, setHtml, showEl, showToast,
+} from '../lib/calc-helpers';
+import { addPdfFooter } from '../lib/pdf-footer';
+
+const DEFAULTS: AutoLoanParams = {
+  vehiclePrice: 35000, downPayment: 5000, tradeIn: 0,
+  termMonths: 60, annualRate: 7.5, salesTaxRate: 6, otherFees: 500,
+};
+
+let currentState  = { ...DEFAULTS };
+let currentResult = calculateAutoLoan(DEFAULTS);
+let currentSchedule: AmortizationRow[] = [];
+let currentYearly:   YearlyRow[]       = [];
+let showMonthly = false;
+let showAll     = false;
+
+function loanParamsFromResult(state: AutoLoanParams, loanAmount: number): LoanParams {
+  return { principal: loanAmount, annualRate: state.annualRate, years: state.termMonths / 12, frequency: 'monthly' };
+}
+
+function readInputs(): AutoLoanParams {
+  return {
+    vehiclePrice: parseDollar('inp-price'),
+    downPayment:  parseDollar('inp-down'),
+    tradeIn:      parseDollar('inp-tradein'),
+    termMonths:   parseInt((document.getElementById('inp-term') as HTMLSelectElement)?.value) || DEFAULTS.termMonths,
+    annualRate:   parseDecimal('inp-rate') || DEFAULTS.annualRate,
+    salesTaxRate: parseDecimal('inp-tax')  || DEFAULTS.salesTaxRate,
+    otherFees:    parseDollar('inp-fees'),
+  };
+}
+
+function recalculate(params?: AutoLoanParams): void {
+  if (params) currentState = params;
+  currentResult   = calculateAutoLoan(currentState);
+  const lp        = loanParamsFromResult(currentState, currentResult.loanAmount);
+  currentSchedule = generateLoanPeriodSchedule(lp);
+  currentYearly   = generateLoanAmortizationByYear(lp);
+  showAll = false;
+
+  renderResults();
+  renderCharts();
+  renderTable();
+  updateURL();
+}
+
+function renderResults(): void {
+  const r = currentResult;
+  const s = currentState;
+
+  setText('r-payment',       formatCurrency(r.monthlyPayment));
+  setText('r-vehicle-price', formatCurrency(s.vehiclePrice));
+  setText('r-down',          '−' + formatCurrency(s.downPayment));
+  setText('r-tradein',       '−' + formatCurrency(s.tradeIn));
+  setText('r-tax-amount',    formatCurrency(r.salesTaxAmount));
+  setText('r-fees',          formatCurrency(s.otherFees));
+  setText('r-loan-amount',   formatCurrency(r.loanAmount));
+  setText('r-total-interest', formatCurrency(r.totalInterest));
+  setText('r-total-paid',    formatCurrency(r.totalPaid));
+
+  showEl('r-tradein-row', s.tradeIn > 0);
+
+  const startEl  = document.getElementById('inp-start') as HTMLInputElement | null;
+  const startVal = startEl?.value;
+  if (startVal) {
+    const [yr, mo] = startVal.split('-').map(Number);
+    setText('r-payoff', getPayoffDate(new Date(yr, mo - 1), s.termMonths / 12));
+  } else {
+    setText('r-payoff', getPayoffDate(new Date(), s.termMonths / 12));
+  }
+}
+
+function renderCharts(): void {
+  const r = currentResult;
+  const segments = [
+    { label: 'Loan Amount', value: r.loanAmount,    color: '#0052CC' },
+    { label: 'Interest',    value: r.totalInterest, color: '#00B876' },
+  ];
+  setHtml('pie-container', generatePieChart(segments));
+  setHtml('pie-legend',    generatePieLegend(segments, r.totalPaid));
+  const linePoints = currentYearly.map((row, i) => ({ x: i + 1, y: row.endingBalance }));
+  setHtml('line-container', generateLineChart(linePoints, { formatY: (v) => `$${Math.round(v / 1000)}k` }));
+}
+
+function renderTable(): void {
+  const isYearly = !showMonthly;
+  const rows     = isYearly ? currentYearly : currentSchedule;
+  const pageSize = isYearly ? 10 : 12;
+  const visible  = showAll ? rows : rows.slice(0, pageSize);
+
+  const headerEl = $('amort-headers');
+  if (headerEl) {
+    const col1 = isYearly ? 'Year' : 'Month';
+    headerEl.innerHTML = [col1, 'Payment', 'Principal', 'Interest', 'Balance'].map(h =>
+      `<th class="px-4 py-3 text-${h === col1 ? 'left' : 'right'} text-xs font-semibold text-gray-500 uppercase tracking-wide">${h}</th>`
+    ).join('');
+  }
+
+  const tbody = $('amort-tbody');
+  if (tbody) {
+    tbody.innerHTML = visible.map((row: any) => {
+      const col1 = isYearly ? row.year : row.month;
+      const pmt  = isYearly ? row.totalPayment  : row.payment;
+      const prin = isYearly ? row.totalPrincipal : row.principal;
+      const int  = isYearly ? row.totalInterest  : row.interest;
+      const bal  = isYearly ? row.endingBalance  : row.balance;
+      return `<tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 text-gray-700">${col1}</td>
+        <td class="px-4 py-3 text-right font-mono text-gray-700">${formatCurrency(pmt)}</td>
+        <td class="px-4 py-3 text-right font-mono text-gray-700">${formatCurrency(prin)}</td>
+        <td class="px-4 py-3 text-right font-mono text-gray-700">${formatCurrency(int)}</td>
+        <td class="px-4 py-3 text-right font-mono font-medium text-gray-900">${formatCurrency(bal)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  const showAllBtn = $('btn-show-all');
+  if (showAllBtn) {
+    const total = rows.length;
+    const label = isYearly ? 'years' : 'months';
+    if (total > pageSize && !showAll) {
+      showAllBtn.textContent = `Show all ${total} ${label} →`;
+      showAllBtn.classList.remove('hidden');
+    } else if (showAll) {
+      showAllBtn.textContent = 'Show less ↑';
+      showAllBtn.classList.remove('hidden');
+    } else {
+      showAllBtn.classList.add('hidden');
+    }
+  }
+}
+
+function updateURL(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set('price', String(currentState.vehiclePrice));
+  url.searchParams.set('down',  String(currentState.downPayment));
+  url.searchParams.set('trade', String(currentState.tradeIn));
+  url.searchParams.set('term',  String(currentState.termMonths));
+  url.searchParams.set('rate',  String(currentState.annualRate));
+  history.replaceState(null, '', url.toString());
+}
+
+function readURLParams(): void {
+  const p = new URLSearchParams(window.location.search);
+  if (!p.has('price') && !p.has('rate')) return;
+  const s: AutoLoanParams = {
+    vehiclePrice: Number(p.get('price')) || DEFAULTS.vehiclePrice,
+    downPayment:  Number(p.get('down'))  || DEFAULTS.downPayment,
+    tradeIn:      Number(p.get('trade')) || DEFAULTS.tradeIn,
+    termMonths:   Number(p.get('term'))  || DEFAULTS.termMonths,
+    annualRate:   Number(p.get('rate'))  || DEFAULTS.annualRate,
+    salesTaxRate: DEFAULTS.salesTaxRate,
+    otherFees:    DEFAULTS.otherFees,
+  };
+  (document.getElementById('inp-price')   as HTMLInputElement).value  = s.vehiclePrice.toLocaleString('en-US');
+  (document.getElementById('inp-down')    as HTMLInputElement).value  = s.downPayment.toLocaleString('en-US');
+  (document.getElementById('inp-tradein') as HTMLInputElement).value  = s.tradeIn.toLocaleString('en-US');
+  (document.getElementById('inp-term')    as HTMLSelectElement).value = String(s.termMonths);
+  (document.getElementById('inp-rate')    as HTMLInputElement).value  = String(s.annualRate);
+  recalculate(s);
+}
+
+async function savePDF(): Promise<void> {
+  const btn = $('btn-pdf') as HTMLButtonElement | null;
+  if (btn) btn.textContent = 'Generating…';
+  try {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    const r = currentResult; const s = currentState;
+    doc.setFontSize(20); doc.setTextColor(0, 82, 204);
+    doc.text('Auto Loan Calculation', 20, 25);
+    doc.setFontSize(9); doc.setTextColor(120, 120, 120);
+    doc.text('MoneyMathCalc.com  —  Free Financial Calculators', 20, 33);
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, 20, 39);
+    doc.setFontSize(12); doc.setTextColor(30, 30, 30); doc.text('Vehicle & Loan Details', 20, 52);
+    doc.setFontSize(10);
+    const details: [string, string][] = [
+      ['Vehicle Price',    formatCurrency(s.vehiclePrice)],
+      ['Down Payment',     formatCurrency(s.downPayment)],
+      ['Trade-in Value',   formatCurrency(s.tradeIn)],
+      ['Sales Tax',        formatCurrency(r.salesTaxAmount)],
+      ['Fees',             formatCurrency(s.otherFees)],
+      ['Total Loan',       formatCurrency(r.loanAmount)],
+      ['Interest Rate',    `${s.annualRate}%`],
+      ['Loan Term',        `${s.termMonths} months`],
+    ];
+    let y = 60;
+    details.forEach(([label, val]) => {
+      doc.setTextColor(100, 100, 100); doc.text(label + ':', 20, y);
+      doc.setTextColor(30, 30, 30);  doc.text(val, 90, y); y += 7;
+    });
+    y += 4;
+    doc.setFontSize(12); doc.text('Payment Summary', 20, y); y += 8;
+    doc.setFontSize(10);
+    [['Monthly Payment', formatCurrency(r.monthlyPayment)],
+     ['Total Interest',  formatCurrency(r.totalInterest)],
+     ['Total of Payments', formatCurrency(r.totalPaid)]].forEach(([l, v]) => {
+      doc.setTextColor(100, 100, 100); doc.text(l + ':', 20, y);
+      doc.setTextColor(30, 30, 30); doc.text(v, 90, y); y += 8;
+    });
+    y += 6;
+    doc.setFontSize(12); doc.text('Amortization Schedule (Annual)', 20, y); y += 8;
+    doc.setFontSize(9); doc.setTextColor(120, 120, 120);
+    ['Year','Payment','Principal','Interest','Balance'].forEach((h, i) => doc.text(h, [20,50,85,120,155][i], y));
+    y += 5; doc.setDrawColor(200,200,200); doc.line(20, y, 190, y); y += 4;
+    doc.setTextColor(30, 30, 30);
+    currentYearly.forEach(row => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      [row.year, formatCurrency(row.totalPayment), formatCurrency(row.totalPrincipal),
+       formatCurrency(row.totalInterest), formatCurrency(row.endingBalance)].forEach((v, i) => {
+        doc.text(String(v), [20,50,85,120,155][i], y);
+      }); y += 7;
+    });
+    await addPdfFooter(doc, window.location.href, 'Auto Loan Calculation');
+    doc.save('auto-loan-calculation.pdf');
+  } finally {
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg> Save as PDF';
+  }
+}
+
+function calcPFP(): void {
+  const payment = parseDollar('pfp-payment');
+  const termMo  = parseInt((document.getElementById('pfp-term') as HTMLSelectElement)?.value) || 60;
+  const rate    = parseDecimal('pfp-rate') || 7.5;
+  const maxLoan = calculateMaxLoan(payment, rate, termMo / 12);
+  setText('pfp-max-loan', formatCurrency(maxLoan));
+  showEl('pfp-result', true);
+}
+
+function setup(): void {
+  const startEl = document.getElementById('inp-start') as HTMLInputElement | null;
+  if (startEl) {
+    const now = new Date();
+    startEl.value = `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, '0')}`;
+  }
+
+  ['inp-price','inp-down','inp-tradein','inp-fees'].forEach(id => {
+    document.getElementById(id)?.addEventListener('blur', () => {
+      formatDollarInput(id); recalculate(readInputs());
+    });
+  });
+
+  document.getElementById('inp-rate')?.addEventListener('blur', () => {
+    normalizeDecimalInput('inp-rate', 2); recalculate(readInputs());
+  });
+  document.getElementById('inp-rate')?.addEventListener('change', () => recalculate(readInputs()));
+
+  document.getElementById('inp-tax')?.addEventListener('blur', () => {
+    normalizeDecimalInput('inp-tax', 2); recalculate(readInputs());
+  });
+
+  ['inp-term','inp-start'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', () => recalculate(readInputs()));
+  });
+
+  $('btn-calculate')?.addEventListener('click', () => {
+    ['inp-price','inp-down','inp-tradein','inp-fees'].forEach(id => formatDollarInput(id));
+    normalizeDecimalInput('inp-rate', 2);
+    normalizeDecimalInput('inp-tax', 2);
+    recalculate(readInputs());
+  });
+
+  $('btn-reset')?.addEventListener('click', () => {
+    (document.getElementById('inp-price')   as HTMLInputElement).value  = (35000).toLocaleString('en-US');
+    (document.getElementById('inp-down')    as HTMLInputElement).value  = (5000).toLocaleString('en-US');
+    (document.getElementById('inp-tradein') as HTMLInputElement).value  = '0';
+    (document.getElementById('inp-term')    as HTMLSelectElement).value = '60';
+    (document.getElementById('inp-rate')    as HTMLInputElement).value  = '7.50';
+    (document.getElementById('inp-tax')     as HTMLInputElement).value  = '6.00';
+    (document.getElementById('inp-fees')    as HTMLInputElement).value  = '500';
+    recalculate({ ...DEFAULTS });
+  });
+
+  $('btn-share')?.addEventListener('click', () => {
+    updateURL();
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => showToast('Link copied to clipboard!'))
+      .catch(() => showToast('Copy the URL from your address bar.'));
+  });
+
+  $('btn-pdf')?.addEventListener('click', () => savePDF());
+
+  $('btn-advanced')?.addEventListener('click', () => {
+    const section = $('advanced-section');
+    const btn     = $('btn-advanced') as HTMLButtonElement | null;
+    const chevron = document.getElementById('adv-chevron');
+    const open    = !section?.classList.contains('hidden');
+    section?.classList.toggle('hidden');
+    if (btn) { btn.textContent = open ? ' Show advanced options' : ' Hide advanced options'; btn.setAttribute('aria-expanded', String(!open)); }
+    chevron?.classList.toggle('rotate-180');
+  });
+
+  $('btn-pfp-toggle')?.addEventListener('click', () => {
+    const section = $('pfp-section');
+    const chevron = document.getElementById('pfp-chevron');
+    const open    = !section?.classList.contains('hidden');
+    section?.classList.toggle('hidden');
+    chevron?.classList.toggle('rotate-180');
+    ($('btn-pfp-toggle') as HTMLButtonElement)?.setAttribute('aria-expanded', String(!open));
+  });
+
+  $('btn-pfp-calc')?.addEventListener('click', () => calcPFP());
+  document.getElementById('pfp-payment')?.addEventListener('blur', () => { formatDollarInput('pfp-payment'); calcPFP(); });
+  ['pfp-term','pfp-rate'].forEach(id => document.getElementById(id)?.addEventListener('change', () => calcPFP()));
+
+  $('btn-year-view')?.addEventListener('click', () => {
+    if (showMonthly) {
+      showMonthly = false; showAll = false;
+      $('btn-year-view')?.classList.replace('text-gray-700','text-white');
+      $('btn-year-view')?.classList.replace('hover:bg-gray-100','bg-primary-600');
+      $('btn-month-view')?.classList.replace('text-white','text-gray-700');
+      $('btn-month-view')?.classList.replace('bg-primary-600','hover:bg-gray-100');
+      renderTable();
+    }
+  });
+
+  $('btn-month-view')?.addEventListener('click', () => {
+    if (!showMonthly) {
+      showMonthly = true; showAll = false;
+      $('btn-month-view')?.classList.replace('text-gray-700','text-white');
+      $('btn-month-view')?.classList.replace('hover:bg-gray-100','bg-primary-600');
+      $('btn-year-view')?.classList.replace('text-white','text-gray-700');
+      $('btn-year-view')?.classList.replace('bg-primary-600','hover:bg-gray-100');
+      renderTable();
+    }
+  });
+
+  $('btn-show-all')?.addEventListener('click', () => { showAll = !showAll; renderTable(); });
+
+  readURLParams();
+  recalculate();
+}
+
+setup();
+</script>

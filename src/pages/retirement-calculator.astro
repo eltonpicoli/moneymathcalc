@@ -1,0 +1,964 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const title = "Retirement Calculator — MoneyMathCalc";
+const description = "Three retirement calculators in one: project your savings, see how long money lasts, or find out how much you need. Free, instant, no signup.";
+const canonical = "https://moneymathcalc.com/retirement-calculator";
+
+const schema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Retirement Calculator",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "url": canonical,
+      "description": description
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moneymathcalc.com" },
+        { "@type": "ListItem", "position": 2, "name": "Retirement Calculator", "item": canonical }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "How much do I need to retire?", "acceptedAnswer": { "@type": "Answer", "text": "A common rule: save 25× your desired annual retirement income (4% rule). For $60,000/year in retirement, you'd need approximately $1.5 million. This rule assumes a 30-year retirement and a diversified portfolio. Adjust for your expected retirement length, other income sources like Social Security, and spending needs." } },
+        { "@type": "Question", "name": "What is the 4% rule for retirement?", "acceptedAnswer": { "@type": "Answer", "text": "The 4% rule (from the 1994 Bengen study) says you can withdraw 4% of your portfolio in year 1, then adjust for inflation annually, with low risk of running out of money over 30 years. A $1 million portfolio would generate $40,000/year. Some planners now use 3.3–3.5% for longer retirements." } },
+        { "@type": "Question", "name": "How long will $500,000 last in retirement?", "acceptedAnswer": { "@type": "Answer", "text": "With $500,000, withdrawing $3,000/month, a 5% return, and 3% inflation, the money lasts approximately 16 years. Add Social Security (average $1,900/month in 2026 per SSA) and the portfolio lasts significantly longer. Use the 'How Long Will It Last?' tab in this calculator for your specific scenario." } },
+        { "@type": "Question", "name": "When should I start saving for retirement?", "acceptedAnswer": { "@type": "Answer", "text": "Yesterday. The earlier you start, the less you need to save monthly due to compound interest. Starting at 25 vs. 35 with the same monthly contribution produces roughly double the retirement balance. Contributing $300/month from age 25 to 65 at 7% return gives $1.4 million. Starting at 35 gives just $680,000." } },
+        { "@type": "Question", "name": "How much of my income should I save for retirement?", "acceptedAnswer": { "@type": "Answer", "text": "Most financial planners recommend saving 15% of gross income for retirement, including any employer match. If you're starting late, 20–25% may be needed to catch up. At minimum, contribute enough to get your full employer 401(k) match — that's an immediate 50–100% return on those dollars." } },
+        { "@type": "Question", "name": "What is the average Social Security benefit in 2026?", "acceptedAnswer": { "@type": "Answer", "text": "The average Social Security retirement benefit in 2026 is approximately $1,900/month ($22,800/year), according to the SSA. The maximum benefit for someone retiring at full retirement age is about $3,822/month. Benefits depend on your earnings history and the age you claim — delaying to 70 increases benefits by 8% per year after full retirement age." } },
+        { "@type": "Question", "name": "Can I retire on $1 million?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, $1 million can support retirement — but it depends on your spending, retirement length, and other income. The 4% rule gives $40,000/year from $1M. Add average Social Security ($22,800/year) and you have $62,800/year. In a lower cost-of-living area, that's comfortable. In a high-cost city, you may need more." } }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={schema} />
+  </Fragment>
+
+  <Header slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-primary-600 transition">Home</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">Retirement Calculator</span>
+    </nav>
+
+    <!-- Hero -->
+    <div class="mb-6">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Retirement Calculator</h1>
+      <p class="text-gray-500">Three questions, one calculator. Project your savings, find out how long money lasts, or calculate exactly what you need.</p>
+    </div>
+
+    <!-- Calculator & Tabs -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6">
+
+    <!-- Mode Tabs -->
+    <section class="pt-2 mb-2">
+      <div class="flex border-b border-gray-200 gap-1">
+        <button id="tab-a" data-mode="a"
+          class="tab-btn px-5 py-3 text-sm font-medium rounded-t-lg border border-b-0 border-gray-200 bg-white text-primary-600 -mb-px">
+          📈 How much will I have?
+        </button>
+        <button id="tab-b" data-mode="b"
+          class="tab-btn px-5 py-3 text-sm font-medium rounded-t-lg border border-transparent text-gray-500 hover:text-gray-700">
+          ⏳ How long will it last?
+        </button>
+        <button id="tab-c" data-mode="c"
+          class="tab-btn px-5 py-3 text-sm font-medium rounded-t-lg border border-transparent text-gray-500 hover:text-gray-700">
+          🎯 How much do I need?
+        </button>
+      </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section class="py-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- =================== MODE A INPUTS =================== -->
+        <div id="inputs-a" class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-5">Your Retirement Savings Plan</h2>
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="a-current-age">Current Age</label>
+                <input id="a-current-age" type="text" inputmode="numeric" value="35"
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="a-retire-age">Retirement Age</label>
+                <input id="a-retire-age" type="text" inputmode="numeric" value="67"
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="a-current-savings">Current Savings</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="a-current-savings" type="text" inputmode="numeric" value="30,000"
+                  class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="a-monthly">Monthly Contribution</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="a-monthly" type="text" inputmode="numeric" value="500"
+                  class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="a-rate">Annual Return Rate</label>
+              <div class="relative">
+                <input id="a-rate" type="text" inputmode="decimal" value="7"
+                  class="w-full pl-4 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="a-inflation">Inflation Rate</label>
+              <div class="relative">
+                <input id="a-inflation" type="text" inputmode="decimal" value="3"
+                  class="w-full pl-4 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+              </div>
+            </div>
+            <button id="btn-calc-a" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-colors">Calculate</button>
+          </div>
+        </div>
+
+        <!-- =================== MODE B INPUTS =================== -->
+        <div id="inputs-b" class="hidden bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-5">Your Retirement Savings</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="b-balance">Current Balance</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="b-balance" type="text" inputmode="numeric" value="500,000"
+                  class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="b-withdrawal">Monthly Withdrawal</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="b-withdrawal" type="text" inputmode="numeric" value="3,000"
+                  class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="b-return">Annual Return Rate</label>
+              <div class="relative">
+                <input id="b-return" type="text" inputmode="decimal" value="5"
+                  class="w-full pl-4 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="b-inflation">Inflation Rate</label>
+              <div class="relative">
+                <input id="b-inflation" type="text" inputmode="decimal" value="3"
+                  class="w-full pl-4 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+              </div>
+            </div>
+            <!-- Social Security note -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
+              💡 Average Social Security benefit 2026: <strong>~$1,900/month</strong> (<a href="https://www.ssa.gov" target="_blank" rel="noopener" class="text-primary-600 hover:underline">ssa.gov</a>). Consider subtracting SS from your monthly withdrawal need.
+            </div>
+            <button id="btn-calc-b" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-colors">Calculate</button>
+          </div>
+        </div>
+
+        <!-- =================== MODE C INPUTS =================== -->
+        <div id="inputs-c" class="hidden bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-5">Your Retirement Goal</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="c-income">Annual Income Desired (today's $)</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="c-income" type="text" inputmode="numeric" value="60,000"
+                  class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="c-years-retirement">Years in Retirement</label>
+                <input id="c-years-retirement" type="text" inputmode="numeric" value="25"
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="c-years-to-retirement">Years to Retirement</label>
+                <input id="c-years-to-retirement" type="text" inputmode="numeric" value="30"
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="c-return-acc">Return Rate (accumulation)</label>
+              <div class="relative">
+                <input id="c-return-acc" type="text" inputmode="decimal" value="7"
+                  class="w-full pl-4 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="c-return-ret">Return Rate (in retirement)</label>
+              <div class="relative">
+                <input id="c-return-ret" type="text" inputmode="decimal" value="5"
+                  class="w-full pl-4 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="c-inflation">Inflation Rate</label>
+                <div class="relative">
+                  <input id="c-inflation" type="text" inputmode="decimal" value="3"
+                    class="w-full pl-3 pr-7 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm" />
+                  <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="c-current-savings">Current Savings</label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                  <input id="c-current-savings" type="text" inputmode="numeric" value="0"
+                    class="w-full pl-7 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm" />
+                </div>
+              </div>
+            </div>
+            <button id="btn-calc-c" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-colors">Calculate</button>
+          </div>
+        </div>
+
+        <!-- =================== RESULTS (shared) =================== -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col">
+
+          <!-- MODE A results -->
+          <div id="results-a">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Projected at Retirement</h2>
+            <div class="bg-accent-50 rounded-xl p-5 mb-4 text-center">
+              <p class="text-sm text-gray-600 mb-1">Projected Balance</p>
+              <p id="a-final" class="text-4xl font-bold text-accent-600 font-mono">$994,097</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="bg-gray-50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">In Today's Dollars</p>
+                <p id="a-inflation-adj" class="text-lg font-semibold text-gray-900 font-mono">$386,000</p>
+              </div>
+              <div class="bg-blue-50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">Total Contributed</p>
+                <p id="a-contributed" class="text-lg font-semibold text-primary-600 font-mono">$222,000</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-gray-50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">Growth Years</p>
+                <p id="a-years" class="text-base font-semibold text-gray-900">32 years</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">Interest Earned</p>
+                <p id="a-interest" class="text-base font-semibold text-accent-600 font-mono">$772,097</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODE B results -->
+          <div id="results-b" class="hidden">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">How Long Your Money Lasts</h2>
+            <div id="b-hero-sustain" class="hidden bg-accent-50 rounded-xl p-5 mb-4 text-center">
+              <p class="text-sm text-accent-700 font-medium mb-1">✅ Sustainable</p>
+              <p class="text-2xl font-bold text-accent-600">Lasts 100+ years</p>
+              <p class="text-sm text-gray-500 mt-1">Your withdrawal rate is sustainable long-term.</p>
+            </div>
+            <div id="b-hero-deplete" class="bg-red-50 rounded-xl p-5 mb-4 text-center">
+              <p class="text-sm text-gray-600 mb-1">Balance Depleted In</p>
+              <p id="b-years-last" class="text-4xl font-bold text-red-600 font-mono">16.2 years</p>
+              <p id="b-depletion-date" class="text-sm text-gray-500 mt-1">Estimated depletion: April 2042</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-gray-50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">Monthly Withdrawal</p>
+                <p id="b-monthly-display" class="text-base font-semibold text-gray-900 font-mono">$3,000</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">Safe Withdrawal Rate</p>
+                <p id="b-swr" class="text-base font-semibold text-gray-900">0.72%/mo</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODE C results -->
+          <div id="results-c" class="hidden">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Your Retirement Number</h2>
+            <div class="bg-primary-50 rounded-xl p-5 mb-4 text-center">
+              <p class="text-sm text-gray-600 mb-1">Nest Egg Needed</p>
+              <p id="c-nest-egg" class="text-4xl font-bold text-primary-600 font-mono">$1,187,000</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div class="bg-accent-50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">Monthly Savings Needed</p>
+                <p id="c-monthly-savings" class="text-xl font-bold text-accent-600 font-mono">$973</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">Inflation-Adj. Income</p>
+                <p id="c-adj-income" class="text-base font-semibold text-gray-900 font-mono">$145,518/yr</p>
+              </div>
+            </div>
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-gray-600">
+              💡 This is the monthly savings required <em>in addition to</em> what your current savings will grow to. Adjust "Current Savings" if you already have a nest egg started.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex flex-wrap gap-3 mt-4">
+        <button id="btn-share" class="px-5 py-2 bg-white border border-gray-300 hover:border-primary-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+          🔗 Share Result
+        </button>
+        <button id="btn-pdf" class="px-5 py-2 bg-white border border-gray-300 hover:border-primary-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+          📄 Save as PDF
+        </button>
+        <button id="btn-reset" class="px-5 py-2 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+          ↺ Reset
+        </button>
+      </div>
+      <p class="text-xs text-gray-400 mt-2">For educational purposes only. Consult a licensed financial advisor for personalized retirement planning.</p>
+    </section>
+
+    </div>
+
+    <!-- Chart -->
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4" id="chart-title">Savings Growth Over Time</h2>
+        <div id="ret-chart" class="w-full overflow-x-auto"></div>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4" id="table-title">Year-by-Year Breakdown</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr id="table-header" class="border-b border-gray-200 text-left text-gray-500 text-xs uppercase tracking-wide"></tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-gray-100 font-mono"></tbody>
+          </table>
+        </div>
+        <div id="table-expand" class="mt-3 text-center hidden">
+          <button id="btn-show-all" class="text-sm text-primary-600 hover:underline">Show all years ▼</button>
+        </div>
+      </div>
+    </section>
+
+    <AdSlot id="in-article-1" />
+
+    <!-- Educational Content -->
+    <section class="py-8">
+      <div class="prose prose-gray max-w-none">
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">How to Use This Retirement Calculator</h2>
+        <p class="text-gray-700 mb-4">
+          This calculator has three modes, each answering a different retirement question. Use <strong>"How much will I have?"</strong> to project your current savings plan — enter your age, target retirement age, current savings, and monthly contributions. <strong>"How long will it last?"</strong> takes your retirement balance and withdrawal amount and tells you when the money runs out. <strong>"How much do I need?"</strong> works backwards from your desired income to calculate your target nest egg and required monthly savings.
+        </p>
+        <p class="text-gray-700 mb-4">
+          For all modes, use a realistic annual return. A <strong>7% return</strong> reflects historical S&P 500 performance after inflation over long periods. For a more conservative estimate — especially for the years in retirement when you may shift to bonds — use 5–6%. The inflation rate defaults to 3%, the US long-term average; adjust if your planning assumptions differ.
+        </p>
+        <p class="text-gray-700 mb-6">
+          The results update immediately when you click Calculate. Use the Share Result button to save a URL with your exact inputs — useful for comparing scenarios or sharing with a financial advisor.
+        </p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">How Retirement Projections Are Calculated</h2>
+        <p class="text-gray-700 mb-4">
+          <strong>Mode A (How much will I have?)</strong> uses the compound growth formula with monthly contributions — same math as a compound interest calculator, but run for the years between now and retirement. It also shows your balance in "today's dollars" by adjusting for inflation over the full period.
+        </p>
+        <p class="text-gray-700 mb-4">
+          <strong>Mode B (How long will it last?)</strong> simulates monthly draws from your portfolio. Each month: apply the monthly return rate to your balance, then subtract your withdrawal. Withdrawals increase annually by the inflation rate (so your purchasing power stays constant). The simulation ends when the balance hits zero or reaches 100 years.
+        </p>
+        <p class="text-gray-700 mb-4">
+          <strong>Mode C (How much do I need?)</strong> uses a two-step calculation. First, it computes the <strong>nest egg needed</strong> as the present value of an annuity — a stream of inflation-adjusted income payments over your retirement years, discounted at the real return rate (Fisher equation). Then it calculates the monthly savings required (PMT formula) to reach that nest egg, after accounting for how much your current savings will grow.
+        </p>
+        <p class="text-gray-700 mb-6">
+          The <strong>4% rule</strong> (from the 1994 Bengen study) offers a simple cross-check: your retirement nest egg should be about 25× your desired annual withdrawal. It assumes a 30-year retirement with a balanced portfolio. This calculator's Mode C uses a more precise calculation, but the 4% rule is useful for quick sanity checks.
+        </p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Understanding Your Retirement Results</h2>
+        <p class="text-gray-700 mb-4">
+          In <strong>Mode A</strong>, the "In Today's Dollars" figure is more meaningful for planning than the nominal projection. If your plan shows $994,000 at retirement in 32 years, that sounds impressive — but at 3% inflation, it's worth about $386,000 in today's purchasing power. That's still strong, but it reframes what a million dollars will actually buy.
+        </p>
+        <p class="text-gray-700 mb-4">
+          In <strong>Mode B</strong>, remember that your portfolio's longevity depends heavily on sequence of returns risk — the risk that poor returns early in retirement (when your balance is largest) permanently impair your portfolio. The 4% rule's 30-year sustainability was derived from historical US market data; actual results vary.
+        </p>
+        <p class="text-gray-700 mb-4">
+          Social Security significantly extends portfolio longevity in Mode B. The average 2026 benefit is $1,900/month. If you're withdrawing $3,000/month but receive $1,900 from Social Security, you only need $1,100/month from your portfolio — extending its life dramatically. Reduce your withdrawal amount to account for Social Security income.
+        </p>
+
+      </div>
+    </section>
+
+    <AdSlot id="in-article-2" />
+
+    <!-- FAQ -->
+    <section class="py-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <div class="space-y-4">
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">How much do I need to retire?</h3>
+          <p class="text-gray-600 text-sm">A common rule: save 25× your desired annual retirement income (4% rule). For $60,000/year in retirement, you'd need approximately $1.5 million. This assumes a 30-year retirement and a diversified portfolio. Adjust for your expected retirement length, other income sources like Social Security ($1,900/month average in 2026), and spending needs.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">What is the 4% rule for retirement?</h3>
+          <p class="text-gray-600 text-sm">The 4% rule (from the 1994 Bengen study) says you can withdraw 4% of your portfolio in year 1, then adjust for inflation annually, with low risk of running out over 30 years. A $1 million portfolio generates $40,000/year. Some planners now use 3.3–3.5% for longer retirements or lower expected returns.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">How long will $500,000 last in retirement?</h3>
+          <p class="text-gray-600 text-sm">With $500,000, withdrawing $3,000/month, a 5% return, and 3% inflation, the money lasts approximately 16 years. Add Social Security (average $1,900/month in 2026 per SSA) and reduce your withdrawal to $1,100/month — then the portfolio lasts well over 30 years. Use the "How Long Will It Last?" tab for your specific numbers.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">When should I start saving for retirement?</h3>
+          <p class="text-gray-600 text-sm">The earlier the better. Contributing $300/month from age 25 to 65 at 7% return yields approximately $1.4 million. Starting at 35 yields just $680,000 — half as much for the same monthly contribution. The difference isn't just 10 years of contributions; it's 10 fewer years of compounding on every dollar already saved.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">How much of my income should I save for retirement?</h3>
+          <p class="text-gray-600 text-sm">Most financial planners recommend 15% of gross income, including any employer match. If you start late, 20–25% may be needed to catch up. At minimum, contribute enough to get your full employer 401(k) match — that's an immediate 50–100% return on those dollars, better than any investment you can make.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">What is the average Social Security benefit in 2026?</h3>
+          <p class="text-gray-600 text-sm">The average Social Security retirement benefit in 2026 is approximately $1,900/month ($22,800/year), according to the SSA. The maximum benefit for someone retiring at full retirement age is about $3,822/month. Delaying benefits past full retirement age increases payments by 8% per year up to age 70.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">Can I retire on $1 million?</h3>
+          <p class="text-gray-600 text-sm">Yes — $1 million can support retirement. The 4% rule yields $40,000/year. Add average Social Security ($22,800/year) for $62,800 total annual income. In many parts of the US, that's comfortable. In high cost-of-living cities like NYC or San Francisco, you may need $2–3 million. Your specific location and lifestyle determine the right number.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Related Calculators -->
+    <section class="py-8 border-t border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Related Calculators</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="/investment-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">📈</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Investment Calculator</p>
+        </a>
+        <a href="/compound-interest-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">📊</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Compound Interest</p>
+        </a>
+        <a href="/income-tax-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">🧾</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Income Tax Calculator</p>
+        </a>
+        <a href="/salary-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">💼</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Salary Calculator</p>
+        </a>
+      </div>
+    </section>
+
+    <AdSlot id="bottom" />
+  </div>
+
+  <Footer slot="footer" />
+</Layout>
+
+<script>
+  import {
+    calculateCompoundGrowth,
+    calculateWithdrawalYears,
+    calculateRetirementNeed,
+    formatCurrency,
+  } from '../lib/calculations';
+  import {
+    generateDualLineChart,
+    generateLineChart,
+  } from '../lib/chart-utils';
+  import {
+    $, parseDollar, parseDecimal, normalizeDecimalInput,
+    formatDollarInput, setText, setHtml, showToast,
+  } from '../lib/calc-helpers';
+  import { addPdfFooter } from '../lib/pdf-footer';
+
+  let currentMode = 'a';
+
+  // Tab switching
+  document.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.mode!;
+      switchMode(mode);
+      calculate();
+    });
+  });
+
+  function switchMode(mode: string) {
+    currentMode = mode;
+    document.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach(btn => {
+      const active = btn.dataset.mode === mode;
+      btn.classList.toggle('border-gray-200', active);
+      btn.classList.toggle('bg-white', active);
+      btn.classList.toggle('text-primary-600', active);
+      btn.classList.toggle('-mb-px', active);
+      btn.classList.toggle('border-transparent', !active);
+      btn.classList.toggle('text-gray-500', !active);
+    });
+    ['a', 'b', 'c'].forEach(m => {
+      ($(`inputs-${m}`) as HTMLElement).classList.toggle('hidden', m !== mode);
+      ($(`results-${m}`) as HTMLElement).classList.toggle('hidden', m !== mode);
+    });
+  }
+
+  function calculate() {
+    if (currentMode === 'a') calcA();
+    else if (currentMode === 'b') calcB();
+    else calcC();
+  }
+
+  // =================== MODE A ===================
+  function calcA() {
+    const currentAge = parseInt(($('a-current-age') as HTMLInputElement).value, 10) || 35;
+    const retireAge = parseInt(($('a-retire-age') as HTMLInputElement).value, 10) || 67;
+    const years = Math.max(1, retireAge - currentAge);
+    const principal = parseDollar('a-current-savings');
+    const contrib = parseDollar('a-monthly');
+    const rate = parseDecimal('a-rate');
+    const inflation = parseDecimal('a-inflation');
+
+    const result = calculateCompoundGrowth({
+      principal, monthlyContribution: contrib,
+      annualRate: rate, years, compoundingFrequency: 'monthly',
+    });
+
+    setText('a-final', formatCurrency(result.finalBalance));
+    setText('a-years', `${years} years`);
+    setText('a-contributed', formatCurrency(result.totalContributions));
+    setText('a-interest', formatCurrency(result.totalInterest));
+
+    const inflFactor = Math.pow(1 + inflation / 100, years);
+    setText('a-inflation-adj', formatCurrency(result.finalBalance / inflFactor));
+
+    // Chart
+    const line1 = result.yearByYear.map(r => ({ x: r.year, y: r.totalContributions }));
+    const line2 = result.yearByYear.map(r => ({ x: r.year, y: r.balance }));
+    setText('chart-title', 'Savings Growth Over Time');
+    setHtml('ret-chart', generateDualLineChart(line1, line2, {
+      label1: 'Total Contributed',
+      label2: 'Projected Balance',
+    }));
+
+    // Table
+    setText('table-title', 'Year-by-Year Projection');
+    ($('table-header') as HTMLElement).innerHTML = `
+      <th class="pb-2 pr-4">Year</th>
+      <th class="pb-2 pr-4 text-right">Annual Contrib.</th>
+      <th class="pb-2 pr-4 text-right">Interest Earned</th>
+      <th class="pb-2 text-right">Balance</th>`;
+    ($('table-body') as HTMLElement).innerHTML = result.yearByYear.map(row => `
+      <tr class="hover:bg-gray-50">
+        <td class="py-2 pr-4 text-gray-600">Year ${row.year} (Age ${currentAge + row.year})</td>
+        <td class="py-2 pr-4 text-right text-gray-600">${formatCurrency(row.yearlyContribution)}</td>
+        <td class="py-2 pr-4 text-right text-primary-600">${formatCurrency(row.yearlyInterest)}</td>
+        <td class="py-2 text-right font-semibold text-gray-900">${formatCurrency(row.balance)}</td>
+      </tr>`).join('');
+  }
+
+  // =================== MODE B ===================
+  function calcB() {
+    const balance = parseDollar('b-balance');
+    const withdrawal = parseDollar('b-withdrawal');
+    const returnRate = parseDecimal('b-return');
+    const inflation = parseDecimal('b-inflation');
+
+    const result = calculateWithdrawalYears({
+      balance, monthlyWithdrawal: withdrawal,
+      annualReturnRate: returnRate, inflationRate: inflation,
+    });
+
+    const sustainDiv = $('b-hero-sustain') as HTMLElement;
+    const depleteDiv = $('b-hero-deplete') as HTMLElement;
+
+    if (result.sustainable) {
+      sustainDiv.classList.remove('hidden');
+      depleteDiv.classList.add('hidden');
+    } else {
+      sustainDiv.classList.add('hidden');
+      depleteDiv.classList.remove('hidden');
+      setText('b-years-last', `${result.yearsLast.toFixed(1)} years`);
+      setText('b-depletion-date', `Estimated depletion: ${result.depletionDate}`);
+    }
+
+    setText('b-monthly-display', formatCurrency(withdrawal));
+    const swr = balance > 0 ? ((withdrawal / balance) * 100).toFixed(2) : '0.00';
+    setText('b-swr', `${swr}%/mo`);
+
+    // Chart — declining balance line chart
+    const points = result.yearByYear.map(r => ({ x: r.year, y: r.endBalance }));
+    setText('chart-title', 'Portfolio Balance Over Time');
+    setHtml('ret-chart', generateLineChart(points));
+
+    // Table
+    setText('table-title', 'Annual Withdrawal Schedule');
+    ($('table-header') as HTMLElement).innerHTML = `
+      <th class="pb-2 pr-4">Year</th>
+      <th class="pb-2 pr-4 text-right">Start Balance</th>
+      <th class="pb-2 pr-4 text-right">Annual Withdrawal</th>
+      <th class="pb-2 pr-4 text-right">Portfolio Return</th>
+      <th class="pb-2 text-right">End Balance</th>`;
+    const rows = result.yearByYear;
+    const showAll = (rows.length <= 20) || ($('btn-show-all') as HTMLElement)?.dataset.expanded === '1';
+    const displayRows = showAll ? rows : rows.slice(0, 20);
+    ($('table-body') as HTMLElement).innerHTML = displayRows.map(row => `
+      <tr class="hover:bg-gray-50">
+        <td class="py-2 pr-4 text-gray-600">Year ${row.year}</td>
+        <td class="py-2 pr-4 text-right text-gray-700">${formatCurrency(row.startBalance)}</td>
+        <td class="py-2 pr-4 text-right text-red-600">${formatCurrency(row.annualWithdrawal)}</td>
+        <td class="py-2 pr-4 text-right text-primary-600">${formatCurrency(row.annualReturn)}</td>
+        <td class="py-2 text-right font-semibold ${row.endBalance < 50000 ? 'text-red-600' : 'text-gray-900'}">${formatCurrency(row.endBalance)}</td>
+      </tr>`).join('');
+    const expandDiv = $('table-expand') as HTMLElement;
+    if (rows.length > 20 && !showAll) {
+      expandDiv.classList.remove('hidden');
+    } else {
+      expandDiv.classList.add('hidden');
+    }
+  }
+
+  // =================== MODE C ===================
+  function calcC() {
+    const income = parseDollar('c-income');
+    const yearsRetirement = parseInt(($('c-years-retirement') as HTMLInputElement).value, 10) || 25;
+    const yearsToRetirement = parseInt(($('c-years-to-retirement') as HTMLInputElement).value, 10) || 30;
+    const returnAcc = parseDecimal('c-return-acc');
+    const returnRet = parseDecimal('c-return-ret');
+    const inflation = parseDecimal('c-inflation');
+    const currentSavings = parseDollar('c-current-savings');
+
+    const result = calculateRetirementNeed({
+      annualIncomeDesired: income,
+      yearsInRetirement: yearsRetirement,
+      returnRateInRetirement: returnRet,
+      inflationRate: inflation,
+      yearsToRetirement,
+      currentSavings,
+      accumulationRate: returnAcc,
+    });
+
+    setText('c-nest-egg', formatCurrency(result.nestEggNeeded));
+    setText('c-monthly-savings', formatCurrency(result.monthlySavingsRequired));
+    setText('c-adj-income', `${formatCurrency(result.inflationAdjustedAnnualIncome)}/yr`);
+
+    // Chart — dual line showing savings path
+    const accumResult = calculateCompoundGrowth({
+      principal: currentSavings,
+      monthlyContribution: result.monthlySavingsRequired,
+      annualRate: returnAcc,
+      years: yearsToRetirement,
+      compoundingFrequency: 'monthly',
+    });
+    const line1 = accumResult.yearByYear.map(r => ({ x: r.year, y: r.totalContributions }));
+    const line2 = accumResult.yearByYear.map(r => ({ x: r.year, y: r.balance }));
+    setText('chart-title', 'Path to Your Retirement Number');
+    setHtml('ret-chart', generateDualLineChart(line1, line2, {
+      label1: 'Total Contributed',
+      label2: 'Projected Balance',
+    }));
+
+    // Table
+    setText('table-title', 'Savings Accumulation Schedule');
+    ($('table-header') as HTMLElement).innerHTML = `
+      <th class="pb-2 pr-4">Year</th>
+      <th class="pb-2 pr-4 text-right">Annual Savings</th>
+      <th class="pb-2 pr-4 text-right">Interest Earned</th>
+      <th class="pb-2 text-right">Balance</th>`;
+    ($('table-body') as HTMLElement).innerHTML = accumResult.yearByYear.map(row => `
+      <tr class="hover:bg-gray-50">
+        <td class="py-2 pr-4 text-gray-600">Year ${row.year}</td>
+        <td class="py-2 pr-4 text-right text-gray-600">${formatCurrency(row.yearlyContribution)}</td>
+        <td class="py-2 pr-4 text-right text-primary-600">${formatCurrency(row.yearlyInterest)}</td>
+        <td class="py-2 text-right font-semibold ${row.balance >= result.nestEggNeeded ? 'text-accent-600' : 'text-gray-900'}">${formatCurrency(row.balance)}</td>
+      </tr>`).join('');
+  }
+
+  // Show all table rows (Mode B)
+  $('btn-show-all')?.addEventListener('click', () => {
+    const btn = $('btn-show-all') as HTMLElement;
+    btn.dataset.expanded = '1';
+    btn.textContent = '';
+    $('table-expand')?.classList.add('hidden');
+    calcB();
+  });
+
+  // Input events - Mode A
+  ['a-current-age', 'a-retire-age', 'a-rate', 'a-inflation'].forEach(id => {
+    const el = $(id) as HTMLInputElement | null;
+    el?.addEventListener('blur', () => { normalizeDecimalInput(id, 2); if (currentMode === 'a') calculate(); });
+    el?.addEventListener('keydown', e => { if ((e as KeyboardEvent).key === 'Enter' && currentMode === 'a') calculate(); });
+  });
+  ['a-current-savings', 'a-monthly'].forEach(id => {
+    const el = $(id) as HTMLInputElement | null;
+    el?.addEventListener('blur', () => { formatDollarInput(id); if (currentMode === 'a') calculate(); });
+  });
+  $('btn-calc-a')?.addEventListener('click', () => { switchMode('a'); calculate(); });
+
+  // Mode B
+  ['b-return', 'b-inflation'].forEach(id => {
+    const el = $(id) as HTMLInputElement | null;
+    el?.addEventListener('blur', () => { normalizeDecimalInput(id, 2); if (currentMode === 'b') calculate(); });
+  });
+  ['b-balance', 'b-withdrawal'].forEach(id => {
+    const el = $(id) as HTMLInputElement | null;
+    el?.addEventListener('blur', () => { formatDollarInput(id); if (currentMode === 'b') calculate(); });
+  });
+  $('btn-calc-b')?.addEventListener('click', () => { switchMode('b'); calculate(); });
+
+  // Mode C
+  ['c-return-acc', 'c-return-ret', 'c-inflation', 'c-years-retirement', 'c-years-to-retirement'].forEach(id => {
+    const el = $(id) as HTMLInputElement | null;
+    el?.addEventListener('blur', () => { normalizeDecimalInput(id, 2); if (currentMode === 'c') calculate(); });
+  });
+  ['c-income', 'c-current-savings'].forEach(id => {
+    const el = $(id) as HTMLInputElement | null;
+    el?.addEventListener('blur', () => { formatDollarInput(id); if (currentMode === 'c') calculate(); });
+  });
+  $('btn-calc-c')?.addEventListener('click', () => { switchMode('c'); calculate(); });
+
+  // Share
+  function buildShareURL(): string {
+    const url = new URL(window.location.href);
+    url.searchParams.set('mode', currentMode);
+    if (currentMode === 'a') {
+      url.searchParams.set('age',     ($('a-current-age') as HTMLInputElement).value);
+      url.searchParams.set('retire',  ($('a-retire-age') as HTMLInputElement).value);
+      url.searchParams.set('savings', String(parseDollar('a-current-savings')));
+      url.searchParams.set('monthly', String(parseDollar('a-monthly')));
+      url.searchParams.set('rate',    ($('a-rate') as HTMLInputElement).value);
+      url.searchParams.set('infl',    ($('a-inflation') as HTMLInputElement).value);
+    } else if (currentMode === 'b') {
+      url.searchParams.set('balance',    String(parseDollar('b-balance')));
+      url.searchParams.set('withdrawal', String(parseDollar('b-withdrawal')));
+      url.searchParams.set('brate',      ($('b-return') as HTMLInputElement).value);
+      url.searchParams.set('infl',       ($('b-inflation') as HTMLInputElement).value);
+    } else {
+      url.searchParams.set('income',  String(parseDollar('c-income')));
+      url.searchParams.set('yrret',   ($('c-years-retirement') as HTMLInputElement).value);
+      url.searchParams.set('yrtore',  ($('c-years-to-retirement') as HTMLInputElement).value);
+      url.searchParams.set('racc',    ($('c-return-acc') as HTMLInputElement).value);
+      url.searchParams.set('rret',    ($('c-return-ret') as HTMLInputElement).value);
+      url.searchParams.set('infl',    ($('c-inflation') as HTMLInputElement).value);
+      url.searchParams.set('csav',    String(parseDollar('c-current-savings')));
+    }
+    return url.toString();
+  }
+
+  $('btn-share')?.addEventListener('click', () => {
+    const urlStr = buildShareURL();
+    history.replaceState(null, '', urlStr);
+    navigator.clipboard.writeText(urlStr).then(() => showToast('Link copied to clipboard!'));
+  });
+
+  // PDF
+  $('btn-pdf')?.addEventListener('click', async () => {
+    const btn = $('btn-pdf') as HTMLButtonElement | null;
+    if (btn) btn.textContent = 'Generating…';
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      const fmt = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      const modeLabel = currentMode === 'a' ? 'How much will I have?' : currentMode === 'b' ? 'How long will it last?' : 'How much do I need to save?';
+
+      doc.setFontSize(20); doc.setTextColor(0, 82, 204);
+      doc.text('Retirement Calculation', 20, 25);
+      doc.setFontSize(9); doc.setTextColor(120, 120, 120);
+      doc.text('MoneyMathCalc.com  —  Free Financial Calculators', 20, 33);
+      doc.text(`Generated: ${dateStr}`, 20, 39);
+      doc.setFontSize(9); doc.setTextColor(100, 100, 100);
+      doc.text(`Mode: ${modeLabel}`, 20, 47);
+
+      let y = 56;
+
+      if (currentMode === 'a') {
+        const currentAge = parseInt(($('a-current-age') as HTMLInputElement).value, 10) || 35;
+        const retireAge  = parseInt(($('a-retire-age') as HTMLInputElement).value, 10) || 67;
+        const years      = Math.max(1, retireAge - currentAge);
+        const principal  = parseDollar('a-current-savings');
+        const contrib    = parseDollar('a-monthly');
+        const rate       = parseDecimal('a-rate');
+        const inflation  = parseDecimal('a-inflation');
+        const result     = calculateCompoundGrowth({ principal, monthlyContribution: contrib, annualRate: rate, years, compoundingFrequency: 'monthly' });
+        const inflAdj    = result.finalBalance / Math.pow(1 + inflation / 100, years);
+
+        doc.setFontSize(12); doc.setTextColor(30, 30, 30); doc.text('Your Retirement Details', 20, y); y += 8;
+        doc.setFontSize(10);
+        ([['Current Age', `${currentAge}`], ['Retirement Age', `${retireAge}`], ['Years Until Retirement', `${years}`],
+          ['Current Savings', fmt(principal)], ['Monthly Contribution', fmt(contrib)], ['Annual Return', `${rate}%`], ['Inflation Rate', `${inflation}%`]] as [string,string][]).forEach(([l,v]) => {
+          doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 100, y); y += 7;
+        });
+        y += 4; doc.setFontSize(12); doc.text('Results Summary', 20, y); y += 8; doc.setFontSize(10);
+        ([['Projected Balance at Retirement', fmt(result.finalBalance)], ['Total Contributions', fmt(result.totalContributions)],
+          ['Investment Growth', fmt(result.totalInterest)], [`Inflation-Adjusted Value (${inflation}%)`, fmt(inflAdj)]] as [string,string][]).forEach(([l,v]) => {
+          doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 115, y); y += 7;
+        });
+        y += 6; if (y > 240) { doc.addPage(); y = 20; }
+        doc.setFontSize(12); doc.text('Year-by-Year Projection', 20, y); y += 8;
+        doc.setFontSize(9); doc.setTextColor(120,120,120);
+        ['Year (Age)', 'Annual Contrib.', 'Interest', 'Balance'].forEach((h,i) => doc.text(h,[20,75,120,158][i], y));
+        y += 4; doc.setDrawColor(200,200,200); doc.line(20, y, 190, y); y += 4; doc.setTextColor(30,30,30);
+        result.yearByYear.forEach(row => {
+          if (y > 248) { doc.addPage(); y = 20; }
+          [`Year ${row.year} (Age ${currentAge+row.year})`, fmt(row.yearlyContribution), fmt(row.yearlyInterest), fmt(row.balance)].forEach((v,i) => doc.text(String(v),[20,75,120,158][i], y));
+          y += 6;
+        });
+
+      } else if (currentMode === 'b') {
+        const balance   = parseDollar('b-balance');
+        const withdrawal = parseDollar('b-withdrawal');
+        const returnRate = parseDecimal('b-return');
+        const inflation  = parseDecimal('b-inflation');
+        const result     = calculateWithdrawalYears({ balance, monthlyWithdrawal: withdrawal, annualReturnRate: returnRate, inflationRate: inflation });
+        const swr = balance > 0 ? ((withdrawal / balance) * 100).toFixed(2) : '0.00';
+
+        doc.setFontSize(12); doc.setTextColor(30, 30, 30); doc.text('Your Withdrawal Details', 20, y); y += 8; doc.setFontSize(10);
+        ([['Portfolio Balance', fmt(balance)], ['Monthly Withdrawal', fmt(withdrawal)], ['Annual Return Rate', `${returnRate}%`], ['Inflation Rate', `${inflation}%`]] as [string,string][]).forEach(([l,v]) => {
+          doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 95, y); y += 7;
+        });
+        y += 4; doc.setFontSize(12); doc.text('Results Summary', 20, y); y += 8; doc.setFontSize(10);
+        if (result.sustainable) {
+          doc.setTextColor(0, 140, 70); doc.text('Portfolio is SUSTAINABLE — balance will grow or hold.', 20, y); y += 7;
+        } else {
+          doc.setTextColor(180, 0, 0); doc.text(`Portfolio depletes in ${result.yearsLast.toFixed(1)} years.`, 20, y); y += 7;
+          doc.setTextColor(100,100,100); doc.text('Estimated Depletion Date:', 20, y); doc.setTextColor(30,30,30); doc.text(result.depletionDate || '', 100, y); y += 7;
+        }
+        doc.setTextColor(100,100,100); doc.text('Monthly Withdrawal Rate:', 20, y); doc.setTextColor(30,30,30); doc.text(`${swr}%/month of portfolio`, 100, y); y += 7;
+        y += 6; if (y > 230) { doc.addPage(); y = 20; }
+        doc.setFontSize(12); doc.setTextColor(30,30,30); doc.text('Annual Withdrawal Schedule', 20, y); y += 8;
+        doc.setFontSize(9); doc.setTextColor(120,120,120);
+        ['Year','Start Balance','Annual Withdrawal','Return','End Balance'].forEach((h,i) => doc.text(h,[20,50,90,133,160][i], y));
+        y += 4; doc.setDrawColor(200,200,200); doc.line(20, y, 190, y); y += 4; doc.setTextColor(30,30,30);
+        result.yearByYear.forEach(row => {
+          if (y > 248) { doc.addPage(); y = 20; }
+          [`Year ${row.year}`, fmt(row.startBalance), fmt(row.annualWithdrawal), fmt(row.annualReturn), fmt(row.endBalance)].forEach((v,i) => doc.text(String(v),[20,50,90,133,160][i], y));
+          y += 6;
+        });
+
+      } else { // Mode C
+        const income           = parseDollar('c-income');
+        const yearsRetirement  = parseInt(($('c-years-retirement') as HTMLInputElement).value, 10) || 25;
+        const yearsToRetirement = parseInt(($('c-years-to-retirement') as HTMLInputElement).value, 10) || 30;
+        const returnAcc        = parseDecimal('c-return-acc');
+        const returnRet        = parseDecimal('c-return-ret');
+        const inflation        = parseDecimal('c-inflation');
+        const currentSavings   = parseDollar('c-current-savings');
+        const result = calculateRetirementNeed({ annualIncomeDesired: income, yearsInRetirement: yearsRetirement, returnRateInRetirement: returnRet, inflationRate: inflation, yearsToRetirement, currentSavings, accumulationRate: returnAcc });
+
+        doc.setFontSize(12); doc.setTextColor(30,30,30); doc.text('Your Retirement Goal Details', 20, y); y += 8; doc.setFontSize(10);
+        ([['Desired Annual Income', fmt(income)], ['Years in Retirement', `${yearsRetirement}`], ['Years to Retirement', `${yearsToRetirement}`],
+          ['Accumulation Rate', `${returnAcc}%`], ['Withdrawal Rate', `${returnRet}%`], ['Inflation Rate', `${inflation}%`], ['Current Savings', fmt(currentSavings)]] as [string,string][]).forEach(([l,v]) => {
+          doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 100, y); y += 7;
+        });
+        y += 4; doc.setFontSize(12); doc.text('Results Summary', 20, y); y += 8; doc.setFontSize(10);
+        ([['Nest Egg Needed', fmt(result.nestEggNeeded)], ['Monthly Savings Required', fmt(result.monthlySavingsRequired)],
+          ['Inflation-Adj. Annual Income', fmt(result.inflationAdjustedAnnualIncome)]] as [string,string][]).forEach(([l,v]) => {
+          doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 100, y); y += 7;
+        });
+        y += 6; if (y > 230) { doc.addPage(); y = 20; }
+        doc.setFontSize(12); doc.text('Savings Accumulation Schedule', 20, y); y += 8;
+        const accumResult = calculateCompoundGrowth({ principal: currentSavings, monthlyContribution: result.monthlySavingsRequired, annualRate: returnAcc, years: yearsToRetirement, compoundingFrequency: 'monthly' });
+        doc.setFontSize(9); doc.setTextColor(120,120,120);
+        ['Year','Annual Savings','Interest','Balance'].forEach((h,i) => doc.text(h,[20,65,115,158][i], y));
+        y += 4; doc.setDrawColor(200,200,200); doc.line(20, y, 190, y); y += 4; doc.setTextColor(30,30,30);
+        accumResult.yearByYear.forEach(row => {
+          if (y > 248) { doc.addPage(); y = 20; }
+          [`Year ${row.year}`, fmt(row.yearlyContribution), fmt(row.yearlyInterest), fmt(row.balance)].forEach((v,i) => doc.text(String(v),[20,65,115,158][i], y));
+          y += 6;
+        });
+      }
+
+      await addPdfFooter(doc, window.location.href, 'Retirement Calculation');
+      doc.save('retirement-calculation.pdf');
+    } finally {
+      if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg> Save as PDF';
+    }
+  });
+
+  // Reset
+  $('btn-reset')?.addEventListener('click', () => {
+    ($('a-current-age') as HTMLInputElement).value = '35';
+    ($('a-retire-age') as HTMLInputElement).value = '67';
+    ($('a-current-savings') as HTMLInputElement).value = '30,000';
+    ($('a-monthly') as HTMLInputElement).value = '500';
+    ($('a-rate') as HTMLInputElement).value = '7';
+    ($('a-inflation') as HTMLInputElement).value = '3';
+    ($('b-balance') as HTMLInputElement).value = '500,000';
+    ($('b-withdrawal') as HTMLInputElement).value = '3,000';
+    ($('b-return') as HTMLInputElement).value = '5';
+    ($('b-inflation') as HTMLInputElement).value = '3';
+    ($('c-income') as HTMLInputElement).value = '60,000';
+    ($('c-years-retirement') as HTMLInputElement).value = '25';
+    ($('c-years-to-retirement') as HTMLInputElement).value = '30';
+    ($('c-return-acc') as HTMLInputElement).value = '7';
+    ($('c-return-ret') as HTMLInputElement).value = '5';
+    ($('c-inflation') as HTMLInputElement).value = '3';
+    ($('c-current-savings') as HTMLInputElement).value = '0';
+    history.replaceState(null, '', window.location.pathname);
+    switchMode('a');
+    calculate();
+  });
+
+  // URL param restore
+  const p = new URLSearchParams(window.location.search);
+  const urlMode = p.get('mode');
+  if (urlMode && ['a', 'b', 'c'].includes(urlMode)) switchMode(urlMode);
+
+  if (!urlMode || urlMode === 'a') {
+    if (p.get('age'))     ($('a-current-age') as HTMLInputElement).value = p.get('age')!;
+    if (p.get('retire'))  ($('a-retire-age') as HTMLInputElement).value = p.get('retire')!;
+    if (p.get('savings')) ($('a-current-savings') as HTMLInputElement).value = Number(p.get('savings')).toLocaleString('en-US');
+    if (p.get('monthly')) ($('a-monthly') as HTMLInputElement).value = Number(p.get('monthly')).toLocaleString('en-US');
+    if (p.get('rate'))    ($('a-rate') as HTMLInputElement).value = p.get('rate')!;
+    if (p.get('infl'))    ($('a-inflation') as HTMLInputElement).value = p.get('infl')!;
+  } else if (urlMode === 'b') {
+    if (p.get('balance'))    ($('b-balance') as HTMLInputElement).value = Number(p.get('balance')).toLocaleString('en-US');
+    if (p.get('withdrawal')) ($('b-withdrawal') as HTMLInputElement).value = Number(p.get('withdrawal')).toLocaleString('en-US');
+    if (p.get('brate'))      ($('b-return') as HTMLInputElement).value = p.get('brate')!;
+    if (p.get('infl'))       ($('b-inflation') as HTMLInputElement).value = p.get('infl')!;
+  } else if (urlMode === 'c') {
+    if (p.get('income'))  ($('c-income') as HTMLInputElement).value = Number(p.get('income')).toLocaleString('en-US');
+    if (p.get('yrret'))   ($('c-years-retirement') as HTMLInputElement).value = p.get('yrret')!;
+    if (p.get('yrtore'))  ($('c-years-to-retirement') as HTMLInputElement).value = p.get('yrtore')!;
+    if (p.get('racc'))    ($('c-return-acc') as HTMLInputElement).value = p.get('racc')!;
+    if (p.get('rret'))    ($('c-return-ret') as HTMLInputElement).value = p.get('rret')!;
+    if (p.get('infl'))    ($('c-inflation') as HTMLInputElement).value = p.get('infl')!;
+    if (p.get('csav'))    ($('c-current-savings') as HTMLInputElement).value = Number(p.get('csav')).toLocaleString('en-US');
+  }
+
+  calculate();
+</script>

@@ -1,0 +1,149 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const title = "Disclaimer — MoneyMathCalc";
+const description = "Important disclaimer for MoneyMathCalc. Our calculators are educational tools only — not financial, tax, or legal advice. Read before making financial decisions.";
+const canonical = "https://moneymathcalc.com/disclaimer";
+const effectiveDate = "April 22, 2026";
+
+const schemaMarkup = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "Disclaimer",
+      "url": canonical,
+      "description": description,
+      "datePublished": "2026-04-22",
+      "dateModified": "2026-04-22"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moneymathcalc.com" },
+        { "@type": "ListItem", "position": 2, "name": "Disclaimer", "item": canonical }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={title} description={description} canonical={canonical} schemaMarkup={schemaMarkup}>
+  <Header slot="header" />
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-8" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-blue-600">Home</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">Disclaimer</span>
+    </nav>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Disclaimer</h1>
+      <p class="text-sm text-gray-500 mb-8">Last updated: {effectiveDate}</p>
+
+      <!-- Key disclaimer banner -->
+      <div class="bg-yellow-50 border border-yellow-300 rounded-xl p-5 mb-8">
+        <p class="text-yellow-900 font-semibold text-lg mb-1">Educational Tools Only</p>
+        <p class="text-yellow-800 text-sm">
+          MoneyMathCalc provides financial calculators for informational and educational purposes. We do not provide financial advice, investment advice, tax advice, or legal advice. Always consult a licensed professional for decisions that affect your finances.
+        </p>
+      </div>
+
+      <div class="prose prose-gray max-w-none text-gray-700 space-y-6">
+
+        <h2 class="text-xl font-bold text-gray-900">General Disclaimer</h2>
+        <p>
+          The information and tools provided on MoneyMathCalc (moneymathcalc.com) are intended for general educational and informational purposes only. Nothing on this website should be construed as professional financial, tax, investment, mortgage, legal, or other professional advice.
+        </p>
+        <p>
+          Calculator results are mathematical estimates based on the inputs you provide and publicly available data. They do not account for your complete financial situation, individual circumstances, creditworthiness, local regulations, or other factors that a qualified professional would consider.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">Mortgage and Loan Calculators</h2>
+        <p>
+          Mortgage and loan calculator results are estimates only. Actual loan terms, interest rates, monthly payments, and total costs will depend on factors including your credit score, debt-to-income ratio, down payment, loan type, lender-specific requirements, and market conditions at the time of application.
+        </p>
+        <p>
+          We are not a mortgage lender, broker, or licensed mortgage professional. Interest rate defaults used in our calculators are illustrative examples and do not represent current market rates, which change daily. For actual loan quotes, contact a licensed mortgage professional.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">Tax Calculators</h2>
+        <p>
+          Tax estimates provided by our Income Tax Calculator and related tools are based on published IRS tax brackets, standard deductions, and FICA rates for the specified tax year. These estimates may not account for:
+        </p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Tax credits (Earned Income Credit, Child Tax Credit, education credits, etc.)</li>
+          <li>Alternative Minimum Tax (AMT)</li>
+          <li>Self-employment income and deductions</li>
+          <li>Capital gains and investment income</li>
+          <li>Rental property income and deductions</li>
+          <li>State and local tax law nuances beyond the rates shown</li>
+          <li>Local/city income taxes (e.g., New York City, Philadelphia)</li>
+          <li>Recent legislative changes not yet reflected in our data</li>
+        </ul>
+        <p>
+          For tax filing purposes, consult a licensed CPA or tax professional. Do not use our calculators as a substitute for professional tax preparation.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">Retirement and Investment Calculators</h2>
+        <p>
+          Retirement and investment projections on this site use assumed rates of return that are for illustrative purposes only. <strong>Past market performance does not guarantee future results.</strong> Investment returns are not guaranteed and actual performance may differ substantially from projections.
+        </p>
+        <p>
+          We do not promise, suggest, or imply any specific investment returns. Default return rates used in our calculators (e.g., 7% average annual market return) are commonly used long-term historical averages and may not represent future conditions. Your actual returns will vary based on market performance, investment choices, fees, timing, and other factors.
+        </p>
+        <p>
+          MoneyMathCalc is not a registered investment advisor under the Investment Advisers Act of 1940 or any state securities laws. Nothing on this site constitutes investment advice or a recommendation to buy, sell, or hold any security or investment.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">Salary and Income Calculations</h2>
+        <p>
+          Salary conversion calculations assume standard work schedules and do not account for overtime regulations, local minimum wage laws, employment contracts, or benefits. Income percentile comparisons are based on publicly available Bureau of Labor Statistics data and are approximations.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">Accuracy and Currency of Information</h2>
+        <p>
+          We make reasonable efforts to maintain accurate and up-to-date data, including annual updates to reflect IRS adjustments, FICA wage bases, and other changing figures. However, we cannot guarantee that all information is current, complete, or error-free. Tax laws, interest rates, and financial regulations change frequently.
+        </p>
+        <p>
+          If you believe any of our calculator data is incorrect, please <a href="/contact" class="text-blue-600 hover:underline">contact us</a>.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">No Liability</h2>
+        <p>
+          MoneyMathCalc and its operators shall not be liable for any damages, losses, or consequences arising from your reliance on the information or tools provided on this site. Your use of this site is entirely at your own risk.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">Consult a Professional</h2>
+        <p>
+          For personalized guidance on financial decisions, we strongly recommend consulting one or more of the following:
+        </p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Certified Financial Planner (CFP)</strong> — for comprehensive financial planning</li>
+          <li><strong>Certified Public Accountant (CPA)</strong> — for tax preparation and tax planning</li>
+          <li><strong>Licensed mortgage professional (NMLS)</strong> — for mortgage and home loan decisions</li>
+          <li><strong>Registered Investment Advisor (RIA)</strong> — for investment management</li>
+          <li><strong>Estate planning attorney</strong> — for retirement accounts and estate decisions</li>
+        </ul>
+
+        <h2 class="text-xl font-bold text-gray-900">Affiliate Disclosure</h2>
+        <p>
+          This site may in the future include affiliate links to financial products or services. If we earn a commission from a link, it will be clearly disclosed. Affiliate relationships do not affect the accuracy or independence of our calculator tools.
+        </p>
+
+      </div>
+    </div>
+
+    <div class="mt-6 text-center text-sm text-gray-400">
+      See also: <a href="/privacy-policy" class="text-blue-600 hover:underline">Privacy Policy</a> · <a href="/terms-of-use" class="text-blue-600 hover:underline">Terms of Use</a> · <a href="/about" class="text-blue-600 hover:underline">About</a>
+    </div>
+
+  </div>
+
+  <Footer slot="footer" />
+</Layout>

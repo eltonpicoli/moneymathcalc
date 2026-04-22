@@ -1,0 +1,890 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import AdSlot from '../components/AdSlot.astro';
+import Icon from '../components/Icon.astro';
+import {
+  calculateLoanPayment,
+  generateLoanPeriodSchedule,
+  generateLoanAmortizationByYear,
+  formatCurrency,
+  type LoanParams,
+} from '../lib/calculations';
+import { generatePieChart, generateLineChart, generatePieLegend } from '../lib/chart-utils';
+
+const DEFAULTS: LoanParams = {
+  principal: 25000,
+  annualRate: 8.5,
+  years: 5,
+  frequency: 'monthly',
+};
+
+const init         = calculateLoanPayment(DEFAULTS);
+const initSchedule = generateLoanPeriodSchedule(DEFAULTS);
+const initYearly   = generateLoanAmortizationByYear(DEFAULTS);
+
+const initPieSegments = [
+  { label: 'Principal', value: DEFAULTS.principal,   color: '#0052CC' },
+  { label: 'Interest',  value: init.totalInterest,   color: '#00B876' },
+];
+const initPieSvg    = generatePieChart(initPieSegments);
+const initPieLegend = generatePieLegend(initPieSegments, init.totalPaid);
+
+const initLinePoints = initYearly.map((r, i) => ({ x: i + 1, y: r.endingBalance }));
+const initLineSvg    = generateLineChart(initLinePoints, {
+  formatY: (v: number) => `$${Math.round(v / 1000)}k`,
+});
+
+const title       = 'Loan Calculator — Monthly Payment & Total Interest | MoneyMathCalc';
+const description = 'Calculate monthly payments, total interest, and full amortization schedule for any personal loan. Free loan payment calculator — no signup required.';
+
+const faqs = [
+  {
+    q: 'What credit score do I need to get a personal loan?',
+    a: 'Most lenders require at least a 580–600 score to qualify for a personal loan, but the best rates go to borrowers with 720 or higher. Below 640, you\'ll typically pay 20%–36% APR. Above 720, you\'re looking at 8%–12% from online lenders and banks. Every 40-point improvement in score can save $50–$100/month on a $25,000 loan.',
+  },
+  {
+    q: 'What is the average interest rate on a personal loan in 2026?',
+    a: 'The average personal loan rate in 2026 is around 12%–13% APR according to Bankrate. However, rates range widely: credit unions often offer 7%–9% to members, online lenders like LightStream offer 8%–11% for strong borrowers, and high-risk lenders charge 28%–36%. The rate you\'re offered depends on your credit score, income, and debt-to-income ratio.',
+  },
+  {
+    q: 'Is a personal loan better than a credit card for debt consolidation?',
+    a: 'Usually yes — if you qualify for a rate below your credit card APR. The average credit card rate is 21%+. A personal loan at 10%–14% saves real money and gives you a fixed payoff date. On $15,000 in credit card debt, switching to a 5-year personal loan at 11% saves approximately $8,000 in interest and $200/month in minimum payments.',
+  },
+  {
+    q: 'Can I pay off a personal loan early without a penalty?',
+    a: 'Most personal loans from online lenders and credit unions have no prepayment penalty. Some traditional bank loans still include them — read your loan agreement. If there\'s no penalty, paying extra principal each month saves significant interest: one extra payment per year on a $25,000 loan at 8.5% cuts 7 months off a 5-year term and saves about $580 in interest.',
+  },
+  {
+    q: 'How much can I borrow with a personal loan?',
+    a: 'Typical personal loan limits range from $1,000 to $100,000, with most lenders capping at $35,000–$50,000. Maximum amounts depend on your income and credit profile. Lenders generally want total monthly debt payments (including the new loan) to stay below 36%–43% of gross monthly income. Use this calculator to find a payment that fits comfortably in your budget.',
+  },
+  {
+    q: 'Does applying for a personal loan hurt my credit score?',
+    a: 'A hard inquiry at application temporarily drops your score by 2–5 points, typically recovering within 6 months. Pre-qualification uses a soft pull and has no impact. If you\'re rate shopping, submit all applications within a 14-45 day window — credit bureaus treat multiple loan inquiries in that period as a single inquiry. Taking out the loan itself can initially lower your average account age.',
+  },
+  {
+    q: 'What is the difference between a secured and unsecured personal loan?',
+    a: 'An unsecured personal loan requires no collateral — approval is based on creditworthiness. A secured loan requires an asset (savings account, vehicle, or other collateral) as a guarantee. Secured loans typically offer lower rates (1%–5% less) because the lender\'s risk is reduced. If you default on a secured loan, the lender can seize the collateral. Most personal loans advertised online are unsecured.',
+  },
+];
+
+const schema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'SoftwareApplication',
+      name: 'Loan Calculator',
+      applicationCategory: 'FinanceApplication',
+      description: 'Free personal loan calculator with monthly payment, total interest, and full amortization schedule.',
+      url: 'https://moneymathcalc.com/loan-calculator',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      operatingSystem: 'Web Browser',
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+    {
+      '@type': 'HowTo',
+      name: 'How to use the Loan Calculator',
+      step: [
+        { '@type': 'HowToStep', position: 1, name: 'Enter loan amount',     text: 'Type the total amount you want to borrow.' },
+        { '@type': 'HowToStep', position: 2, name: 'Set the loan term',     text: 'Enter the number of years to repay the loan.' },
+        { '@type': 'HowToStep', position: 3, name: 'Enter interest rate',   text: 'Use the rate you\'ve been quoted or check current averages.' },
+        { '@type': 'HowToStep', position: 4, name: 'Review your results',   text: 'See your monthly payment and total cost instantly.' },
+      ],
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home',  item: 'https://moneymathcalc.com/' },
+        { '@type': 'ListItem', position: 2, name: 'Loans', item: 'https://moneymathcalc.com/mortgage-calculator' },
+        { '@type': 'ListItem', position: 3, name: 'Loan Calculator', item: 'https://moneymathcalc.com/loan-calculator' },
+      ],
+    },
+  ],
+});
+
+const inputClass = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent';
+const labelClass = 'block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1';
+---
+
+<Layout title={title} description={description} schemaMarkup={schema}>
+  <Header slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-primary-600 transition">Home</a>
+      <span>/</span>
+      <a href="/mortgage-calculator" class="hover:text-primary-600 transition">Loans</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">Loan Calculator</span>
+    </nav>
+
+    <!-- Page heading -->
+    <div class="mb-6">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Loan Calculator</h1>
+      <p class="text-gray-500">Calculate your monthly payment and total interest for any loan. Results update instantly.</p>
+    </div>
+
+    <!-- Use case banner -->
+    <div class="bg-primary-50 border border-primary-600/20 rounded-xl px-5 py-3 mb-6 flex items-center gap-3">
+      <Icon name="zap" size={18} class="text-primary-600 flex-shrink-0" />
+      <p class="text-sm text-primary-700">
+        <strong>Great for:</strong> Personal loans, debt consolidation, medical bills, home improvement, and any fixed-rate borrowing.
+      </p>
+    </div>
+
+    <!-- ====================================================================
+         CALCULATOR CARD
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6">
+
+      <!-- Card header -->
+      <div class="bg-primary-600 rounded-t-2xl px-6 py-4">
+        <p class="text-white/90 text-sm font-medium">Enter your loan details below — results update as you type.</p>
+      </div>
+
+      <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+          <!-- ── INPUTS ─────────────────────────────────────────── -->
+          <div class="space-y-4">
+
+            <!-- Loan Amount -->
+            <div>
+              <label for="inp-amount" class={labelClass}>Loan Amount</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
+                <input id="inp-amount" type="text" value="25,000" class={`${inputClass} pl-6`} inputmode="numeric" />
+              </div>
+            </div>
+
+            <!-- Loan Term -->
+            <div>
+              <label for="inp-term" class={labelClass}>Loan Term (years)</label>
+              <div class="relative">
+                <input id="inp-term" type="text" inputmode="numeric" value="5" class={`${inputClass} pr-16`} />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">years</span>
+              </div>
+            </div>
+
+            <!-- Interest Rate -->
+            <div>
+              <label for="inp-rate" class={labelClass}>Interest Rate</label>
+              <div class="relative">
+                <input id="inp-rate" type="text" inputmode="decimal" value="8.50" class={`${inputClass} pr-6`} />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">%</span>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">Avg personal loan rate: 12–13% APR (Bankrate, 2026)</p>
+            </div>
+
+            <!-- Advanced toggle -->
+            <div>
+              <button
+                id="btn-advanced"
+                type="button"
+                class="flex items-center gap-1.5 text-sm text-primary-600 font-medium hover:text-primary-700 transition"
+                aria-expanded="false"
+              >
+                <Icon name="chevron-down" size={16} id="adv-chevron" />
+                Show advanced options
+              </button>
+            </div>
+
+            <!-- Advanced section -->
+            <div id="advanced-section" class="hidden space-y-4 pt-2 border-t border-gray-100">
+
+              <!-- Payment Frequency -->
+              <div>
+                <label for="inp-freq" class={labelClass}>Payment Frequency</label>
+                <select id="inp-freq" class={inputClass}>
+                  <option value="monthly"  selected>Monthly</option>
+                  <option value="biweekly">Biweekly (every 2 weeks)</option>
+                  <option value="weekly">Weekly</option>
+                </select>
+                <p class="text-xs text-gray-400 mt-1">Biweekly/weekly payments reduce total interest by paying down principal faster.</p>
+              </div>
+
+              <!-- Start Date -->
+              <div>
+                <label for="inp-start" class={labelClass}>First Payment Date</label>
+                <input id="inp-start" type="month" class={inputClass} />
+              </div>
+
+            </div>
+
+            <!-- Calculate button -->
+            <button
+              id="btn-calculate"
+              type="button"
+              class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg transition text-sm mt-2"
+            >
+              Calculate
+            </button>
+
+          </div>
+
+          <!-- ── RESULTS ─────────────────────────────────────────── -->
+          <div class="space-y-5">
+
+            <!-- Payment hero -->
+            <div class="bg-primary-50 rounded-xl p-5">
+              <p id="r-freq-label" class="text-xs font-semibold text-primary-600 uppercase tracking-wide mb-1">Monthly Payment</p>
+              <p id="r-payment" class="font-mono text-4xl font-bold text-primary-600">{formatCurrency(init.paymentAmount)}</p>
+              <p class="text-xs text-gray-500 mt-1">Fixed for the life of the loan</p>
+            </div>
+
+            <!-- Monthly equivalent (biweekly/weekly only) -->
+            <div id="monthly-equiv-row" class="hidden bg-gray-50 rounded-xl p-4">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Monthly Equivalent</p>
+              <p id="r-monthly-equiv" class="font-mono text-xl font-bold text-gray-700">{formatCurrency(init.monthlyEquivalent)}</p>
+              <p class="text-xs text-gray-400 mt-0.5">Comparable monthly cost</p>
+            </div>
+
+            <!-- Pie chart + legend -->
+            <div class="grid grid-cols-2 gap-4 items-center">
+              <div id="pie-container" class="w-full max-w-[160px] mx-auto">
+                <Fragment set:html={initPieSvg} />
+              </div>
+              <div id="pie-legend" class="space-y-2">
+                <Fragment set:html={initPieLegend} />
+              </div>
+            </div>
+
+            <!-- Breakdown rows -->
+            <div class="space-y-2 text-sm border-t border-gray-100 pt-4">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Loan Amount</span>
+                <span id="r-principal" class="font-medium font-mono">{formatCurrency(DEFAULTS.principal)}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total Interest</span>
+                <span id="r-total-interest" class="font-medium font-mono text-warning-500">{formatCurrency(init.totalInterest)}</span>
+              </div>
+              <div class="flex justify-between border-t border-gray-100 pt-2">
+                <span class="text-gray-700 font-medium">Total of Payments</span>
+                <span id="r-total-paid" class="font-semibold font-mono">{formatCurrency(init.totalPaid)}</span>
+              </div>
+            </div>
+
+            <!-- Summary stats -->
+            <div class="grid grid-cols-2 gap-3 border-t border-gray-100 pt-4">
+              <div class="text-center">
+                <p class="text-xs text-gray-400 mb-1">Total Periods</p>
+                <p id="r-total-periods" class="text-sm font-semibold font-mono text-gray-900">{init.totalPeriods}</p>
+              </div>
+              <div class="text-center">
+                <p class="text-xs text-gray-400 mb-1">Payoff Date</p>
+                <p id="r-payoff" class="text-sm font-semibold text-gray-900">—</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons + disclaimer -->
+    <div class="flex flex-wrap items-center gap-3 mb-2">
+      <button id="btn-share" type="button"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary-600 hover:text-primary-600 transition">
+        <Icon name="trending-up" size={16} />
+        Share Result
+      </button>
+      <button id="btn-pdf" type="button"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary-600 hover:text-primary-600 transition">
+        <Icon name="file-text" size={16} />
+        Save as PDF
+      </button>
+      <button id="btn-reset" type="button"
+        class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-gray-400 transition">
+        <Icon name="x" size={16} />
+        Reset
+      </button>
+    </div>
+    <p class="text-xs text-gray-400 mb-8">Results are estimates for educational purposes. Not financial advice. <a href="/disclaimer" class="underline hover:text-gray-600">See disclaimer</a>.</p>
+
+    <!-- Toast notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white text-sm px-4 py-2 rounded-lg shadow-lg opacity-0 transition-opacity duration-200 pointer-events-none z-50">
+      Link copied to clipboard!
+    </div>
+
+    <!-- ====================================================================
+         AMORTIZATION SECTION
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Amortization Schedule</h2>
+
+      <!-- Line chart -->
+      <div id="line-container" class="w-full mb-6 overflow-x-auto">
+        <Fragment set:html={initLineSvg} />
+      </div>
+
+      <!-- View toggle + table -->
+      <div class="flex items-center gap-2 mb-4">
+        <button id="btn-year-view"
+          class="px-3 py-1.5 rounded-md text-sm font-medium bg-primary-600 text-white transition">
+          Year View
+        </button>
+        <button id="btn-month-view"
+          class="px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition">
+          Period View
+        </button>
+      </div>
+
+      <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr id="amort-headers">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Year</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Payment</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Principal</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Interest</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Balance</th>
+            </tr>
+          </thead>
+          <tbody id="amort-tbody" class="divide-y divide-gray-100">
+            {initYearly.map(row => (
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-700">{row.year}</td>
+                <td class="px-4 py-3 text-right font-mono text-gray-700">{formatCurrency(row.totalPayment)}</td>
+                <td class="px-4 py-3 text-right font-mono text-gray-700">{formatCurrency(row.totalPrincipal)}</td>
+                <td class="px-4 py-3 text-right font-mono text-gray-700">{formatCurrency(row.totalInterest)}</td>
+                <td class="px-4 py-3 text-right font-mono font-medium text-gray-900">{formatCurrency(row.endingBalance)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <button id="btn-show-all" type="button"
+        class="hidden mt-3 text-sm text-primary-600 hover:text-primary-700 font-medium transition">
+        Show all periods →
+      </button>
+    </div>
+
+    <!-- Ad slot 1 -->
+    <AdSlot id="in-article-1" class="my-8" />
+
+    <!-- ====================================================================
+         EDUCATIONAL CONTENT
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8 prose prose-gray max-w-none">
+
+      <!-- Section A: How to use -->
+      <h2 class="text-2xl font-bold text-gray-900 not-prose mb-4">How to Use This Loan Calculator</h2>
+      <p>This calculator gives you an instant breakdown of any fixed-rate loan — monthly payment, total interest, and a full amortization schedule. Enter your numbers and the results update automatically as you type. No need to click Calculate first.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">1. Enter the loan amount</h3>
+      <p>Type the total amount you want to borrow. This is the principal — the sum you receive from the lender, before any interest accumulates. For a personal loan, this is commonly $5,000–$50,000. Our default of $25,000 is a typical amount for debt consolidation or a major home repair.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">2. Set the loan term</h3>
+      <p>Enter the number of years you'll have to repay the loan. Personal loans typically range from 2 to 7 years. Shorter terms mean higher monthly payments but significantly less total interest. A 3-year term on $25,000 at 8.5% costs roughly $1,100 less in interest than a 5-year term — the trade-off is a $250/month higher payment.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">3. Enter your interest rate</h3>
+      <p>Use the Annual Percentage Rate (APR) you've been quoted. If you're still shopping, use Bankrate's current average as a benchmark — around 12%–13% APR in 2026 for a well-qualified borrower. Entering different rates shows you immediately what a better credit score or lender could be worth: the difference between 10% and 14% on a $25,000 loan adds up to over $1,400 in extra interest over 5 years.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">4. Try the advanced options</h3>
+      <p>Click <strong>Show advanced options</strong> to set payment frequency. Switching from monthly to biweekly payments (every two weeks) means 26 half-payments per year instead of 12 full ones — effectively one extra full payment annually. On a $25,000 loan at 8.5%, biweekly payments pay off the loan about 5 months early and save roughly $300 in interest.</p>
+
+      <!-- Section B: How it's calculated -->
+      <h2 class="text-2xl font-bold text-gray-900 not-prose mt-10 mb-4">How Loan Payments Are Calculated</h2>
+      <p>Every fixed-rate loan uses the standard amortization formula. Your payment is calculated once and stays the same for every period — what changes each period is how much of that payment goes to interest versus how much reduces your balance.</p>
+
+      <div class="bg-gray-50 rounded-xl p-5 my-6 not-prose font-mono text-sm text-gray-800">
+        M = P × [r(1 + r)^n] ÷ [(1 + r)^n − 1]
+      </div>
+
+      <p>Where:</p>
+      <ul class="space-y-1 my-4 list-disc list-inside">
+        <li><strong>M</strong> = payment per period</li>
+        <li><strong>P</strong> = principal (loan amount)</li>
+        <li><strong>r</strong> = periodic interest rate (annual rate ÷ periods per year ÷ 100)</li>
+        <li><strong>n</strong> = total number of payments (years × periods per year)</li>
+      </ul>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">A worked example</h3>
+      <p>For a $25,000 personal loan at 8.5% for 5 years, paid monthly:</p>
+      <ul class="space-y-1 my-4 list-disc list-inside">
+        <li>P = $25,000</li>
+        <li>r = 8.5 ÷ 12 ÷ 100 = 0.007083 (monthly rate)</li>
+        <li>n = 5 × 12 = 60 (total payments)</li>
+        <li>M = <strong>$512.66/month</strong></li>
+      </ul>
+
+      <p>Over 60 months, you pay $512.66 × 60 = $30,759.60 total. You borrowed $25,000, so the cost of borrowing is <strong>$5,759.60 in interest</strong> — about 23% of the loan amount. That's the real price of the loan, and it's the number worth shopping around to reduce.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">How biweekly and weekly payments change the math</h3>
+      <p>With biweekly payments, the formula uses <strong>r = annual rate ÷ 26</strong> and <strong>n = years × 26</strong>. Each payment is roughly half the monthly amount, but because you make 26 payments per year instead of 24 equivalent half-payments, you're applying extra money to principal each year. That extra principal reduces your balance faster, which means less interest accrues — and the loan ends early.</p>
+
+      <!-- Section C: Understanding results -->
+      <h2 class="text-2xl font-bold text-gray-900 not-prose mt-10 mb-4">Understanding Your Results</h2>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Monthly Payment</h3>
+      <p>This is the fixed amount due every period for the life of the loan. It never changes — every payment is identical from month one to the last. What changes is the internal split: early payments are mostly interest; later payments are mostly principal. The amortization schedule below shows this shift year by year.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Total Interest</h3>
+      <p>This is the true cost of borrowing the money — the lender's fee for fronting you the principal. A $25,000 loan at 8.5% for 5 years costs $5,760 in interest. The same loan at 14% costs $9,271 — over $3,500 more for the same $25,000. This single number is why your credit score and rate shopping matter so much.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Total of Payments</h3>
+      <p>This is the full amount you'll send to the lender: principal plus every dollar of interest. It's the number to compare against what you're financing. If you're borrowing $25,000 to consolidate $25,000 in credit card debt, check that the total of payments is meaningfully less than what you'd pay staying on your cards' minimum payment schedule.</p>
+
+      <h3 class="text-lg font-semibold text-gray-900 not-prose mt-6 mb-2">Amortization schedule</h3>
+      <p>The schedule shows how each payment breaks down, year by year or period by period. In year one of a $25,000 loan at 8.5%, about $1,880 of your $6,152 in payments goes to interest. By year five, interest is less than $200 for the full year. The schedule is useful for understanding the cost of refinancing or paying off early — the earlier you pay, the more interest you save.</p>
+    </div>
+
+    <!-- Ad slot 2 -->
+    <AdSlot id="in-article-2" class="my-8" />
+
+    <!-- ====================================================================
+         FAQ
+    ===================================================================== -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <div class="space-y-6">
+        {faqs.map(faq => (
+          <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+            <h3 class="text-base font-semibold text-gray-900 mb-2">{faq.q}</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">{faq.a}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Related calculators -->
+    <div class="mb-8">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Related Calculators</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { href: '/mortgage-calculator',     label: 'Mortgage Calculator',     desc: 'Home loans with taxes & insurance.',  iconName: 'home' as const },
+          { href: '/auto-loan-calculator',    label: 'Auto Loan Calculator',    desc: 'Car payment with taxes and fees.',    iconName: 'car' as const },
+          { href: '/amortization-calculator', label: 'Amortization Calculator', desc: 'Full schedule with extra payments.',  iconName: 'calendar' as const },
+          { href: '/payment-calculator',      label: 'Payment Calculator',      desc: 'Solve for any loan variable.',        iconName: 'calculator' as const },
+        ].map(c => (
+          <a href={c.href}
+            class="flex flex-col p-4 bg-white border border-gray-200 rounded-xl hover:border-primary-600 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-150">
+            <span class="text-primary-600 mb-2"><Icon name={c.iconName} size={20} /></span>
+            <p class="text-sm font-semibold text-gray-900 mb-1">{c.label}</p>
+            <p class="text-xs text-gray-500">{c.desc}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Ad slot 3 -->
+    <AdSlot id="bottom" class="my-8" />
+
+  </div>
+
+  <Footer slot="footer" />
+</Layout>
+
+<!-- =========================================================================
+     INTERACTIVE JAVASCRIPT
+========================================================================== -->
+<script>
+import {
+  calculateLoanPayment,
+  generateLoanPeriodSchedule,
+  generateLoanAmortizationByYear,
+  getPayoffDate,
+  formatCurrency,
+  type LoanParams,
+  type LoanResult,
+  type YearlyRow,
+  type AmortizationRow,
+} from '../lib/calculations';
+import {
+  generatePieChart,
+  generateLineChart,
+  generatePieLegend,
+} from '../lib/chart-utils';
+import {
+  $, parseDollar, parseDecimal, normalizeDecimalInput,
+  formatDollarInput, setText, setHtml, showEl, showToast,
+} from '../lib/calc-helpers';
+import { addPdfFooter } from '../lib/pdf-footer';
+
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const DEFAULTS: LoanParams = {
+  principal: 25000,
+  annualRate: 8.5,
+  years: 5,
+  frequency: 'monthly',
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+
+let currentState: LoanParams    = { ...DEFAULTS };
+let currentResult: LoanResult   = calculateLoanPayment(DEFAULTS);
+let currentSchedule: AmortizationRow[] = generateLoanPeriodSchedule(DEFAULTS);
+let currentYearly:   YearlyRow[]       = generateLoanAmortizationByYear(DEFAULTS);
+let showPeriods = false;
+let showAll     = false;
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function readFrequency(): LoanParams['frequency'] {
+  const val = (document.getElementById('inp-freq') as HTMLSelectElement | null)?.value ?? 'monthly';
+  return val as LoanParams['frequency'];
+}
+
+function readInputs(): LoanParams {
+  return {
+    principal:  parseDollar('inp-amount'),
+    annualRate: parseDecimal('inp-rate') || DEFAULTS.annualRate,
+    years:      parseInt((document.getElementById('inp-term') as HTMLInputElement)?.value) || DEFAULTS.years,
+    frequency:  readFrequency(),
+  };
+}
+
+// ── Core calculation ─────────────────────────────────────────────────────────
+
+function recalculate(params?: LoanParams): void {
+  if (params) currentState = params;
+  currentResult   = calculateLoanPayment(currentState);
+  currentSchedule = generateLoanPeriodSchedule(currentState);
+  currentYearly   = generateLoanAmortizationByYear(currentState);
+  showAll = false;
+
+  renderResults();
+  renderCharts();
+  renderTable();
+  updateURL();
+}
+
+// ── Rendering ────────────────────────────────────────────────────────────────
+
+function renderResults(): void {
+  const r   = currentResult;
+  const s   = currentState;
+  const freq = s.frequency;
+
+  const freqLabel = freq === 'monthly' ? 'Monthly Payment'
+    : freq === 'biweekly' ? 'Biweekly Payment'
+    : 'Weekly Payment';
+
+  setText('r-freq-label',    freqLabel);
+  setText('r-payment',       formatCurrency(r.paymentAmount));
+  setText('r-monthly-equiv', formatCurrency(r.monthlyEquivalent));
+  setText('r-principal',     formatCurrency(s.principal));
+  setText('r-total-interest', formatCurrency(r.totalInterest));
+  setText('r-total-paid',    formatCurrency(r.totalPaid));
+  setText('r-total-periods', String(r.totalPeriods));
+
+  showEl('monthly-equiv-row', freq !== 'monthly');
+
+  // Payoff date
+  const startEl = document.getElementById('inp-start') as HTMLInputElement | null;
+  const startVal = startEl?.value;
+  if (startVal) {
+    const [yr, mo] = startVal.split('-').map(Number);
+    setText('r-payoff', getPayoffDate(new Date(yr, mo - 1), s.years));
+  } else {
+    setText('r-payoff', getPayoffDate(new Date(), s.years));
+  }
+}
+
+function renderCharts(): void {
+  const r = currentResult;
+  const segments = [
+    { label: 'Principal', value: currentState.principal, color: '#0052CC' },
+    { label: 'Interest',  value: r.totalInterest,        color: '#00B876' },
+  ];
+
+  setHtml('pie-container', generatePieChart(segments));
+  setHtml('pie-legend',    generatePieLegend(segments, r.totalPaid));
+
+  const linePoints = currentYearly.map((row, i) => ({ x: i + 1, y: row.endingBalance }));
+  setHtml('line-container', generateLineChart(linePoints, {
+    formatY: (v: number) => `$${Math.round(v / 1000)}k`,
+  }));
+}
+
+function renderTable(): void {
+  const isYearly  = !showPeriods;
+  const rows      = isYearly ? currentYearly : currentSchedule;
+  const pageSize  = isYearly ? 10 : 12;
+  const visible   = showAll ? rows : rows.slice(0, pageSize);
+
+  const freq = currentState.frequency;
+  const periodLabel = freq === 'monthly' ? 'Month' : freq === 'biweekly' ? 'Period (BW)' : 'Period (Wk)';
+
+  // Headers
+  const headerEl = $('amort-headers');
+  if (headerEl) {
+    const col1 = isYearly ? 'Year' : periodLabel;
+    headerEl.innerHTML = [col1, 'Payment', 'Principal', 'Interest', 'Balance'].map(h =>
+      `<th class="px-4 py-3 text-${h === col1 ? 'left' : 'right'} text-xs font-semibold text-gray-500 uppercase tracking-wide">${h}</th>`
+    ).join('');
+  }
+
+  // Rows
+  const tbody = $('amort-tbody');
+  if (tbody) {
+    tbody.innerHTML = visible.map((row: any) => {
+      const col1 = isYearly ? row.year : row.month;
+      const pmt  = isYearly ? row.totalPayment  : row.payment;
+      const prin = isYearly ? row.totalPrincipal : row.principal;
+      const int  = isYearly ? row.totalInterest  : row.interest;
+      const bal  = isYearly ? row.endingBalance  : row.balance;
+      return `<tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 text-gray-700">${col1}</td>
+        <td class="px-4 py-3 text-right font-mono text-gray-700">${formatCurrency(pmt)}</td>
+        <td class="px-4 py-3 text-right font-mono text-gray-700">${formatCurrency(prin)}</td>
+        <td class="px-4 py-3 text-right font-mono text-gray-700">${formatCurrency(int)}</td>
+        <td class="px-4 py-3 text-right font-mono font-medium text-gray-900">${formatCurrency(bal)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Show-all button
+  const showAllBtn = $('btn-show-all');
+  if (showAllBtn) {
+    const total = rows.length;
+    const label = isYearly ? 'years' : 'periods';
+    if (total > pageSize && !showAll) {
+      showAllBtn.textContent = `Show all ${total} ${label} →`;
+      showAllBtn.classList.remove('hidden');
+    } else if (showAll) {
+      showAllBtn.textContent = 'Show less ↑';
+      showAllBtn.classList.remove('hidden');
+    } else {
+      showAllBtn.classList.add('hidden');
+    }
+  }
+}
+
+// ── URL share ────────────────────────────────────────────────────────────────
+
+function updateURL(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set('amt',  String(currentState.principal));
+  url.searchParams.set('rate', String(currentState.annualRate));
+  url.searchParams.set('term', String(currentState.years));
+  url.searchParams.set('freq', currentState.frequency);
+  history.replaceState(null, '', url.toString());
+}
+
+function readURLParams(): void {
+  const p = new URLSearchParams(window.location.search);
+  if (!p.has('amt') && !p.has('rate') && !p.has('term') && !p.has('freq')) return;
+
+  const principal  = Number(p.get('amt'))  || DEFAULTS.principal;
+  const annualRate = Number(p.get('rate')) || DEFAULTS.annualRate;
+  const years      = Number(p.get('term')) || DEFAULTS.years;
+  const frequency  = (p.get('freq') ?? DEFAULTS.frequency) as LoanParams['frequency'];
+
+  (document.getElementById('inp-amount') as HTMLInputElement).value = principal.toLocaleString('en-US');
+  (document.getElementById('inp-rate')   as HTMLInputElement).value = String(annualRate);
+  (document.getElementById('inp-term')   as HTMLInputElement).value = String(years);
+  (document.getElementById('inp-freq')   as HTMLSelectElement).value = frequency;
+
+  recalculate({ principal, annualRate, years, frequency });
+}
+
+// ── PDF export ───────────────────────────────────────────────────────────────
+
+async function savePDF(): Promise<void> {
+  const btn = $('btn-pdf') as HTMLButtonElement | null;
+  if (btn) btn.textContent = 'Generating…';
+  try {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    const r   = currentResult;
+    const s   = currentState;
+
+    doc.setFontSize(20);
+    doc.setTextColor(0, 82, 204);
+    doc.text('Loan Calculation', 20, 25);
+
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text('MoneyMathCalc.com  —  Free Financial Calculators', 20, 33);
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`, 20, 39);
+
+    doc.setFontSize(12);
+    doc.setTextColor(30, 30, 30);
+    doc.text('Loan Details', 20, 52);
+
+    doc.setFontSize(10);
+    const freqLabel = s.frequency === 'monthly' ? 'Monthly' : s.frequency === 'biweekly' ? 'Biweekly' : 'Weekly';
+    const details: [string, string][] = [
+      ['Loan Amount',       formatCurrency(s.principal)],
+      ['Interest Rate',     `${s.annualRate}%`],
+      ['Loan Term',         `${s.years} years`],
+      ['Payment Frequency', freqLabel],
+    ];
+    let y = 60;
+    details.forEach(([label, val]) => {
+      doc.setTextColor(100, 100, 100); doc.text(label + ':', 20, y);
+      doc.setTextColor(30,  30,  30);  doc.text(val, 80, y);
+      y += 8;
+    });
+
+    y += 4;
+    doc.setFontSize(12); doc.text('Payment Summary', 20, y); y += 8;
+    doc.setFontSize(10);
+    const summary: [string, string][] = [
+      [`${freqLabel} Payment`, formatCurrency(r.paymentAmount)],
+      ...(s.frequency !== 'monthly' ? [['Monthly Equivalent', formatCurrency(r.monthlyEquivalent)] as [string, string]] : []),
+      ['Total Interest',  formatCurrency(r.totalInterest)],
+      ['Total of Payments', formatCurrency(r.totalPaid)],
+    ];
+    summary.forEach(([label, val]) => {
+      doc.setTextColor(100, 100, 100); doc.text(label + ':', 20, y);
+      doc.setTextColor(30,  30,  30);  doc.text(val, 100, y);
+      y += 8;
+    });
+
+    y += 6;
+    doc.setFontSize(12); doc.text('Amortization Schedule (Annual)', 20, y); y += 8;
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    ['Year', 'Payment', 'Principal', 'Interest', 'Balance'].forEach((h, i) => {
+      doc.text(h, [20, 50, 85, 120, 155][i], y);
+    });
+    y += 5;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, y, 190, y); y += 4;
+
+    doc.setTextColor(30, 30, 30);
+    currentYearly.forEach(row => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      [row.year, formatCurrency(row.totalPayment), formatCurrency(row.totalPrincipal),
+       formatCurrency(row.totalInterest), formatCurrency(row.endingBalance)].forEach((v, i) => {
+        doc.text(String(v), [20, 50, 85, 120, 155][i], y);
+      });
+      y += 7;
+    });
+
+    await addPdfFooter(doc, window.location.href, 'Loan Calculation');
+    doc.save('loan-calculation.pdf');
+  } finally {
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg> Save as PDF';
+  }
+}
+
+// ── Event setup ──────────────────────────────────────────────────────────────
+
+function setup(): void {
+  // Set initial start date
+  const startEl = document.getElementById('inp-start') as HTMLInputElement | null;
+  if (startEl) {
+    const now = new Date();
+    startEl.value = `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, '0')}`;
+  }
+
+  // Loan amount
+  document.getElementById('inp-amount')?.addEventListener('blur', () => {
+    formatDollarInput('inp-amount');
+    recalculate(readInputs());
+  });
+
+  // Interest rate
+  document.getElementById('inp-rate')?.addEventListener('blur', () => {
+    normalizeDecimalInput('inp-rate', 2);
+    recalculate(readInputs());
+  });
+  document.getElementById('inp-rate')?.addEventListener('change', () => recalculate(readInputs()));
+
+  // Term (numeric text input)
+  document.getElementById('inp-term')?.addEventListener('blur', () => recalculate(readInputs()));
+  document.getElementById('inp-term')?.addEventListener('change', () => recalculate(readInputs()));
+
+  // Frequency + start date
+  ['inp-freq', 'inp-start'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', () => recalculate(readInputs()));
+  });
+
+  // Calculate button
+  $('btn-calculate')?.addEventListener('click', () => {
+    formatDollarInput('inp-amount');
+    normalizeDecimalInput('inp-rate', 2);
+    recalculate(readInputs());
+  });
+
+  // Reset
+  $('btn-reset')?.addEventListener('click', () => {
+    (document.getElementById('inp-amount') as HTMLInputElement).value = (25000).toLocaleString('en-US');
+    (document.getElementById('inp-rate')   as HTMLInputElement).value = '8.50';
+    (document.getElementById('inp-term')   as HTMLInputElement).value = '5';
+    (document.getElementById('inp-freq')   as HTMLSelectElement).value = 'monthly';
+    recalculate({ ...DEFAULTS });
+  });
+
+  // Share
+  $('btn-share')?.addEventListener('click', () => {
+    updateURL();
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      showToast('Link copied to clipboard!');
+    }).catch(() => {
+      showToast('Copy the URL from your address bar.');
+    });
+  });
+
+  // PDF
+  $('btn-pdf')?.addEventListener('click', () => savePDF());
+
+  // Advanced toggle
+  $('btn-advanced')?.addEventListener('click', () => {
+    const section = $('advanced-section');
+    const btn     = $('btn-advanced') as HTMLButtonElement | null;
+    const chevron = document.getElementById('adv-chevron');
+    const open    = !section?.classList.contains('hidden');
+    section?.classList.toggle('hidden');
+    if (btn) {
+      btn.textContent = open ? ' Show advanced options' : ' Hide advanced options';
+      btn.setAttribute('aria-expanded', String(!open));
+    }
+    chevron?.classList.toggle('rotate-180');
+  });
+
+  // Amortization view toggle
+  $('btn-year-view')?.addEventListener('click', () => {
+    if (showPeriods) {
+      showPeriods = false; showAll = false;
+      $('btn-year-view')?.classList.replace('text-gray-700', 'text-white');
+      $('btn-year-view')?.classList.replace('hover:bg-gray-100', 'bg-primary-600');
+      $('btn-month-view')?.classList.replace('text-white', 'text-gray-700');
+      $('btn-month-view')?.classList.replace('bg-primary-600', 'hover:bg-gray-100');
+      renderTable();
+    }
+  });
+
+  $('btn-month-view')?.addEventListener('click', () => {
+    if (!showPeriods) {
+      showPeriods = true; showAll = false;
+      $('btn-month-view')?.classList.replace('text-gray-700', 'text-white');
+      $('btn-month-view')?.classList.replace('hover:bg-gray-100', 'bg-primary-600');
+      $('btn-year-view')?.classList.replace('text-white', 'text-gray-700');
+      $('btn-year-view')?.classList.replace('bg-primary-600', 'hover:bg-gray-100');
+      renderTable();
+    }
+  });
+
+  // Show all toggle
+  $('btn-show-all')?.addEventListener('click', () => {
+    showAll = !showAll;
+    renderTable();
+  });
+
+  // Init from URL params if present
+  readURLParams();
+
+  // Initial render
+  recalculate();
+}
+
+setup();
+</script>

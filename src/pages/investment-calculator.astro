@@ -1,0 +1,556 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+const title = "Investment Calculator — MoneyMathCalc";
+const description = "Calculate investment growth with inflation and tax adjustments. See real returns after inflation and capital gains tax. Free tool with year-by-year breakdown.";
+const canonical = "https://moneymathcalc.com/investment-calculator";
+
+const schema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Investment Calculator",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "url": canonical,
+      "description": description
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moneymathcalc.com" },
+        { "@type": "ListItem", "position": 2, "name": "Investment Calculator", "item": canonical }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is a realistic investment return rate?", "acceptedAnswer": { "@type": "Answer", "text": "The S&P 500 has averaged about 10% annually before inflation over the long term. After inflation (averaging 3%), the real return is closer to 7%. For diversified portfolios with bonds, 5–7% nominal is a reasonable planning assumption. No return is guaranteed." } },
+        { "@type": "Question", "name": "How does inflation affect investment returns?", "acceptedAnswer": { "@type": "Answer", "text": "Inflation erodes purchasing power. A 8% nominal return with 3% inflation gives a 4.85% real return (Fisher equation: (1.08/1.03) − 1). Over 10 years, $135,805 in nominal terms might only buy what $108,720 buys today. Always check inflation-adjusted numbers for retirement planning." } },
+        { "@type": "Question", "name": "How are investment gains taxed?", "acceptedAnswer": { "@type": "Answer", "text": "Long-term capital gains (assets held over 1 year) are taxed at 0%, 15%, or 20% depending on income. Most middle-income investors pay 15%. Short-term gains (under 1 year) are taxed as ordinary income. In tax-advantaged accounts (401k, IRA), gains grow tax-deferred or tax-free." } },
+        { "@type": "Question", "name": "What is the difference between nominal and real returns?", "acceptedAnswer": { "@type": "Answer", "text": "Nominal returns are raw investment growth before inflation. Real returns are what you actually gain in purchasing power. If your investment grows 8% but inflation is 3%, your real return is about 4.85%. Real returns matter more for long-term planning — a million-dollar portfolio in 30 years isn't the same as a million today." } },
+        { "@type": "Question", "name": "Should I invest a lump sum or monthly contributions?", "acceptedAnswer": { "@type": "Answer", "text": "Research shows lump sum investing outperforms dollar-cost averaging about two-thirds of the time since markets trend upward. However, monthly contributions reduce timing risk and are more realistic for most people. The most important factor is investing consistently rather than waiting for the 'perfect' moment." } },
+        { "@type": "Question", "name": "How much do I need to invest to reach $1 million?", "acceptedAnswer": { "@type": "Answer", "text": "To reach $1 million in 30 years at 7% return: starting with $0 and contributing monthly requires about $888/month. Starting with $100,000 and contributing $300/month gets you there. The earlier you start, the less monthly contribution you need — compounding does the heavy lifting over long periods." } },
+        { "@type": "Question", "name": "What is dollar-cost averaging?", "acceptedAnswer": { "@type": "Answer", "text": "Dollar-cost averaging means investing a fixed amount regularly (e.g., $500/month) regardless of market conditions. When prices are low you buy more shares; when high, fewer. It removes the emotion of trying to time the market and is the default strategy of 401(k) contributions. It's simple, disciplined, and effective." } }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={schema} />
+  </Fragment>
+
+  <Header slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-primary-600 transition">Home</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">Investment Calculator</span>
+    </nav>
+
+    <!-- Hero -->
+    <div class="mb-6">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Investment Calculator</h1>
+      <p class="text-gray-500">Project your investment growth with real-world adjustments for inflation and taxes. See what your portfolio will actually be worth.</p>
+    </div>
+
+    <!-- Calculator -->
+    <section>
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- Inputs -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-5">Investment Details</h2>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="principal">Initial Investment</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="principal" type="text" inputmode="numeric" value="20,000"
+                  class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="monthly-contrib">Monthly Contribution</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="monthly-contrib" type="text" inputmode="numeric" value="500"
+                  class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="rate">Annual Return Rate</label>
+              <div class="relative">
+                <input id="rate" type="text" inputmode="decimal" value="8"
+                  class="w-full pl-4 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="years">Time Period</label>
+              <div class="relative">
+                <input id="years" type="text" inputmode="numeric" value="10"
+                  class="w-full pl-4 pr-16 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">years</span>
+              </div>
+            </div>
+
+            <!-- Adjustments -->
+            <div class="border border-gray-200 rounded-xl p-4 space-y-3">
+              <p class="text-sm font-medium text-gray-700">Real-World Adjustments</p>
+
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="chk-inflation" class="w-4 h-4 text-primary-600 rounded" checked />
+                  <label for="chk-inflation" class="text-sm text-gray-700">Adjust for Inflation</label>
+                </div>
+                <div class="relative w-24">
+                  <input id="inflation-rate" type="text" inputmode="decimal" value="3"
+                    class="w-full pl-2 pr-6 py-1.5 border border-gray-300 rounded-lg text-sm text-right font-mono focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                  <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="chk-tax" class="w-4 h-4 text-primary-600 rounded" />
+                  <label for="chk-tax" class="text-sm text-gray-700">Apply Capital Gains Tax</label>
+                </div>
+                <div class="relative w-24">
+                  <input id="tax-rate" type="text" inputmode="decimal" value="15"
+                    class="w-full pl-2 pr-6 py-1.5 border border-gray-300 rounded-lg text-sm text-right font-mono focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                  <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
+                </div>
+              </div>
+            </div>
+
+            <button id="btn-calc"
+              class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-colors">
+              Calculate
+            </button>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col">
+          <h2 class="text-xl font-semibold text-gray-900 mb-5">Results</h2>
+
+          <div class="bg-accent-50 rounded-xl p-5 mb-4 text-center">
+            <p class="text-sm text-gray-600 mb-1">Projected Balance</p>
+            <p id="final-balance" class="text-4xl font-bold text-accent-600 font-mono">$135,805</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-gray-50 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-500 mb-1">Total Contributions</p>
+              <p id="total-contributions" class="text-lg font-semibold text-gray-900 font-mono">$80,000</p>
+            </div>
+            <div class="bg-blue-50 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-500 mb-1">Investment Returns</p>
+              <p id="total-returns" class="text-lg font-semibold text-primary-600 font-mono">$55,805</p>
+            </div>
+          </div>
+
+          <!-- Adjusted results -->
+          <div id="adj-section" class="space-y-2 mb-4">
+            <div id="inflation-row" class="flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2.5">
+              <span class="text-sm text-gray-600">📉 Inflation-Adjusted Value</span>
+              <span id="inflation-adjusted" class="text-sm font-semibold font-mono text-gray-900">$108,720</span>
+            </div>
+            <div id="tax-row" class="hidden flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-4 py-2.5">
+              <span class="text-sm text-gray-600">💰 After-Tax Balance</span>
+              <span id="after-tax" class="text-sm font-semibold font-mono text-gray-900">—</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mt-auto">
+            <div class="bg-gray-50 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-500 mb-1">Return on Investment</p>
+              <p id="roi" class="text-base font-semibold text-gray-900">69.75%</p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-500 mb-1">Effective Annual Return</p>
+              <p id="effective-rate" class="text-base font-semibold text-gray-900">8.00%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex flex-wrap gap-3 mt-4">
+        <button id="btn-share" class="px-5 py-2 bg-white border border-gray-300 hover:border-primary-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+          🔗 Share Result
+        </button>
+        <button id="btn-pdf" class="px-5 py-2 bg-white border border-gray-300 hover:border-primary-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+          📄 Save as PDF
+        </button>
+        <button id="btn-reset" class="px-5 py-2 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+          ↺ Reset
+        </button>
+      </div>
+      <p class="text-xs text-gray-400 mt-2">For educational purposes only. Past returns do not guarantee future results.</p>
+      </div>
+    </section>
+
+    <!-- Chart -->
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Portfolio Growth</h2>
+        <div id="growth-chart" class="w-full overflow-x-auto"></div>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Year-by-Year Breakdown</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 text-left text-gray-500 text-xs uppercase tracking-wide">
+                <th class="pb-2 pr-4">Year</th>
+                <th class="pb-2 pr-4 text-right">Annual Return</th>
+                <th class="pb-2 pr-4 text-right">Total Invested</th>
+                <th class="pb-2 pr-4 text-right">Balance</th>
+                <th id="th-adjusted" class="pb-2 text-right hidden">Infl. Adj.</th>
+              </tr>
+            </thead>
+            <tbody id="table-body" class="divide-y divide-gray-100 font-mono"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <AdSlot id="in-article-1" />
+
+    <!-- Educational Content -->
+    <section class="py-8">
+      <div class="prose prose-gray max-w-none">
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">How to Use This Investment Calculator</h2>
+        <p class="text-gray-700 mb-4">
+          Enter your <strong>initial investment</strong>, your <strong>monthly contribution</strong>, the expected <strong>annual return rate</strong>, and the <strong>time period</strong>. The calculator uses monthly compounding by default — appropriate for most long-term investment projections.
+        </p>
+        <p class="text-gray-700 mb-4">
+          Toggle <strong>Adjust for Inflation</strong> to see your projected balance in today's purchasing power. The default inflation rate of 3% reflects the US long-term average. This shows you the "real" value of your future portfolio. Toggle <strong>Apply Capital Gains Tax</strong> to see your balance after a 15% long-term capital gains tax on investment gains (the rate most middle-income Americans pay).
+        </p>
+        <p class="text-gray-700 mb-6">
+          Both adjustments update instantly when you check or uncheck the toggles — no need to click Calculate again. The year-by-year table shows all adjustments applied consistently across the projection period.
+        </p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Understanding Nominal vs. Real Returns</h2>
+        <p class="text-gray-700 mb-4">
+          Your portfolio's <strong>nominal return</strong> is the raw growth before adjusting for inflation. If you invest $20,000 at 8% for 10 years with $500/month, you'll have $135,805 in nominal terms — but that $135,805 won't buy what $135,805 buys today.
+        </p>
+        <p class="text-gray-700 mb-4">
+          The <strong>real return</strong> adjusts for inflation using the Fisher equation: real rate = (1 + nominal) / (1 + inflation) − 1. At 8% nominal with 3% inflation, the real rate is 4.85%. This calculator applies that real rate to show what your projected balance would be worth in today's dollars.
+        </p>
+        <p class="text-gray-700 mb-4">
+          With $135,805 projected (nominal) and 3% inflation over 10 years, the inflation-adjusted value is approximately $108,720 — about 80% of the nominal figure. That's still a strong outcome, but worth understanding when planning for retirement income or specific future expenses.
+        </p>
+        <p class="text-gray-700 mb-6">
+          <strong>Capital gains tax</strong> applies to the gain portion of your investment. Using 15% on gains: if you contributed $80,000 and earned $55,805 in returns, your after-tax balance would be $80,000 + ($55,805 × 0.85) = $127,434. Tax-advantaged accounts (401k, IRA, Roth IRA) defer or eliminate this tax entirely.
+        </p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Investment Strategies: Lump Sum vs. Monthly Contributions</h2>
+        <p class="text-gray-700 mb-4">
+          Research from Vanguard shows that lump-sum investing outperforms dollar-cost averaging (DCA) about 67% of the time, because markets trend upward over long periods. If you have a large amount to invest, putting it in all at once tends to produce better long-term results.
+        </p>
+        <p class="text-gray-700 mb-4">
+          However, for most people investing from earned income, monthly contributions are not only more realistic — they're psychologically sustainable. Contributing $500/month consistently beats sporadic lump sums for most investors because consistency matters more than perfect timing.
+        </p>
+        <p class="text-gray-700 mb-4">
+          Notice in this calculator how contributions and compounding work together: early contributions have more years to grow. Your first $500 invested at year 1 has 9 more years of compounding than your last $500 at year 10. This front-loading effect is why starting early, even with smaller amounts, dramatically improves outcomes.
+        </p>
+
+      </div>
+    </section>
+
+    <AdSlot id="in-article-2" />
+
+    <!-- FAQ -->
+    <section class="py-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <div class="space-y-4">
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">What is a realistic investment return rate?</h3>
+          <p class="text-gray-600 text-sm">The S&P 500 has averaged about 10% annually before inflation over the long term (Vanguard, Morningstar data). After inflation averaging 3%, real return is closer to 7%. For diversified portfolios with bonds, 5–7% nominal is a reasonable planning assumption. Bonds average 3–4%. No return is guaranteed — past performance doesn't predict future results.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">How does inflation affect investment returns?</h3>
+          <p class="text-gray-600 text-sm">Inflation erodes purchasing power over time. A 8% nominal return with 3% inflation gives a 4.85% real return (Fisher equation). Over 10 years, $135,805 in nominal terms buys roughly what $108,720 buys today. Always check inflation-adjusted numbers for retirement planning, where purchasing power in future years is what truly matters.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">How are investment gains taxed?</h3>
+          <p class="text-gray-600 text-sm">Long-term capital gains (held over 1 year) are taxed at 0%, 15%, or 20% depending on income. Most middle-income investors pay 15%. Short-term gains (under 1 year) are taxed as ordinary income up to 37%. In tax-advantaged accounts — 401(k), Traditional IRA, Roth IRA — gains grow tax-deferred or completely tax-free.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">What is the difference between nominal and real returns?</h3>
+          <p class="text-gray-600 text-sm">Nominal returns are raw investment growth before inflation. Real returns are what you actually gain in purchasing power. If your investment grows 8% but inflation is 3%, your real return is about 4.85%. For retirement planning, real returns matter more — $1 million in 30 years won't have the same purchasing power as $1 million today.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">Should I invest a lump sum or monthly contributions?</h3>
+          <p class="text-gray-600 text-sm">Research shows lump sum investing outperforms dollar-cost averaging about 67% of the time since markets trend upward (Vanguard study). However, monthly contributions are more realistic for most people and reduce timing risk. The most important factor is investing consistently rather than waiting for the "perfect" moment — time in the market beats timing the market.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">How much do I need to invest to reach $1 million?</h3>
+          <p class="text-gray-600 text-sm">To reach $1 million in 30 years at 7% return: starting with $0 requires about $888/month in contributions. Starting with $100,000 and contributing $300/month also gets you there. The earlier you start, the less monthly contribution you need — compounding does the heavy lifting over 30+ year periods. A $0 start at 25 beats a $100k start at 45.</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900 mb-2">What is dollar-cost averaging?</h3>
+          <p class="text-gray-600 text-sm">Dollar-cost averaging means investing a fixed amount regularly (e.g., $500/month) regardless of market conditions. When prices are low you buy more shares; when high, fewer shares. It removes emotion from timing decisions and is the default strategy of most 401(k) contributions. It's simple, disciplined, and consistently effective for long-term investors.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Related Calculators -->
+    <section class="py-8 border-t border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Related Calculators</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="/compound-interest-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">📊</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Compound Interest</p>
+        </a>
+        <a href="/retirement-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">🏖️</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Retirement Calculator</p>
+        </a>
+        <a href="/mortgage-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">🏠</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Mortgage Calculator</p>
+        </a>
+        <a href="/loan-calculator" class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+          <div class="text-2xl mb-2">🏦</div>
+          <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">Loan Calculator</p>
+        </a>
+      </div>
+    </section>
+
+    <AdSlot id="bottom" />
+  </div>
+
+  <Footer slot="footer" />
+</Layout>
+
+<script>
+  import {
+    calculateCompoundGrowth,
+    formatCurrency,
+  } from '../lib/calculations';
+  import {
+    generateDualLineChart,
+  } from '../lib/chart-utils';
+  import {
+    $, parseDollar, parseDecimal, normalizeDecimalInput,
+    formatDollarInput, setText, setHtml, showToast,
+  } from '../lib/calc-helpers';
+  import { addPdfFooter } from '../lib/pdf-footer';
+
+  function readInputs() {
+    return {
+      principal: parseDollar('principal'),
+      contrib: parseDollar('monthly-contrib'),
+      rate: parseDecimal('rate'),
+      years: parseInt(($('years') as HTMLInputElement)?.value || '10', 10),
+      useInflation: ($('chk-inflation') as HTMLInputElement)?.checked ?? true,
+      inflationRate: parseDecimal('inflation-rate'),
+      useTax: ($('chk-tax') as HTMLInputElement)?.checked ?? false,
+      taxRate: parseDecimal('tax-rate'),
+    };
+  }
+
+  function calculate() {
+    const { principal, contrib, rate, years, useInflation, inflationRate, useTax, taxRate } = readInputs();
+
+    const result = calculateCompoundGrowth({
+      principal, monthlyContribution: contrib,
+      annualRate: rate, years,
+      compoundingFrequency: 'monthly',
+    });
+
+    setText('final-balance', formatCurrency(result.finalBalance));
+    setText('total-contributions', formatCurrency(result.totalContributions));
+    setText('total-returns', formatCurrency(result.totalInterest));
+    const roi = result.totalContributions > 0 ? ((result.totalInterest / result.totalContributions) * 100).toFixed(2) : '0.00';
+    setText('roi', `${roi}%`);
+    setText('effective-rate', `${rate.toFixed(2)}%`);
+
+    // Inflation adjusted
+    const inflRow = $('inflation-row');
+    if (inflRow) inflRow.classList.toggle('hidden', !useInflation);
+    if (useInflation) {
+      const inflFactor = Math.pow(1 + inflationRate / 100, years);
+      const adjBalance = result.finalBalance / inflFactor;
+      setText('inflation-adjusted', formatCurrency(adjBalance));
+    }
+
+    // After-tax
+    const taxRow = $('tax-row');
+    if (taxRow) taxRow.classList.toggle('hidden', !useTax);
+    if (useTax) {
+      const taxAmount = result.totalInterest * (taxRate / 100);
+      const afterTax = result.finalBalance - taxAmount;
+      setText('after-tax', formatCurrency(afterTax));
+    }
+
+    // Chart
+    const line1 = result.yearByYear.map(r => ({ x: r.year, y: r.totalContributions }));
+    const line2 = result.yearByYear.map(r => ({ x: r.year, y: r.balance }));
+    setHtml('growth-chart', generateDualLineChart(line1, line2, {
+      label1: 'Contributions',
+      label2: 'Total Balance',
+    }));
+
+    // Table
+    const thAdj = $('th-adjusted');
+    if (thAdj) thAdj.classList.toggle('hidden', !useInflation);
+
+    const tbody = $('table-body');
+    if (tbody) {
+      tbody.innerHTML = result.yearByYear.map(row => {
+        const adjBal = useInflation
+          ? formatCurrency(row.balance / Math.pow(1 + inflationRate / 100, row.year))
+          : '';
+        return `<tr class="hover:bg-gray-50">
+          <td class="py-2 pr-4 text-gray-600">Year ${row.year}</td>
+          <td class="py-2 pr-4 text-right text-primary-600">${formatCurrency(row.yearlyInterest)}</td>
+          <td class="py-2 pr-4 text-right text-gray-600">${formatCurrency(row.totalContributions)}</td>
+          <td class="py-2 pr-4 text-right font-semibold text-gray-900">${formatCurrency(row.balance)}</td>
+          ${useInflation ? `<td class="py-2 text-right text-gray-500">${adjBal}</td>` : ''}
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  // Events
+  ['principal', 'monthly-contrib', 'rate', 'years', 'inflation-rate', 'tax-rate'].forEach(id => {
+    const el = $(id) as HTMLInputElement | null;
+    el?.addEventListener('blur', () => {
+      if (id === 'principal' || id === 'monthly-contrib') formatDollarInput(id);
+      else normalizeDecimalInput(id, 2);
+      calculate();
+    });
+    el?.addEventListener('keydown', e => { if ((e as KeyboardEvent).key === 'Enter') calculate(); });
+  });
+  ['chk-inflation', 'chk-tax'].forEach(id => $(`${id}`)?.addEventListener('change', calculate));
+  $('btn-calc')?.addEventListener('click', calculate);
+
+  // Share
+  $('btn-share')?.addEventListener('click', () => {
+    const { principal, contrib, rate, years } = readInputs();
+    const url = new URL(window.location.href);
+    url.searchParams.set('principal', String(principal));
+    url.searchParams.set('contrib', String(contrib));
+    url.searchParams.set('rate', String(rate));
+    url.searchParams.set('years', String(years));
+    history.replaceState(null, '', url.toString());
+    navigator.clipboard.writeText(url.toString()).then(() => showToast('Link copied to clipboard!'));
+  });
+
+  // PDF
+  $('btn-pdf')?.addEventListener('click', async () => {
+    const btn = $('btn-pdf') as HTMLButtonElement | null;
+    if (btn) btn.textContent = 'Generating…';
+    try {
+      const { jsPDF } = await import('jspdf');
+      const { principal, contrib, rate, years, useInflation, inflationRate, useTax, taxRate } = readInputs();
+      const res = calculateCompoundGrowth({ principal, monthlyContribution: contrib, annualRate: rate, years, compoundingFrequency: 'monthly' });
+      const doc = new jsPDF();
+      const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+      doc.setFontSize(20); doc.setTextColor(0, 82, 204);
+      doc.text('Investment Projection', 20, 25);
+      doc.setFontSize(9); doc.setTextColor(120, 120, 120);
+      doc.text('MoneyMathCalc.com  —  Free Financial Calculators', 20, 33);
+      doc.text(`Generated: ${dateStr}`, 20, 39);
+
+      let y = 52;
+      doc.setFontSize(12); doc.setTextColor(30, 30, 30); doc.text('Investment Details', 20, y); y += 8;
+      doc.setFontSize(10);
+      ([['Initial Investment', formatCurrency(principal)], ['Monthly Contribution', formatCurrency(contrib)],
+        ['Annual Return Rate', `${rate}%`], ['Time Horizon', `${years} years`]] as [string,string][]).forEach(([l,v]) => {
+        doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 90, y); y += 7;
+      });
+      if (useInflation) { doc.setTextColor(100,100,100); doc.text('Inflation Rate:', 20, y); doc.setTextColor(30,30,30); doc.text(`${inflationRate}%`, 90, y); y += 7; }
+      if (useTax) { doc.setTextColor(100,100,100); doc.text('Capital Gains Tax Rate:', 20, y); doc.setTextColor(30,30,30); doc.text(`${taxRate}%`, 90, y); y += 7; }
+
+      y += 4;
+      doc.setFontSize(12); doc.setTextColor(30, 30, 30); doc.text('Results Summary', 20, y); y += 8; doc.setFontSize(10);
+      const roi = res.totalContributions > 0 ? ((res.totalInterest / res.totalContributions) * 100).toFixed(2) : '0.00';
+      ([['Projected Balance', formatCurrency(res.finalBalance)], ['Total Contributions', formatCurrency(res.totalContributions)],
+        ['Investment Returns', formatCurrency(res.totalInterest)], ['Return on Investment', `${roi}%`]] as [string,string][]).forEach(([l,v]) => {
+        doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 90, y); y += 7;
+      });
+      if (useInflation) {
+        const adjBalance = res.finalBalance / Math.pow(1 + inflationRate / 100, years);
+        doc.setTextColor(100,100,100); doc.text('Inflation-Adjusted Value:', 20, y); doc.setTextColor(30,30,30); doc.text(formatCurrency(adjBalance), 90, y); y += 7;
+      }
+      if (useTax) {
+        const afterTax = res.finalBalance - (res.totalInterest * (taxRate / 100));
+        doc.setTextColor(100,100,100); doc.text('After-Tax Value:', 20, y); doc.setTextColor(30,30,30); doc.text(formatCurrency(afterTax), 90, y); y += 7;
+      }
+
+      y += 6; if (y > 230) { doc.addPage(); y = 20; }
+      doc.setFontSize(12); doc.setTextColor(30,30,30); doc.text('Year-by-Year Growth', 20, y); y += 8;
+      doc.setFontSize(9); doc.setTextColor(120,120,120);
+      ['Year', 'Annual Return', 'Total Contributions', 'Balance'].forEach((h,i) => doc.text(h,[20,55,100,148][i], y));
+      y += 4; doc.setDrawColor(200,200,200); doc.line(20, y, 190, y); y += 4; doc.setTextColor(30,30,30);
+      res.yearByYear.forEach(row => {
+        if (y > 248) { doc.addPage(); y = 20; }
+        [`Year ${row.year}`, formatCurrency(row.yearlyInterest), formatCurrency(row.totalContributions), formatCurrency(row.balance)].forEach((v,i) => doc.text(String(v),[20,55,100,148][i], y));
+        y += 6;
+      });
+
+      await addPdfFooter(doc, window.location.href, 'Investment Projection');
+      doc.save('investment-projection.pdf');
+    } finally {
+      if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg> Save as PDF';
+    }
+  });
+
+  // Reset
+  $('btn-reset')?.addEventListener('click', () => {
+    ($('principal') as HTMLInputElement).value = '20,000';
+    ($('monthly-contrib') as HTMLInputElement).value = '500';
+    ($('rate') as HTMLInputElement).value = '8';
+    ($('years') as HTMLInputElement).value = '10';
+    ($('chk-inflation') as HTMLInputElement).checked = true;
+    ($('inflation-rate') as HTMLInputElement).value = '3';
+    ($('chk-tax') as HTMLInputElement).checked = false;
+    history.replaceState(null, '', window.location.pathname);
+    calculate();
+  });
+
+  // URL params
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('principal')) ($('principal') as HTMLInputElement).value = Number(p.get('principal')).toLocaleString('en-US');
+  if (p.get('contrib')) ($('monthly-contrib') as HTMLInputElement).value = p.get('contrib')!;
+  if (p.get('rate')) ($('rate') as HTMLInputElement).value = p.get('rate')!;
+  if (p.get('years')) ($('years') as HTMLInputElement).value = p.get('years')!;
+
+  calculate();
+</script>

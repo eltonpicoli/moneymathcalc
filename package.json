@@ -1,0 +1,25 @@
+{
+  "name": "site-base",
+  "version": "0.1.0",
+  "description": "Base template for utility sites with SEO + AdSense",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.2.0",
+    "@astrojs/tailwind": "^5.1.2",
+    "astro": "^4.16.0",
+    "jspdf": "^4.2.1",
+    "tailwindcss": "^3.4.14"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/qrcode": "^1.5.6",
+    "qrcode": "^1.5.4"
+  }
+}

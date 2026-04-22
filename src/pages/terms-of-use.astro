@@ -1,0 +1,156 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const title = "Terms of Use — MoneyMathCalc";
+const description = "Terms of use for MoneyMathCalc. Please read these terms before using our free financial calculators and tools.";
+const canonical = "https://moneymathcalc.com/terms-of-use";
+const effectiveDate = "April 22, 2026";
+
+const schemaMarkup = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "name": "Terms of Use",
+      "url": canonical,
+      "description": description,
+      "datePublished": "2026-04-22",
+      "dateModified": "2026-04-22"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moneymathcalc.com" },
+        { "@type": "ListItem", "position": 2, "name": "Terms of Use", "item": canonical }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={title} description={description} canonical={canonical} schemaMarkup={schemaMarkup}>
+  <Header slot="header" />
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-8" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-blue-600">Home</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">Terms of Use</span>
+    </nav>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Terms of Use</h1>
+      <p class="text-sm text-gray-500 mb-8">Effective Date: {effectiveDate}</p>
+
+      <div class="prose prose-gray max-w-none text-gray-700 space-y-6">
+
+        <p>
+          These Terms of Use ("Terms") govern your use of the MoneyMathCalc website at moneymathcalc.com ("Site"). By accessing or using the Site, you agree to be bound by these Terms. If you do not agree, please do not use the Site.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">1. Acceptance of Terms</h2>
+        <p>
+          By using MoneyMathCalc, you confirm that you are at least 13 years of age and have the legal capacity to enter into these Terms. Your continued use of the Site following changes to these Terms constitutes acceptance of the revised Terms.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">2. Description of Service</h2>
+        <p>
+          MoneyMathCalc provides free online financial calculators and educational content related to personal finance, including mortgage calculations, loan amortization, tax estimates, retirement projections, and salary conversions. All tools are provided for <strong>informational and educational purposes only</strong>.
+        </p>
+        <p>
+          We do not provide financial advice, tax advice, legal advice, or investment recommendations. Our calculators are mathematical tools that apply standard financial formulas to your inputs. Results are estimates and should not be used as the sole basis for financial decisions.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">3. No Financial Advice</h2>
+        <p>
+          Nothing on this Site constitutes financial advice, investment advice, tax advice, or any other professional advice. The calculator results, articles, and other content are for general informational purposes only.
+        </p>
+        <p>
+          You should consult a qualified financial advisor, CPA, mortgage broker, or other licensed professional before making any financial decision. MoneyMathCalc is not a registered investment advisor, broker-dealer, CPA firm, or financial planner.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">4. Accuracy of Information</h2>
+        <p>
+          We make reasonable efforts to ensure our calculators use accurate formulas and current data (including IRS tax tables, interest rate benchmarks, and government-sourced statistics). However:
+        </p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Calculator results are estimates only and may not reflect your specific circumstances.</li>
+          <li>Tax calculations are based on published IRS guidance and may not account for individual credits, deductions, or complex tax situations.</li>
+          <li>Interest rates, market returns, and other financial variables change over time. Our default values are illustrative only.</li>
+          <li>We do not warrant that any information on the Site is complete, accurate, current, or free from errors.</li>
+        </ul>
+
+        <h2 class="text-xl font-bold text-gray-900">5. Intellectual Property</h2>
+        <p>
+          All content on this Site — including text, calculators, code, graphics, and layout — is owned by or licensed to MoneyMathCalc and is protected by US copyright law. You may not reproduce, distribute, modify, or create derivative works from any content on this Site without our written permission.
+        </p>
+        <p>
+          You may share links to our pages and quote brief excerpts for commentary or news purposes, provided you attribute the source with a link to moneymathcalc.com.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">6. Permitted Use</h2>
+        <p>You may use this Site for lawful, personal, non-commercial purposes. You agree not to:</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Use the Site in any way that violates applicable laws or regulations</li>
+          <li>Scrape, crawl, or harvest content in bulk without prior written consent</li>
+          <li>Attempt to gain unauthorized access to any portion of the Site</li>
+          <li>Introduce viruses, malware, or other harmful code</li>
+          <li>Use the Site to transmit spam or unsolicited communications</li>
+          <li>Misrepresent your affiliation with any person or entity</li>
+        </ul>
+
+        <h2 class="text-xl font-bold text-gray-900">7. Third-Party Links</h2>
+        <p>
+          The Site may contain links to third-party websites. These links are provided for convenience. We do not control or endorse those sites and are not responsible for their content, privacy practices, or accuracy. Linking to a third-party site does not imply endorsement.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">8. Advertising</h2>
+        <p>
+          This Site displays third-party advertisements through Google AdSense and potentially other advertising networks. We are not responsible for the content of advertisements. Clicking on ads may take you to third-party websites governed by their own terms and privacy policies.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">9. Disclaimer of Warranties</h2>
+        <p>
+          THE SITE AND ITS CONTENT ARE PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY LAW, MONEYMATHCALC DISCLAIMS ALL WARRANTIES, INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">10. Limitation of Liability</h2>
+        <p>
+          TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL MONEYMATHCALC BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE SITE OR RELIANCE ON ITS CONTENT. OUR TOTAL LIABILITY FOR ANY CLAIMS ARISING FROM THESE TERMS SHALL NOT EXCEED $100.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">11. Indemnification</h2>
+        <p>
+          You agree to defend, indemnify, and hold harmless MoneyMathCalc and its operators from any claims, damages, liabilities, costs, or expenses arising from your use of the Site or violation of these Terms.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">12. Governing Law</h2>
+        <p>
+          These Terms are governed by the laws of the United States. Any disputes shall be resolved through binding arbitration or in the courts of applicable jurisdiction, as determined by us.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">13. Changes to Terms</h2>
+        <p>
+          We may modify these Terms at any time. The effective date at the top of this page will reflect the most recent update. Your continued use of the Site after changes constitutes acceptance.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900">14. Contact</h2>
+        <p>
+          Questions about these Terms? Please visit our <a href="/contact" class="text-blue-600 hover:underline">Contact page</a>.
+        </p>
+
+      </div>
+    </div>
+
+    <div class="mt-6 text-center text-sm text-gray-400">
+      See also: <a href="/privacy-policy" class="text-blue-600 hover:underline">Privacy Policy</a> · <a href="/disclaimer" class="text-blue-600 hover:underline">Disclaimer</a>
+    </div>
+
+  </div>
+
+  <Footer slot="footer" />
+</Layout>

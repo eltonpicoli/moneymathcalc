@@ -1,0 +1,124 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const title = "About MoneyMathCalc — Free Financial Calculators";
+const description = "MoneyMathCalc provides free, accurate financial calculators for mortgages, taxes, retirement, and more. Independent tools built for everyday Americans making real money decisions.";
+const canonical = "https://moneymathcalc.com/about";
+
+const schemaMarkup = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "name": "MoneyMathCalc",
+      "url": "https://moneymathcalc.com",
+      "description": description,
+      "foundingDate": "2025",
+      "areaServed": "US",
+      "knowsAbout": ["Financial calculations", "Mortgage calculators", "Tax calculators", "Retirement planning tools"]
+    },
+    {
+      "@type": "WebSite",
+      "name": "MoneyMathCalc",
+      "url": "https://moneymathcalc.com",
+      "description": "Free financial calculators for mortgages, loans, taxes, retirement, and investments",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://moneymathcalc.com/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moneymathcalc.com" },
+        { "@type": "ListItem", "position": 2, "name": "About", "item": canonical }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={title} description={description} canonical={canonical} schemaMarkup={schemaMarkup}>
+  <Header slot="header" />
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-8" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-blue-600">Home</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">About</span>
+    </nav>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+
+      <h1 class="text-3xl font-bold text-gray-900 mb-4">About MoneyMathCalc</h1>
+      <p class="text-lg text-gray-600 mb-8">
+        Smart money calculations, made simple.
+      </p>
+
+      <div class="prose prose-gray max-w-none">
+
+        <h2 class="text-xl font-bold text-gray-900 mt-0 mb-3">What We Do</h2>
+        <p class="text-gray-700">
+          MoneyMathCalc is a free financial calculator platform built for Americans who need precise, trustworthy numbers — fast. Whether you're comparing mortgage options, estimating retirement savings, or figuring out how much you'll actually take home from a new job, our tools give you clear answers without the sales pitch.
+        </p>
+        <p class="text-gray-700">
+          Every calculator on this site is designed around one principle: <strong>accurate math, explained clearly</strong>. We show you the formulas, reference the authoritative sources (IRS, Freddie Mac, BLS), and break down results in a way that actually helps you make decisions.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900 mt-8 mb-3">Our Calculators</h2>
+        <p class="text-gray-700">We cover the financial calculations that matter most to everyday Americans:</p>
+        <ul class="list-disc pl-5 text-gray-700 space-y-1">
+          <li><a href="/mortgage-calculator" class="text-blue-600 hover:underline">Mortgage Calculator</a> — monthly payment, total interest, amortization</li>
+          <li><a href="/loan-calculator" class="text-blue-600 hover:underline">Loan Calculator</a> — any fixed-rate loan with amortization breakdown</li>
+          <li><a href="/auto-loan-calculator" class="text-blue-600 hover:underline">Auto Loan Calculator</a> — car payment with trade-in and down payment</li>
+          <li><a href="/amortization-calculator" class="text-blue-600 hover:underline">Amortization Calculator</a> — full schedule with extra payment impact</li>
+          <li><a href="/retirement-calculator" class="text-blue-600 hover:underline">Retirement Calculator</a> — 401k growth, Social Security, and savings projections</li>
+          <li><a href="/compound-interest-calculator" class="text-blue-600 hover:underline">Compound Interest Calculator</a> — savings growth with regular contributions</li>
+          <li><a href="/investment-calculator" class="text-blue-600 hover:underline">Investment Calculator</a> — stock market returns and portfolio projections</li>
+          <li><a href="/income-tax-calculator" class="text-blue-600 hover:underline">Income Tax Calculator</a> — 2026 federal + all 50 states, FICA, deductions</li>
+          <li><a href="/salary-calculator" class="text-blue-600 hover:underline">Salary Calculator</a> — hourly to annual conversions, all pay periods</li>
+          <li><a href="/payment-calculator" class="text-blue-600 hover:underline">Payment Calculator</a> — monthly payment for any loan amount, rate, and term</li>
+        </ul>
+
+        <h2 class="text-xl font-bold text-gray-900 mt-8 mb-3">Our Approach</h2>
+        <p class="text-gray-700">
+          We don't offer financial advice. We offer precise calculations based on standard financial formulas and current official data. Every tool is built with the same values:
+        </p>
+        <ul class="list-disc pl-5 text-gray-700 space-y-1">
+          <li><strong>Accuracy first.</strong> We use the same math that banks, the IRS, and financial institutions use. Sources are cited.</li>
+          <li><strong>No login required.</strong> Every calculator works instantly, completely free, with no account needed.</li>
+          <li><strong>Privacy by design.</strong> Your financial data stays in your browser. We don't store, sell, or transmit your inputs.</li>
+          <li><strong>Pre-populated examples.</strong> Every calculator loads with realistic default values so you can see results immediately and adjust from there.</li>
+          <li><strong>Shareable results.</strong> Every calculation can be shared via URL — no screenshots needed.</li>
+        </ul>
+
+        <h2 class="text-xl font-bold text-gray-900 mt-8 mb-3">Important Disclaimer</h2>
+        <p class="text-gray-700">
+          MoneyMathCalc is an educational tool. Our calculators provide estimates based on the inputs you provide and publicly available data. They are not a substitute for professional financial advice.
+        </p>
+        <p class="text-gray-700">
+          For decisions involving significant amounts of money — a mortgage, a retirement plan, your tax return — please consult a licensed financial advisor, CPA, or other qualified professional who can account for your complete financial picture.
+        </p>
+        <p class="text-gray-700">
+          See our full <a href="/disclaimer" class="text-blue-600 hover:underline">Disclaimer</a> and <a href="/terms-of-use" class="text-blue-600 hover:underline">Terms of Use</a> for details.
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900 mt-8 mb-3">Contact</h2>
+        <p class="text-gray-700">
+          Questions, corrections, or feedback? We'd like to hear from you. Visit our <a href="/contact" class="text-blue-600 hover:underline">Contact page</a>.
+        </p>
+      </div>
+    </div>
+
+    <!-- Ad slot -->
+    <div class="bg-gray-100 border border-dashed border-gray-300 rounded-xl p-4 text-center text-gray-400 text-sm mt-6" data-ad-slot="bottom">
+      Advertisement
+    </div>
+  </div>
+
+  <Footer slot="footer" />
+</Layout>

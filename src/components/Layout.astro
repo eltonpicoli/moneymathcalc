@@ -1,0 +1,136 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  ogImage?: string;
+  schemaMarkup?: string;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  ogImage = '/og-image.png',
+  schemaMarkup,
+  noindex = false,
+} = Astro.props;
+
+const siteUrl = 'https://moneymathcalc.com';
+const siteName = 'MoneyMathCalc';
+const fullCanonical = canonical || new URL(Astro.url.pathname, siteUrl).toString();
+const fullOgImage = ogImage.startsWith('http') ? ogImage : new URL(ogImage, siteUrl).toString();
+
+const globalSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${siteUrl}/#website`,
+  url: `${siteUrl}/`,
+  name: siteName,
+  description: 'Free financial calculators for mortgages, loans, taxes, retirement, and salary.',
+  publisher: {
+    '@type': 'Organization',
+    '@id': `${siteUrl}/#organization`,
+    name: siteName,
+    url: `${siteUrl}/`,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${siteUrl}/favicon.svg`,
+    },
+  },
+});
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary SEO -->
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={fullCanonical} />
+  {noindex
+    ? <meta name="robots" content="noindex, nofollow" />
+    : <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  }
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={fullCanonical} />
+  <meta property="og:image" content={fullOgImage} />
+  <meta property="og:image:alt" content={title} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name" content={siteName} />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={fullOgImage} />
+
+  <!-- Favicons + PWA -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0052CC" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content={siteName} />
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Primary font: Inter -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Global Schema.org (WebSite + Organization) — every page -->
+  <script type="application/ld+json" set:html={globalSchema} />
+
+  <!-- Per-page Schema.org (SoftwareApplication, FAQPage, etc.) -->
+  {schemaMarkup && <script type="application/ld+json" set:html={schemaMarkup} />}
+
+  <!-- Google Analytics 4 — prod only -->
+  {import.meta.env.PROD && (
+    <>
+      <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-GCWSY3HQR5"></script>
+      <script is:inline>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-GCWSY3HQR5');
+      </script>
+    </>
+  )}
+
+  <!-- Google AdSense — activate after approval -->
+  <!--
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+    crossorigin="anonymous">
+  </script>
+  -->
+</head>
+<body class="min-h-screen flex flex-col bg-white text-gray-900 font-sans antialiased">
+  <slot name="header" />
+
+  <main class="flex-grow bg-gray-50">
+    <slot />
+  </main>
+
+  <slot name="footer" />
+</body>
+</html>

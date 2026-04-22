@@ -1,0 +1,724 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import AdSlot from '../components/AdSlot.astro';
+import Icon from '../components/Icon.astro';
+import {
+  calculateMortgagePayment,
+  generateAmortizationSchedule,
+  aggregateAmortizationByYear,
+  getPayoffDate,
+  formatCurrency,
+} from '../lib/calculations';
+import { generateLineChart } from '../lib/chart-utils';
+
+const LOAN = 300000, RATE = 6.4, YEARS = 30;
+
+const monthlyPayment = calculateMortgagePayment(LOAN, RATE, YEARS);
+const schedule = generateAmortizationSchedule(LOAN, RATE, YEARS);
+const yearly = aggregateAmortizationByYear(schedule);
+const totalInterest = schedule[schedule.length - 1].cumulativeInterest;
+const totalPayments = monthlyPayment * YEARS * 12;
+const payoffDate = getPayoffDate(new Date(), YEARS);
+
+const linePoints = yearly.map((r, i) => ({ x: i + 1, y: r.endingBalance }));
+const lineSvg = generateLineChart(linePoints, { formatY: (v: number) => `$${Math.round(v / 1000)}k` });
+
+const title = "Amortization Calculator - See Every Payment Breakdown | MoneyMathCalc";
+const description = "Calculate your full loan amortization schedule with extra payment analysis. See exactly how each payment splits between principal and interest, total interest saved, and years cut off.";
+const canonical = "https://moneymathcalc.com/amortization-calculator";
+
+const schema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "Amortization Calculator",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "url": canonical,
+      "description": description
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://moneymathcalc.com" },
+        { "@type": "ListItem", "position": 2, "name": "Loans", "item": "https://moneymathcalc.com/mortgage-calculator" },
+        { "@type": "ListItem", "position": 3, "name": "Amortization Calculator", "item": canonical }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "How much interest do I save by making extra mortgage payments?", "acceptedAnswer": { "@type": "Answer", "text": "On a $300,000 loan at 6.4% for 30 years, adding just $200/month in extra payments saves approximately $72,000 in interest and cuts 6 years off your loan. The impact is front-loaded: extra payments made in the first decade save roughly 3x more than the same payments in the final decade because interest is charged on a higher balance early on." } },
+        { "@type": "Question", "name": "What is an amortization schedule?", "acceptedAnswer": { "@type": "Answer", "text": "An amortization schedule is a complete table showing every payment on a loan — how much goes to interest, how much reduces the principal, and the remaining balance after each payment. On a standard 30-year mortgage, the first payment might be 85% interest and 15% principal. By year 20, that split flips. The schedule shows exactly when you cross that midpoint." } },
+        { "@type": "Question", "name": "Should I make biweekly payments instead of monthly?", "acceptedAnswer": { "@type": "Answer", "text": "Biweekly payments result in 26 half-payments per year — the equivalent of 13 monthly payments instead of 12. On a $300,000 loan at 6.4%, switching to biweekly payments saves about $52,000 in interest and pays off the loan 4–5 years early. The benefit is automatic: you make one extra payment per year without thinking about it. Check with your lender — some charge fees for biweekly processing." } },
+        { "@type": "Question", "name": "What is mortgage recasting and when does it make sense?", "acceptedAnswer": { "@type": "Answer", "text": "Recasting means making a large lump-sum payment to reduce your principal, then having your lender recalculate (recast) your monthly payment based on the new, lower balance. Unlike refinancing, recasting keeps your original rate and term, and costs $150–$500 versus thousands for a refinance. It's ideal if you receive a windfall (inheritance, bonus) and want lower monthly payments without the hassle of refinancing." } },
+        { "@type": "Question", "name": "Is it better to refinance or make extra payments?", "acceptedAnswer": { "@type": "Answer", "text": "Refinancing wins when you can drop your rate by 0.75% or more and plan to stay 3+ years. Extra payments win when your current rate is already competitive, you're mid-loan (less interest to save), or you want flexibility to stop extra payments during lean months. At 6.4% with rates possibly dropping to 5.5%+, refinancing in 1–2 years may outperform extra payments — use this calculator to model both scenarios." } },
+        { "@type": "Question", "name": "Does escrow count as part of my amortization payment?", "acceptedAnswer": { "@type": "Answer", "text": "No. Escrow (property taxes and homeowner's insurance collected by your lender) is separate from your P&I (principal and interest) payment. Amortization schedules show only the P&I portion. Your full monthly payment to the lender is typically P&I plus escrow. Extra payments applied to principal should always be designated specifically — without that instruction, extra money may sit in escrow or be applied to future payments." } },
+        { "@type": "Question", "name": "What is an interest-only loan and how does it amortize?", "acceptedAnswer": { "@type": "Answer", "text": "Interest-only loans require only the interest payment for a set period (typically 5–10 years), after which the loan converts and begins fully amortizing over the remaining term. During the interest-only phase, your balance doesn't decrease at all. When it converts, your payment jumps significantly because you're now amortizing the original balance over fewer years. A $300,000 loan converting from 10-year interest-only to 20-year amortization results in a payment ~40% higher than a standard 30-year P&I payment." } }
+      ]
+    }
+  ]
+});
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={schema} />
+  </Fragment>
+  <Header slot="header" />
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-primary-600 transition">Home</a>
+      <span>/</span>
+      <a href="/mortgage-calculator" class="hover:text-primary-600 transition">Loans</a>
+      <span>/</span>
+      <span class="text-gray-900 font-medium">Amortization Calculator</span>
+    </nav>
+
+    <div class="mb-6">
+      <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Amortization Calculator</h1>
+      <p class="text-gray-500">See exactly how every payment breaks down — and how much extra payments can save you. Results update instantly.</p>
+    </div>
+
+    <!-- Calculator Card -->
+    <section>
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6">
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+          <!-- Inputs -->
+          <div class="space-y-4">
+            <h2 class="text-xl font-semibold text-gray-900">Loan Details</h2>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="loan-amount">Loan Amount</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input id="loan-amount" type="text" inputmode="numeric" value="300,000"
+                  class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="rate">Annual Interest Rate</label>
+              <div class="relative">
+                <input id="rate" type="text" inputmode="decimal" value="6.4"
+                  class="w-full pl-4 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">Current avg 30-yr fixed: 6.4% (Freddie Mac, Apr 2026)</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="loan-term">Loan Term</label>
+              <select id="loan-term"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white">
+                <option value="10">10 years</option>
+                <option value="15">15 years</option>
+                <option value="20">20 years</option>
+                <option value="25">25 years</option>
+                <option value="30" selected>30 years</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1" for="start-month">Start Date</label>
+              <div class="grid grid-cols-2 gap-2">
+                <select id="start-month" class="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-sm">
+                  <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                  <option value="4" selected>April</option><option value="5">May</option><option value="6">June</option>
+                  <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                  <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                </select>
+                <input id="start-year" type="text" inputmode="numeric" value="2026"
+                  class="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm" />
+              </div>
+            </div>
+
+            <!-- Extra Payment — highlighted -->
+            <div class="border-2 border-primary-200 bg-primary-50 rounded-xl p-4">
+              <label class="block text-sm font-semibold text-primary-800 mb-1" for="extra-payment">Extra Monthly Payment</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-primary-600 font-medium">$</span>
+                <input id="extra-payment" type="text" inputmode="numeric" value="0"
+                  class="w-full pl-8 pr-4 py-2.5 border border-primary-300 bg-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono" />
+              </div>
+              <p class="text-xs text-primary-600 mt-1">Added to every payment → reduces interest and payoff time</p>
+            </div>
+
+            <button id="btn-calc"
+              class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-lg transition-colors">
+              Calculate
+            </button>
+          </div>
+
+          <!-- Results -->
+          <div class="flex flex-col space-y-4">
+            <h2 class="text-xl font-semibold text-gray-900">Results</h2>
+
+            <div class="bg-accent-50 rounded-xl p-5 text-center">
+              <p class="text-sm text-gray-600 mb-1">Monthly Payment</p>
+              <p id="monthly-payment" class="text-4xl font-bold text-accent-600 font-mono">{formatCurrency(monthlyPayment)}</p>
+              <p class="text-xs text-gray-500 mt-1">Principal & Interest only</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-gray-50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">Total Interest</p>
+                <p id="total-interest" class="text-base font-semibold text-gray-900 font-mono">{formatCurrency(totalInterest)}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3 text-center">
+                <p class="text-xs text-gray-500 mb-1">Total Payments</p>
+                <p id="total-payments" class="text-base font-semibold text-gray-900 font-mono">{formatCurrency(totalPayments)}</p>
+              </div>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600">Payoff Date</span>
+                <span id="payoff-date" class="text-sm font-semibold text-gray-900">{payoffDate}</span>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-sm text-gray-600">Loan Amount</span>
+                <span id="loan-display" class="text-sm font-semibold text-gray-900">{formatCurrency(LOAN)}</span>
+              </div>
+            </div>
+
+            <!-- Extra Payment Impact — shown when extra > 0 -->
+            <div id="extra-impact" class="hidden bg-green-50 border border-green-200 rounded-xl p-4 space-y-3">
+              <p class="text-sm font-semibold text-green-800">💰 Extra Payment Impact</p>
+              <div class="grid grid-cols-2 gap-3 text-center">
+                <div class="bg-white rounded-lg p-3">
+                  <p class="text-xs text-gray-500 mb-1">Interest Saved</p>
+                  <p id="interest-saved" class="text-lg font-bold text-green-700 font-mono">—</p>
+                </div>
+                <div class="bg-white rounded-lg p-3">
+                  <p class="text-xs text-gray-500 mb-1">Time Saved</p>
+                  <p id="time-saved" class="text-lg font-bold text-green-700">—</p>
+                </div>
+              </div>
+              <div class="text-xs text-gray-500 border-t border-green-200 pt-2">
+                <div class="flex justify-between"><span>New Payoff Date</span><span id="new-payoff-date" class="font-medium text-gray-700">—</span></div>
+                <div class="flex justify-between mt-1"><span>New Total Interest</span><span id="new-total-interest" class="font-medium text-gray-700">—</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 mt-6">
+          <button id="btn-share" class="px-5 py-2 bg-white border border-gray-300 hover:border-primary-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+            🔗 Share Result
+          </button>
+          <button id="btn-pdf" class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-primary-600 hover:text-primary-600 transition">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+            Save as PDF
+          </button>
+          <button id="btn-reset" class="px-5 py-2 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+            ↺ Reset
+          </button>
+        </div>
+        <div id="toast" class="mt-2 text-sm text-accent-600 opacity-0 transition-opacity duration-300"></div>
+      </div>
+    </section>
+
+    <!-- Balance Chart -->
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-1">Remaining Balance Over Time</h2>
+        <p class="text-sm text-gray-500 mb-4">Watch your balance decline — slowly at first, then accelerating as more of each payment goes to principal.</p>
+        <div id="balance-chart" class="w-full overflow-x-auto">
+          <Fragment set:html={lineSvg} />
+        </div>
+      </div>
+    </section>
+
+    <AdSlot id="in-article-1" />
+
+    <!-- Amortization Schedule -->
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <h2 class="text-xl font-semibold text-gray-900">Amortization Schedule</h2>
+          <div class="flex gap-2">
+            <button id="btn-yearly" class="px-4 py-1.5 rounded-md text-sm font-medium bg-primary-600 text-white transition">
+              Yearly
+            </button>
+            <button id="btn-monthly" class="px-4 py-1.5 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 border border-gray-200 transition">
+              Monthly
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 text-left text-gray-500 text-xs uppercase tracking-wide">
+                <th id="th-period" class="pb-2 pr-4">Year</th>
+                <th class="pb-2 pr-4 text-right">Payment</th>
+                <th class="pb-2 pr-4 text-right">Principal</th>
+                <th class="pb-2 pr-4 text-right">Interest</th>
+                <th class="pb-2 text-right">Balance</th>
+              </tr>
+            </thead>
+            <tbody id="schedule-body" class="divide-y divide-gray-100 font-mono text-xs"></tbody>
+          </table>
+        </div>
+        <div class="mt-3 flex gap-3">
+          <button id="btn-show-all" class="text-sm text-primary-600 hover:text-primary-700 font-medium">Show all →</button>
+        </div>
+      </div>
+    </section>
+
+    <AdSlot id="in-article-2" />
+
+    <!-- Educational Content -->
+    <section class="mb-6">
+      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">How to Use This Amortization Calculator</h2>
+        <p class="text-gray-700 mb-4">
+          Enter your <strong>loan amount</strong> — the amount you're borrowing, not the purchase price. For a mortgage, that's the home price minus your down payment. Set your <strong>annual interest rate</strong> and <strong>loan term</strong>. The <strong>Start Date</strong> determines when your first payment is due and when the loan pays off.
+        </p>
+        <p class="text-gray-700 mb-4">
+          The most powerful field in this calculator is the <strong>Extra Monthly Payment</strong>. Even $100–$200 extra per month produces dramatic results — often shaving years off the loan and saving tens of thousands in interest. Enter different amounts to find your sweet spot between payment comfort and interest savings.
+        </p>
+        <p class="text-gray-700 mb-6">
+          Hit <strong>Calculate</strong> and you'll see your full monthly payment, total interest, payoff date, and the complete year-by-year amortization schedule. Toggle between <strong>Yearly</strong> and <strong>Monthly</strong> views depending on how much detail you want.
+        </p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">How Amortization Works</h2>
+        <p class="text-gray-700 mb-4">
+          Every fixed-rate loan uses the standard amortization formula: <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm">M = P × [r(1+r)^n] ÷ [(1+r)^n − 1]</code>, where P is principal, r is the monthly rate, and n is the number of payments. This gives you one fixed monthly payment for the entire loan term.
+        </p>
+        <p class="text-gray-700 mb-4">
+          The payment stays the same every month, but the <em>split</em> between interest and principal changes dramatically. In the first month of a $300,000 loan at 6.4%, you pay $1,600 in interest and only $276 in principal. By year 25, those numbers flip: $276 interest and $1,600 principal. This is why selling or refinancing early costs so much — you've been paying mostly interest.
+        </p>
+
+        <h3 class="text-lg font-semibold text-gray-900 mb-3">The Math Behind Extra Payments</h3>
+        <p class="text-gray-700 mb-4">
+          Every extra dollar applied to principal reduces your balance immediately. That lower balance means less interest accrues next month — and every month thereafter. This compounding effect makes early extra payments extraordinarily powerful.
+        </p>
+        <p class="text-gray-700 mb-4">
+          On a $300,000 loan at 6.4% for 30 years: adding $200/month extra saves approximately $72,000 in interest and pays off the loan 6 years early. Adding $500/month saves $130,000 and finishes 11 years early. The math is nonlinear — doubling your extra payment more than doubles the savings because each extra payment builds on the previous one.
+        </p>
+        <div class="bg-gray-50 rounded-xl p-5 my-6">
+          <p class="text-sm font-semibold text-gray-700 mb-3">Example: $300,000 at 6.4%, 30 years</p>
+          <table class="w-full text-sm text-gray-700">
+            <thead><tr class="border-b border-gray-200 text-xs text-gray-500 uppercase tracking-wide">
+              <th class="pb-2 text-left">Extra/mo</th>
+              <th class="pb-2 text-right">Total Interest</th>
+              <th class="pb-2 text-right">Interest Saved</th>
+              <th class="pb-2 text-right">Payoff</th>
+            </tr></thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr><td class="py-1.5">$0</td><td class="py-1.5 text-right font-mono">$375,386</td><td class="py-1.5 text-right">—</td><td class="py-1.5 text-right">Apr 2056</td></tr>
+              <tr><td class="py-1.5">$100</td><td class="py-1.5 text-right font-mono">$319,421</td><td class="py-1.5 text-right text-green-700 font-medium">$55,965</td><td class="py-1.5 text-right">Jun 2052</td></tr>
+              <tr><td class="py-1.5">$200</td><td class="py-1.5 text-right font-mono">$275,943</td><td class="py-1.5 text-right text-green-700 font-medium">$99,443</td><td class="py-1.5 text-right">Mar 2050</td></tr>
+              <tr><td class="py-1.5">$500</td><td class="py-1.5 text-right font-mono">$203,041</td><td class="py-1.5 text-right text-green-700 font-medium">$172,345</td><td class="py-1.5 text-right">Sep 2045</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4 mt-8">Understanding Your Results</h2>
+
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Monthly Payment</h3>
+        <p class="text-gray-700 mb-4">
+          This is your P&I payment — principal and interest only. Your actual payment to the lender will be higher if your lender collects escrow for property taxes and homeowner's insurance. Those costs don't affect your amortization schedule.
+        </p>
+
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Total Interest</h3>
+        <p class="text-gray-700 mb-4">
+          On a 30-year $300,000 mortgage at 6.4%, you'll pay $375,386 in interest — more than the original loan amount. This is the number that motivates most extra payment strategies. Even small additional payments chip away at this figure significantly.
+        </p>
+
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Reading the Schedule</h3>
+        <p class="text-gray-700 mb-6">
+          The yearly view shows annual totals: how much you paid, how much went to principal, how much to interest, and your balance at year-end. The monthly view shows every individual payment. Use this to find specific milestones: when your balance drops below $250k, when you hit 20% equity (PMI cancellation trigger), or when your remaining balance equals your annual income.
+        </p>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+
+        <div class="space-y-5">
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 mb-1">How much interest do I save by making extra mortgage payments?</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">On a $300,000 loan at 6.4% for 30 years, adding just $200/month saves approximately $99,000 in interest and cuts 6 years off your loan. The impact is front-loaded: extra payments in the first decade save roughly 3x more than the same payments in the final decade because interest is charged on a higher balance early on.</p>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 mb-1">What is an amortization schedule?</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">An amortization schedule shows every payment's breakdown: how much goes to interest, how much reduces principal, and the remaining balance. On a 30-year mortgage, the first payment is roughly 85% interest and 15% principal. By year 20, that split has reversed. The schedule shows exactly when you cross milestones like 50% equity or payoff.</p>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 mb-1">Should I make biweekly payments instead of monthly?</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">Biweekly payments equal 26 half-payments per year — the equivalent of 13 monthly payments instead of 12. On $300,000 at 6.4%, biweekly saves about $52,000 in interest and pays off 4–5 years early. The benefit is automatic: one extra payment per year without extra discipline. Check your lender — some charge fees for biweekly processing.</p>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 mb-1">What is mortgage recasting?</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">Recasting means making a large lump-sum principal payment, then having your lender recalculate your monthly payment based on the new lower balance. Unlike refinancing, recasting keeps your original rate and term and costs $150–$500 versus thousands for a refinance. It's ideal if you receive a windfall and want lower monthly payments without the hassle and cost of refinancing.</p>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 mb-1">Is it better to refinance or make extra payments?</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">Refinancing wins when you can drop your rate by 0.75%+ and plan to stay 3+ years. Extra payments win when your current rate is already competitive, you're mid-loan (less interest to save), or you want payment flexibility. With rates potentially dropping from 6.4% to 5.5%+, refinancing in 1–2 years may outperform extra payments — use this calculator to model both scenarios.</p>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 mb-1">Do extra payments go directly to principal?</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">Only if you specifically designate them. When sending extra money, always include a note or use your lender's online system to apply it to "principal only." Without clear instructions, lenders may apply it toward future payments instead — which doesn't reduce your balance the same way. Verify with your lender how to designate extra principal payments correctly.</p>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 mb-1">What is a balloon payment loan?</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">A balloon loan has a large lump-sum payment due at the end — typically after 5–7 years of standard payments calculated on a 30-year schedule. Monthly payments are lower, but the final payment can be 80–90% of the original loan amount. These were common before 2008. Today, most US mortgages are fully amortizing — no balloon payment required.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Related Calculators -->
+    <section class="mb-6 border-t border-gray-200 pt-6">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Related Calculators</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { href: '/mortgage-calculator', label: 'Mortgage Calculator', icon: '🏠' },
+          { href: '/loan-calculator', label: 'Loan Calculator', icon: '🏦' },
+          { href: '/payment-calculator', label: 'Payment Calculator', icon: '💳' },
+          { href: '/compound-interest-calculator', label: 'Compound Interest', icon: '📈' },
+        ].map(c => (
+          <a href={c.href} class="bg-white rounded-xl border border-gray-200 hover:border-primary-300 p-4 text-center transition-colors group">
+            <div class="text-2xl mb-2">{c.icon}</div>
+            <p class="text-sm font-medium text-gray-800 group-hover:text-primary-600">{c.label}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <AdSlot id="bottom" />
+  </div>
+
+  <Footer slot="footer" />
+</Layout>
+
+<script>
+  import { $, parseDollar, parseDecimal, formatDollarInput, setText, showEl, showToast } from '../lib/calc-helpers.ts';
+  import { addPdfFooter } from '../lib/pdf-footer';
+
+  const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+  const fmtFull = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function calcPayment(p: number, r: number, n: number): number {
+    if (p <= 0 || n <= 0) return 0;
+    const mr = r / 100 / 12;
+    if (mr === 0) return p / n;
+    return p * mr * Math.pow(1 + mr, n) / (Math.pow(1 + mr, n) - 1);
+  }
+
+  function calcSchedule(principal: number, annualRate: number, termMonths: number, extra: number) {
+    const mr = annualRate / 100 / 12;
+    const regularPayment = calcPayment(principal, annualRate, termMonths);
+    const rows: { m: number; pmt: number; prin: number; int: number; bal: number }[] = [];
+    let bal = principal;
+    let totalInterest = 0;
+    let month = 0;
+
+    while (bal > 0.01 && month < termMonths) {
+      month++;
+      const interest = bal * mr;
+      const extraApplied = Math.min(extra, bal);
+      const principalPaid = Math.min(regularPayment - interest + extraApplied, bal);
+      bal = Math.max(0, bal - principalPaid);
+      totalInterest += interest;
+      rows.push({ m: month, pmt: regularPayment + extraApplied, prin: principalPaid, int: interest, bal });
+      if (bal < 0.01) break;
+    }
+    return { rows, totalInterest, months: month };
+  }
+
+  function aggregateByYear(rows: { m: number; pmt: number; prin: number; int: number; bal: number }[]) {
+    const yearly: { yr: number; pmt: number; prin: number; int: number; bal: number }[] = [];
+    let pmt = 0, prin = 0, int = 0;
+    for (let i = 0; i < rows.length; i++) {
+      pmt += rows[i].pmt; prin += rows[i].prin; int += rows[i].int;
+      if ((i + 1) % 12 === 0 || i === rows.length - 1) {
+        yearly.push({ yr: yearly.length + 1, pmt, prin, int, bal: rows[i].bal });
+        pmt = prin = int = 0;
+      }
+    }
+    return yearly;
+  }
+
+  function payoffDateStr(startM: number, startY: number, totalMonths: number): string {
+    const d = new Date(startY, startM - 1 + totalMonths, 1);
+    return months[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  let currentYearly: ReturnType<typeof aggregateByYear> = [];
+  let currentMonthly: { m: number; pmt: number; prin: number; int: number; bal: number }[] = [];
+  let viewMode: 'yearly' | 'monthly' = 'yearly';
+  let showAll = false;
+
+  function renderTable() {
+    const tbody = $('schedule-body');
+    if (!tbody) return;
+    const th = $('th-period');
+    if (th) th.textContent = viewMode === 'yearly' ? 'Year' : 'Month';
+
+    const data = viewMode === 'yearly' ? currentYearly : currentMonthly;
+    const limit = showAll ? data.length : (viewMode === 'yearly' ? data.length : 12);
+    const rows = data.slice(0, limit);
+
+    tbody.innerHTML = rows.map(r => {
+      const period = viewMode === 'yearly'
+        ? `Year ${(r as any).yr}`
+        : `Mo ${(r as any).m}`;
+      return `<tr class="hover:bg-gray-50">
+        <td class="py-1.5 pr-4 text-gray-700">${period}</td>
+        <td class="py-1.5 pr-4 text-right">${fmt(r.pmt)}</td>
+        <td class="py-1.5 pr-4 text-right text-primary-700">${fmt(r.prin)}</td>
+        <td class="py-1.5 pr-4 text-right text-red-600">${fmt(r.int)}</td>
+        <td class="py-1.5 text-right">${fmt(r.bal)}</td>
+      </tr>`;
+    }).join('');
+
+    const btn = $('btn-show-all') as HTMLButtonElement;
+    if (btn) {
+      if (viewMode === 'yearly' || showAll) {
+        btn.style.display = 'none';
+      } else {
+        btn.style.display = '';
+        btn.textContent = showAll ? 'Show less ←' : `Show all ${currentMonthly.length} months →`;
+      }
+    }
+  }
+
+  function updateChart(rows: { m: number; bal: number }[]) {
+    // Rebuild chart SVG client-side (year-end balances)
+    const yearlyBals: { x: number; y: number }[] = [];
+    for (let i = 11; i < rows.length; i += 12) {
+      yearlyBals.push({ x: Math.ceil((i + 1) / 12), y: rows[i].bal });
+    }
+    if (rows.length > 0 && rows[rows.length - 1].bal === 0) {
+      yearlyBals.push({ x: yearlyBals.length + 1, y: 0 });
+    }
+    if (yearlyBals.length < 2) return;
+
+    const container = $('balance-chart');
+    if (!container) return;
+
+    // Simple responsive SVG line chart
+    const W = 560, H = 220, PL = 60, PR = 20, PT = 15, PB = 35;
+    const cW = W - PL - PR, cH = H - PT - PB;
+    const maxY = yearlyBals[0].y * 1.05;
+    const minX = 1, maxX = yearlyBals[yearlyBals.length - 1].x;
+    const toX = (x: number) => PL + ((x - minX) / (maxX - minX || 1)) * cW;
+    const toY = (y: number) => PT + cH - (y / (maxY || 1)) * cH;
+
+    const pts = yearlyBals.map(p => `${toX(p.x)},${toY(p.y)}`).join(' ');
+    const fmtK = (v: number) => `$${Math.round(v / 1000)}k`;
+    const ticks = [0, 0.25, 0.5, 0.75, 1].map(t => maxY * t);
+    const grid = ticks.map(v => `<line x1="${PL}" y1="${toY(v)}" x2="${W - PR}" y2="${toY(v)}" stroke="#E5E7EB" stroke-width="1"/>
+      <text x="${PL - 6}" y="${toY(v) + 4}" text-anchor="end" font-size="11" fill="#6B7280">${fmtK(v)}</text>`).join('');
+    const xLabels = [yearlyBals[0], yearlyBals[Math.floor(yearlyBals.length / 2)], yearlyBals[yearlyBals.length - 1]]
+      .map(p => `<text x="${toX(p.x)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#6B7280">${p.x}</text>`).join('');
+
+    container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+      ${grid}
+      <line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT + cH}" stroke="#E5E7EB" stroke-width="1"/>
+      <polyline points="${pts}" fill="none" stroke="#0052CC" stroke-width="2.5" stroke-linejoin="round"/>
+      ${xLabels}
+    </svg>`;
+  }
+
+  function recalculate() {
+    const loan = parseDollar('loan-amount');
+    const rate = parseDecimal('rate');
+    const term = parseInt((document.getElementById('loan-term') as HTMLSelectElement).value);
+    const extra = parseDollar('extra-payment');
+    const startM = parseInt((document.getElementById('start-month') as HTMLSelectElement).value);
+    const startY = parseInt(($('start-year') as HTMLInputElement).value) || new Date().getFullYear();
+
+    if (loan <= 0 || rate <= 0 || term <= 0) return;
+
+    const termMonths = term * 12;
+    const mp = calcPayment(loan, rate, termMonths);
+
+    // Standard (no extra)
+    const std = calcSchedule(loan, rate, termMonths, 0);
+
+    // With extra
+    const withExtra = extra > 0 ? calcSchedule(loan, rate, termMonths, extra) : null;
+
+    // Use the "with extra" or standard as primary display
+    const active = withExtra || std;
+    currentMonthly = active.rows;
+    currentYearly = aggregateByYear(active.rows);
+
+    setText('monthly-payment', fmtFull(mp + (extra > 0 ? extra : 0)));
+    setText('total-interest', fmt(active.totalInterest));
+    setText('total-payments', fmt(mp * termMonths + extra * active.months));
+    setText('loan-display', fmt(loan));
+    setText('payoff-date', payoffDateStr(startM, startY, active.months));
+
+    if (withExtra) {
+      const interestSaved = std.totalInterest - withExtra.totalInterest;
+      const monthsSaved = std.months - withExtra.months;
+      const yearsSaved = Math.floor(monthsSaved / 12);
+      const moSaved = monthsSaved % 12;
+      const timeSavedStr = yearsSaved > 0
+        ? `${yearsSaved}y ${moSaved}m earlier`
+        : `${moSaved} months earlier`;
+
+      showEl('extra-impact', true);
+      setText('interest-saved', fmt(interestSaved));
+      setText('time-saved', timeSavedStr);
+      setText('new-payoff-date', payoffDateStr(startM, startY, withExtra.months));
+      setText('new-total-interest', fmt(withExtra.totalInterest));
+    } else {
+      showEl('extra-impact', false);
+    }
+
+    updateChart(active.rows);
+    showAll = false;
+    renderTable();
+  }
+
+  function setup() {
+    $('btn-calc')?.addEventListener('click', recalculate);
+
+    ['loan-amount', 'rate', 'start-year', 'extra-payment'].forEach(id => {
+      $(id)?.addEventListener('blur', recalculate);
+    });
+
+    ['loan-term', 'start-month'].forEach(id => {
+      $(id)?.addEventListener('change', recalculate);
+    });
+
+    $('btn-yearly')?.addEventListener('click', () => {
+      viewMode = 'yearly'; showAll = false;
+      $('btn-yearly')?.classList.replace('text-gray-600', 'text-white');
+      $('btn-yearly')?.classList.replace('hover:bg-gray-100', 'bg-primary-600');
+      $('btn-monthly')?.classList.remove('bg-primary-600', 'text-white');
+      $('btn-monthly')?.classList.add('text-gray-600', 'hover:bg-gray-100');
+      renderTable();
+    });
+
+    $('btn-monthly')?.addEventListener('click', () => {
+      viewMode = 'monthly'; showAll = false;
+      $('btn-monthly')?.classList.replace('text-gray-600', 'text-white');
+      $('btn-monthly')?.classList.add('bg-primary-600');
+      $('btn-yearly')?.classList.remove('bg-primary-600', 'text-white');
+      $('btn-yearly')?.classList.add('text-gray-600', 'hover:bg-gray-100');
+      renderTable();
+    });
+
+    $('btn-show-all')?.addEventListener('click', () => {
+      showAll = true;
+      renderTable();
+    });
+
+    $('btn-share')?.addEventListener('click', () => {
+      const loan = parseDollar('loan-amount');
+      const rate = parseDecimal('rate');
+      const term = ($('loan-term') as HTMLSelectElement)?.value;
+      const extra = parseDollar('extra-payment');
+      const url = `${window.location.origin}/amortization-calculator?loan=${loan}&rate=${rate}&term=${term}&extra=${extra}`;
+      navigator.clipboard.writeText(url).then(() => showToast('Link copied!')).catch(() => {});
+    });
+
+    $('btn-pdf')?.addEventListener('click', async () => {
+      const btn = $('btn-pdf') as HTMLButtonElement | null;
+      if (btn) btn.textContent = 'Generating…';
+      try {
+        const { jsPDF } = await import('jspdf');
+        const doc = new jsPDF();
+        const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        const loan  = parseDollar('loan-amount');
+        const rate  = parseDecimal('rate');
+        const term  = parseInt(($('loan-term') as HTMLSelectElement).value);
+        const extra = parseDollar('extra-payment');
+        const startM = parseInt(($('start-month') as HTMLSelectElement).value);
+        const startY = parseInt(($('start-year') as HTMLInputElement).value) || new Date().getFullYear();
+        const mp = calcPayment(loan, rate, term * 12);
+        const std = calcSchedule(loan, rate, term * 12, 0);
+        const withExtra = extra > 0 ? calcSchedule(loan, rate, term * 12, extra) : null;
+        const active = withExtra || std;
+
+        doc.setFontSize(20); doc.setTextColor(0, 82, 204);
+        doc.text('Amortization Schedule', 20, 25);
+        doc.setFontSize(9); doc.setTextColor(120, 120, 120);
+        doc.text('MoneyMathCalc.com  —  Free Financial Calculators', 20, 33);
+        doc.text(`Generated: ${dateStr}`, 20, 39);
+
+        let y = 52;
+        doc.setFontSize(12); doc.setTextColor(30, 30, 30); doc.text('Loan Details', 20, y); y += 8;
+        doc.setFontSize(10);
+        ([['Loan Amount', fmtFull(loan)], ['Interest Rate', `${rate}%`], ['Loan Term', `${term} years`],
+          ...(extra > 0 ? [['Extra Monthly Payment', fmtFull(extra)]] : []),
+          ['Start Date', payoffDateStr(startM, startY, 0)]] as [string,string][]).forEach(([l,v]) => {
+          doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 85, y); y += 7;
+        });
+
+        y += 4; doc.setFontSize(12); doc.text('Payment Summary', 20, y); y += 8; doc.setFontSize(10);
+        ([['Monthly Payment', fmtFull(mp + (extra > 0 ? extra : 0))], ['Total Interest', fmt(active.totalInterest)],
+          ['Total of Payments', fmt(mp * term * 12 + extra * active.months)], ['Payoff Date', payoffDateStr(startM, startY, active.months)]] as [string,string][]).forEach(([l,v]) => {
+          doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 85, y); y += 7;
+        });
+
+        if (withExtra) {
+          const intSaved = std.totalInterest - withExtra.totalInterest;
+          const moSaved  = std.months - withExtra.months;
+          y += 4; doc.setFontSize(12); doc.text('Extra Payment Impact', 20, y); y += 8; doc.setFontSize(10);
+          ([['Interest Saved', fmt(intSaved)], ['Time Saved', `${Math.floor(moSaved/12)}y ${moSaved%12}m earlier`],
+            ['New Payoff Date', payoffDateStr(startM, startY, withExtra.months)],
+            ['Interest Without Extra', fmt(std.totalInterest)], ['Interest With Extra', fmt(withExtra.totalInterest)]] as [string,string][]).forEach(([l,v]) => {
+            doc.setTextColor(100,100,100); doc.text(l+':', 20, y); doc.setTextColor(30,30,30); doc.text(v, 85, y); y += 7;
+          });
+        }
+
+        y += 6; if (y > 230) { doc.addPage(); y = 20; }
+        doc.setFontSize(12); doc.setTextColor(30,30,30); doc.text('Amortization Schedule (Annual)', 20, y); y += 8;
+        doc.setFontSize(9); doc.setTextColor(120,120,120);
+        ['Year','Payment','Principal','Interest','Balance'].forEach((h,i) => doc.text(h,[20,50,87,122,158][i], y));
+        y += 4; doc.setDrawColor(200,200,200); doc.line(20, y, 190, y); y += 4; doc.setTextColor(30,30,30);
+        currentYearly.forEach(row => {
+          if (y > 248) { doc.addPage(); y = 20; }
+          [`Year ${row.yr}`, fmt(row.pmt), fmt(row.prin), fmt(row.int), fmt(row.bal)].forEach((v,i) => doc.text(String(v),[20,50,87,122,158][i], y));
+          y += 6;
+        });
+
+        await addPdfFooter(doc, window.location.href, 'Amortization Schedule');
+        doc.save('amortization-schedule.pdf');
+      } finally {
+        if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg> Save as PDF';
+      }
+    });
+
+    $('btn-reset')?.addEventListener('click', () => {
+      ($('loan-amount') as HTMLInputElement).value = '300,000';
+      ($('rate') as HTMLInputElement).value = '6.4';
+      ($('loan-term') as HTMLSelectElement).value = '30';
+      ($('extra-payment') as HTMLInputElement).value = '0';
+      ($('start-month') as HTMLSelectElement).value = '4';
+      ($('start-year') as HTMLInputElement).value = '2026';
+      history.replaceState(null, '', window.location.pathname);
+      recalculate();
+    });
+
+    // URL params
+    const p = new URLSearchParams(window.location.search);
+    if (p.get('loan')) ($('loan-amount') as HTMLInputElement).value = Number(p.get('loan')).toLocaleString('en-US');
+    if (p.get('rate')) ($('rate') as HTMLInputElement).value = p.get('rate')!;
+    if (p.get('term')) ($('loan-term') as HTMLSelectElement).value = p.get('term')!;
+    if (p.get('extra')) ($('extra-payment') as HTMLInputElement).value = p.get('extra')!;
+
+    recalculate();
+  }
+
+  setup();
+</script>

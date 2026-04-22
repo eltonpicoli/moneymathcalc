@@ -1,0 +1,432 @@
+---
+import Layout from '../components/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Icon from '../components/Icon.astro';
+import type { IconName } from '../components/Icon.astro';
+
+const title = 'Free Financial Calculators — MoneyMathCalc';
+const description = 'Free financial calculators for mortgages, loans, taxes, retirement, and salary. Updated 2026 IRS data. No signup, no paywalls — precise math in seconds.';
+const canonical = 'https://moneymathcalc.com';
+
+const schema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': 'https://moneymathcalc.com/#website',
+      url: 'https://moneymathcalc.com/',
+      name: 'MoneyMathCalc',
+      description: 'Free financial calculators for everyday money decisions.',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://moneymathcalc.com/?q={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@type': 'Organization',
+      '@id': 'https://moneymathcalc.com/#organization',
+      name: 'MoneyMathCalc',
+      url: 'https://moneymathcalc.com/',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://moneymathcalc.com/favicon.svg',
+      },
+      description: 'Free financial calculators for mortgages, loans, taxes, retirement, and salary.',
+    },
+    {
+      '@type': 'ItemList',
+      name: 'Financial Calculators',
+      description: 'Free financial calculators by MoneyMathCalc',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Mortgage Calculator', url: 'https://moneymathcalc.com/mortgage-calculator' },
+        { '@type': 'ListItem', position: 2, name: 'Loan Calculator', url: 'https://moneymathcalc.com/loan-calculator' },
+        { '@type': 'ListItem', position: 3, name: 'Auto Loan Calculator', url: 'https://moneymathcalc.com/auto-loan-calculator' },
+        { '@type': 'ListItem', position: 4, name: 'Amortization Calculator', url: 'https://moneymathcalc.com/amortization-calculator' },
+        { '@type': 'ListItem', position: 5, name: 'Payment Calculator', url: 'https://moneymathcalc.com/payment-calculator' },
+        { '@type': 'ListItem', position: 6, name: 'Compound Interest Calculator', url: 'https://moneymathcalc.com/compound-interest-calculator' },
+        { '@type': 'ListItem', position: 7, name: 'Investment Calculator', url: 'https://moneymathcalc.com/investment-calculator' },
+        { '@type': 'ListItem', position: 8, name: 'Retirement Calculator', url: 'https://moneymathcalc.com/retirement-calculator' },
+        { '@type': 'ListItem', position: 9, name: 'Income Tax Calculator', url: 'https://moneymathcalc.com/income-tax-calculator' },
+        { '@type': 'ListItem', position: 10, name: 'Salary Calculator', url: 'https://moneymathcalc.com/salary-calculator' },
+      ],
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'Are these calculators really free?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Yes — completely free, forever. MoneyMathCalc has no subscription plans, no paywalls, and no premium tiers. Every calculator is available to everyone at no cost.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'How accurate are the results?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Our calculators use the same standard financial formulas used by banks, lenders, and the IRS. Tax estimates use 2026 IRS-published brackets and FICA rates. Mortgage math follows the standard amortization formula. Results are precise estimates — your actual figures may vary based on individual circumstances.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Do I need to create an account?',
+          acceptedAnswer: { '@type': 'Answer', text: 'No account required. Ever. Open any calculator, enter your numbers, get your answer. No email, no registration, no credit card.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Is my financial data stored or shared?',
+          acceptedAnswer: { '@type': 'Answer', text: 'No. All calculations run entirely in your browser. Your numbers are never sent to our servers, never stored, and never shared with anyone. When you close the page, the data is gone.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can I use these results for official financial decisions?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Our calculators are educational tools that provide precise estimates. They are not a substitute for professional financial advice. For mortgage applications, tax filings, or major investment decisions, consult a licensed financial advisor, CPA, or mortgage professional.' },
+        },
+      ],
+    },
+  ],
+});
+
+interface Calc {
+  href: string;
+  label: string;
+  desc: string;
+  iconName: IconName;
+  badge?: string;
+}
+
+const loanCalcs: Calc[] = [
+  { href: '/mortgage-calculator',     label: 'Mortgage Calculator',     desc: 'Monthly payment, total interest, taxes & insurance — the full picture.',  iconName: 'home', badge: 'Most Popular' },
+  { href: '/loan-calculator',         label: 'Loan Calculator',         desc: 'Monthly payments for personal, student, or consumer loans.',               iconName: 'credit-card' },
+  { href: '/auto-loan-calculator',    label: 'Auto Loan Calculator',    desc: 'Car payment with trade-in, down payment, and total cost.',                  iconName: 'car' },
+  { href: '/amortization-calculator', label: 'Amortization Calculator', desc: 'Full payment schedule with extra payment savings impact.',                  iconName: 'calendar' },
+  { href: '/payment-calculator',      label: 'Payment Calculator',      desc: 'Solve for payment, loan amount, or interest rate — any direction.',         iconName: 'calculator' },
+];
+
+const savingsCalcs: Calc[] = [
+  { href: '/compound-interest-calculator', label: 'Compound Interest Calculator', desc: 'See how savings grow with compound interest and regular contributions.',  iconName: 'trending-up' },
+  { href: '/investment-calculator',        label: 'Investment Calculator',         desc: 'Project portfolio growth with market returns and monthly additions.',      iconName: 'bar-chart' },
+  { href: '/retirement-calculator',        label: 'Retirement Calculator',         desc: '401k growth, Social Security, and the retirement number you need.',        iconName: 'sun' },
+];
+
+const incomeCalcs: Calc[] = [
+  { href: '/income-tax-calculator', label: 'Income Tax Calculator', desc: '2026 federal + all 50 states, FICA, deductions, annual and per-paycheck.', iconName: 'file-text', badge: '2026 Updated' },
+  { href: '/salary-calculator',     label: 'Salary Calculator',     desc: 'Hourly to annual, every pay period, living wage and income percentile.',   iconName: 'briefcase' },
+];
+
+interface UseCase {
+  title: string;
+  desc: string;
+  links: { href: string; label: string }[];
+  iconName: IconName;
+  color: string;
+}
+
+const useCases: UseCase[] = [
+  {
+    title: 'Buying a Home',
+    desc: 'Understand your true monthly cost before talking to a lender. Run the numbers on your mortgage, amortization, and total interest.',
+    iconName: 'home',
+    color: 'text-blue-600 bg-blue-50',
+    links: [
+      { href: '/mortgage-calculator', label: 'Mortgage Calculator' },
+      { href: '/amortization-calculator', label: 'Amortization Calculator' },
+    ],
+  },
+  {
+    title: 'Planning for Retirement',
+    desc: 'Find out if you\'re on track. Model 401k growth, Social Security income, and how compound interest builds wealth over decades.',
+    iconName: 'sun',
+    color: 'text-green-600 bg-green-50',
+    links: [
+      { href: '/retirement-calculator', label: 'Retirement Calculator' },
+      { href: '/compound-interest-calculator', label: 'Compound Interest' },
+    ],
+  },
+  {
+    title: 'Understanding Your Paycheck',
+    desc: 'Know exactly where your money goes. Calculate your take-home pay after federal and state taxes, FICA, and 401k deductions.',
+    iconName: 'briefcase',
+    color: 'text-purple-600 bg-purple-50',
+    links: [
+      { href: '/income-tax-calculator', label: 'Income Tax Calculator' },
+      { href: '/salary-calculator', label: 'Salary Calculator' },
+    ],
+  },
+  {
+    title: 'Paying Off Debt Faster',
+    desc: 'See how extra payments slash your interest and shorten your loan term. A $200/month extra payment can save thousands.',
+    iconName: 'credit-card',
+    color: 'text-orange-600 bg-orange-50',
+    links: [
+      { href: '/amortization-calculator', label: 'Amortization Calculator' },
+      { href: '/loan-calculator', label: 'Loan Calculator' },
+    ],
+  },
+];
+---
+
+<Layout title={title} description={description} canonical={canonical} schemaMarkup={schema}>
+  <Header slot="header" />
+
+  <!-- ═══ HERO ═══ -->
+  <section class="bg-gradient-to-b from-primary-50 to-white pt-16 pb-14 sm:pt-20 sm:pb-16 px-4 text-center">
+    <div class="max-w-3xl mx-auto">
+      <div class="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-1.5 text-sm text-gray-600 mb-6 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-accent-500 animate-pulse"></span>
+        Used by homebuyers, investors, and planners across all 50 states
+      </div>
+
+      <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-5">
+        Free Financial Calculators<br class="hidden sm:block" /> That Actually Work
+      </h1>
+      <p class="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed">
+        10 precise calculators for mortgages, investments, taxes, and salary. No signup. No paywalls. Just math that helps you make better money decisions.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a href="#calculators"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold px-8 py-3.5 rounded-xl transition-colors text-base shadow-sm">
+          Explore Calculators
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </a>
+        <a href="/mortgage-calculator"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold px-8 py-3.5 rounded-xl border border-gray-300 transition-colors text-base">
+          Most Popular: Mortgage Calculator →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ QUICK STATS ═══ -->
+  <section class="bg-white border-b border-gray-100 py-8 px-4">
+    <div class="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+      <div class="py-4">
+        <div class="text-4xl font-bold text-primary-600 font-mono">10</div>
+        <div class="text-sm text-gray-500 mt-1">Free Calculators</div>
+      </div>
+      <div class="py-4">
+        <div class="text-4xl font-bold text-primary-600 font-mono">2026</div>
+        <div class="text-sm text-gray-500 mt-1">Updated Tax Brackets</div>
+      </div>
+      <div class="py-4">
+        <div class="text-4xl font-bold text-primary-600 font-mono">50</div>
+        <div class="text-sm text-gray-500 mt-1">US States Supported</div>
+      </div>
+      <div class="py-4">
+        <div class="text-4xl font-bold text-primary-600 font-mono">0</div>
+        <div class="text-sm text-gray-500 mt-1">Signups Required</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CALCULATOR GRID ═══ -->
+  <section id="calculators" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+
+    <!-- Loans & Mortgages -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
+          <Icon name="home" size={20} />
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900">Loans &amp; Mortgages</h2>
+          <p class="text-sm text-gray-500">Calculate payments, total costs, and payoff schedules</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {loanCalcs.map(calc => (
+          <a href={calc.href}
+            class="relative flex flex-col p-5 bg-white border border-gray-200 rounded-xl hover:border-primary-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group">
+            {calc.badge && (
+              <span class="absolute top-3 right-3 bg-primary-50 text-primary-700 text-xs font-semibold px-2 py-0.5 rounded-full border border-primary-200">{calc.badge}</span>
+            )}
+            <span class="text-primary-600 mb-3">
+              <Icon name={calc.iconName} size={24} />
+            </span>
+            <h3 class="text-base font-semibold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">{calc.label}</h3>
+            <p class="text-sm text-gray-500 leading-relaxed flex-grow">{calc.desc}</p>
+            <span class="mt-3 text-sm font-medium text-primary-600 group-hover:translate-x-1 inline-block transition-transform">Try it →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Savings & Investments -->
+    <div class="mb-12">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center text-green-600 flex-shrink-0">
+          <Icon name="trending-up" size={20} />
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900">Savings &amp; Investments</h2>
+          <p class="text-sm text-gray-500">Project growth, plan retirement, and model compound returns</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {savingsCalcs.map(calc => (
+          <a href={calc.href}
+            class="flex flex-col p-5 bg-white border border-gray-200 rounded-xl hover:border-primary-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group">
+            <span class="text-primary-600 mb-3">
+              <Icon name={calc.iconName} size={24} />
+            </span>
+            <h3 class="text-base font-semibold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">{calc.label}</h3>
+            <p class="text-sm text-gray-500 leading-relaxed flex-grow">{calc.desc}</p>
+            <span class="mt-3 text-sm font-medium text-primary-600 group-hover:translate-x-1 inline-block transition-transform">Try it →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Income & Taxes -->
+    <div>
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 flex-shrink-0">
+          <Icon name="briefcase" size={20} />
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900">Income &amp; Taxes</h2>
+          <p class="text-sm text-gray-500">Understand your paycheck, tax burden, and earning power</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+        {incomeCalcs.map(calc => (
+          <a href={calc.href}
+            class="relative flex flex-col p-5 bg-white border border-gray-200 rounded-xl hover:border-primary-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group">
+            {calc.badge && (
+              <span class="absolute top-3 right-3 bg-green-50 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full border border-green-200">{calc.badge}</span>
+            )}
+            <span class="text-primary-600 mb-3">
+              <Icon name={calc.iconName} size={24} />
+            </span>
+            <h3 class="text-base font-semibold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">{calc.label}</h3>
+            <p class="text-sm text-gray-500 leading-relaxed flex-grow">{calc.desc}</p>
+            <span class="mt-3 text-sm font-medium text-primary-600 group-hover:translate-x-1 inline-block transition-transform">Try it →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ WHY MONEYMATHCALC ═══ -->
+  <section class="bg-gray-50 border-t border-gray-200 py-16 px-4">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Why MoneyMathCalc?</h2>
+        <p class="text-gray-500 mt-2 max-w-xl mx-auto">Built for the way real people make financial decisions — not how financial services companies want you to.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="text-center px-2">
+          <div class="flex justify-center text-primary-600 mb-4">
+            <div class="w-14 h-14 bg-primary-50 rounded-2xl flex items-center justify-center">
+              <Icon name="target" size={28} strokeWidth={1.5} />
+            </div>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2">Precise Math</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">Same formulas used by banks, lenders, and the IRS — validated against authoritative sources.</p>
+        </div>
+        <div class="text-center px-2">
+          <div class="flex justify-center text-green-600 mb-4">
+            <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center">
+              <Icon name="lock" size={28} strokeWidth={1.5} />
+            </div>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2">Privacy First</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">All calculations run entirely in your browser. Your numbers never leave your device.</p>
+        </div>
+        <div class="text-center px-2">
+          <div class="flex justify-center text-accent-500 mb-4">
+            <div class="w-14 h-14 bg-accent-50 rounded-2xl flex items-center justify-center">
+              <Icon name="check-circle" size={28} strokeWidth={1.5} />
+            </div>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2">Always Free</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">No accounts, no paywalls, no email capture, no premium tiers. Free means free.</p>
+        </div>
+        <div class="text-center px-2">
+          <div class="flex justify-center text-orange-500 mb-4">
+            <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center">
+              <Icon name="zap" size={28} strokeWidth={1.5} />
+            </div>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2">Updated Data</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">2026 IRS tax brackets, current Freddie Mac rate benchmarks, and BLS wage data.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ POPULAR USE CASES ═══ -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-10">
+      <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Common Money Questions, Answered</h2>
+      <p class="text-gray-500 mt-2">Not sure where to start? Here are the most common financial decisions our calculators help with.</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {useCases.map(uc => (
+        <div class="bg-white border border-gray-200 rounded-xl p-6 flex flex-col">
+          <div class={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${uc.color}`}>
+            <Icon name={uc.iconName} size={24} />
+          </div>
+          <h3 class="font-bold text-gray-900 mb-2">{uc.title}</h3>
+          <p class="text-sm text-gray-500 leading-relaxed flex-grow mb-4">{uc.desc}</p>
+          <div class="space-y-1">
+            {uc.links.map(link => (
+              <a href={link.href} class="block text-sm text-primary-600 hover:text-primary-700 hover:underline font-medium">→ {link.label}</a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- ═══ FAQ ═══ -->
+  <section class="bg-gray-50 border-t border-gray-200 py-16 px-4">
+    <div class="max-w-3xl mx-auto">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Frequently Asked Questions</h2>
+      </div>
+      <div class="space-y-5">
+
+        <div class="bg-white border border-gray-200 rounded-xl p-6">
+          <h3 class="font-semibold text-gray-900 mb-2">Are these calculators really free?</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">Yes — completely free, forever. MoneyMathCalc has no subscription plans, no paywalls, and no premium tiers. Every calculator is available to everyone at no cost.</p>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-xl p-6">
+          <h3 class="font-semibold text-gray-900 mb-2">How accurate are the results?</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">Our calculators use the same standard financial formulas used by banks, lenders, and the IRS. Tax estimates use 2026 IRS-published brackets and FICA rates. Mortgage math follows the standard amortization formula. Results are precise estimates — your actual figures may vary based on individual circumstances.</p>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-xl p-6">
+          <h3 class="font-semibold text-gray-900 mb-2">Do I need to create an account?</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">No account required. Ever. Open any calculator, enter your numbers, get your answer. No email, no registration, no credit card.</p>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-xl p-6">
+          <h3 class="font-semibold text-gray-900 mb-2">Is my financial data stored or shared?</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">No. All calculations run entirely in your browser. Your numbers are never sent to our servers, never stored, and never shared with anyone. When you close the page, the data is gone.</p>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-xl p-6">
+          <h3 class="font-semibold text-gray-900 mb-2">Can I use these results for official financial decisions?</h3>
+          <p class="text-gray-600 text-sm leading-relaxed">Our calculators are educational tools that provide precise estimates. They are not a substitute for professional financial advice. For mortgage applications, tax filings, or major investment decisions, consult a licensed financial advisor, CPA, or mortgage professional. See our <a href="/disclaimer" class="text-primary-600 hover:underline">Disclaimer</a> for details.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FINAL CTA ═══ -->
+  <section class="bg-primary-600 py-16 px-4 text-center">
+    <div class="max-w-2xl mx-auto">
+      <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">Ready to Run the Numbers?</h2>
+      <p class="text-primary-50 mb-8 text-lg">Start with our most popular calculator — used by hundreds of thousands of homebuyers every year.</p>
+      <a href="/mortgage-calculator"
+        class="inline-flex items-center gap-2 bg-white text-primary-700 hover:bg-primary-50 font-bold px-10 py-4 rounded-xl transition-colors text-lg shadow-lg">
+        Mortgage Calculator →
+      </a>
+      <p class="text-primary-200 text-sm mt-4">No signup required. Free forever.</p>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</Layout>

@@ -1,0 +1,18 @@
+---
+interface Props {
+  id: string;
+  class?: string;
+}
+const { id, class: className = '' } = Astro.props;
+const isDev = import.meta.env.DEV;
+---
+<div
+  class={`ad-slot w-full ${className}${isDev ? ' border-2 border-dashed border-yellow-400 bg-yellow-50 rounded-lg flex items-center justify-center py-6' : ''}`}
+  id={`ad-${id}`}
+  data-ad-slot={id}
+  aria-hidden="true"
+>
+  {isDev && (
+    <span class="text-xs font-mono text-yellow-600 select-none">[Ad Slot — {id}]</span>
+  )}
+</div>
