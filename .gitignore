@@ -23,3 +23,11 @@ Thumbs.db
 
 # OS
 Desktop.ini
+
+# Claude Code local settings
+.claude/
+
+# Internal strategy/planning docs (site-factory-playbook)
+01-discovery.md
+02-blueprint.md
+CLAUDE.md
