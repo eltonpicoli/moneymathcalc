@@ -2,7 +2,6 @@
 import Layout from '../components/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import AdSlot from '../components/AdSlot.astro';
 import Icon from '../components/Icon.astro';
 import {
   calculateAutoLoan,
@@ -458,9 +457,6 @@ const labelClass = 'block text-xs font-semibold text-gray-500 uppercase tracking
       <button id="btn-show-all" type="button" class="hidden mt-3 text-sm text-primary-600 hover:text-primary-700 font-medium transition"></button>
     </div>
 
-    <!-- Ad slot 1 -->
-    <AdSlot id="in-article-1" class="my-8" />
-
     <!-- ====================================================================
          EDUCATIONAL CONTENT
     ===================================================================== -->
@@ -518,9 +514,6 @@ const labelClass = 'block text-xs font-semibold text-gray-500 uppercase tracking
       <p>Total interest is the true cost of financing. On $32,600 at 7.5% for 5 years, you pay about $6,520 in interest — effectively paying $39,120 for a $35,000 car. The same loan at 84 months reduces the monthly payment by $160 but increases total interest to $8,200. The amortization schedule below shows exactly how each payment is allocated month by month.</p>
     </div>
 
-    <!-- Ad slot 2 -->
-    <AdSlot id="in-article-2" class="my-8" />
-
     <!-- FAQ -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8">
       <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
@@ -553,8 +546,6 @@ const labelClass = 'block text-xs font-semibold text-gray-500 uppercase tracking
         ))}
       </div>
     </div>
-
-    <AdSlot id="bottom" class="my-8" />
 
   </div>
 

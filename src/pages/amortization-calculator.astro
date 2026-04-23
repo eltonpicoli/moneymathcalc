@@ -2,7 +2,6 @@
 import Layout from '../components/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import AdSlot from '../components/AdSlot.astro';
 import Icon from '../components/Icon.astro';
 import {
   calculateMortgagePayment,
@@ -240,8 +239,6 @@ const schema = JSON.stringify({
       </div>
     </section>
 
-    <AdSlot id="in-article-1" />
-
     <!-- Amortization Schedule -->
     <section class="mb-6">
       <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
@@ -275,8 +272,6 @@ const schema = JSON.stringify({
         </div>
       </div>
     </section>
-
-    <AdSlot id="in-article-2" />
 
     <!-- Educational Content -->
     <section class="mb-6">
@@ -396,8 +391,6 @@ const schema = JSON.stringify({
         ))}
       </div>
     </section>
-
-    <AdSlot id="bottom" />
   </div>
 
   <Footer slot="footer" />
