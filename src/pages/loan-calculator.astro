@@ -40,32 +40,24 @@ const description = 'Calculate monthly payments, total interest, and full amorti
 
 const faqs = [
   {
-    q: 'What credit score do I need to get a personal loan?',
-    a: 'Most lenders require at least a 580–600 score to qualify for a personal loan, but the best rates go to borrowers with 720 or higher. Below 640, you\'ll typically pay 20%–36% APR. Above 720, you\'re looking at 8%–12% from online lenders and banks. Every 40-point improvement in score can save $50–$100/month on a $25,000 loan.',
+    q: 'How much will my loan really cost me in total?',
+    a: 'Total loan cost = monthly payment × number of payments. For a $20,000 loan at 8% over 5 years, you\'d pay roughly $24,332 total — meaning $4,332 in interest. Our calculator shows you total interest paid so you see the real cost, not just the monthly payment.',
   },
   {
-    q: 'What is the average interest rate on a personal loan in 2026?',
-    a: 'The average personal loan rate in 2026 is around 12%–13% APR according to Bankrate. However, rates range widely: credit unions often offer 7%–9% to members, online lenders like LightStream offer 8%–11% for strong borrowers, and high-risk lenders charge 28%–36%. The rate you\'re offered depends on your credit score, income, and debt-to-income ratio.',
+    q: 'How can I pay off my loan faster?',
+    a: 'The fastest way is making extra principal payments. Even an extra $50/month on a 5-year loan can shorten payoff by 6–12 months and save hundreds in interest. Some loans charge prepayment penalties, so check your loan terms first.',
   },
   {
-    q: 'Is a personal loan better than a credit card for debt consolidation?',
-    a: 'Usually yes — if you qualify for a rate below your credit card APR. The average credit card rate is 21%+. A personal loan at 10%–14% saves real money and gives you a fixed payoff date. On $15,000 in credit card debt, switching to a 5-year personal loan at 11% saves approximately $8,000 in interest and $200/month in minimum payments.',
+    q: 'What\'s the difference between APR and interest rate?',
+    a: 'Interest rate is what you pay on the borrowed amount. APR (Annual Percentage Rate) includes the interest rate PLUS fees (origination, processing, etc.) annualized. APR is always higher than interest rate when fees exist, and it\'s the better number for comparing loan offers.',
   },
   {
-    q: 'Can I pay off a personal loan early without a penalty?',
-    a: 'Most personal loans from online lenders and credit unions have no prepayment penalty. Some traditional bank loans still include them — read your loan agreement. If there\'s no penalty, paying extra principal each month saves significant interest: one extra payment per year on a $25,000 loan at 8.5% cuts 7 months off a 5-year term and saves about $580 in interest.',
+    q: 'Should I take a longer loan term to get lower monthly payments?',
+    a: 'Longer terms mean lower payments but significantly more total interest. A $20,000 loan at 8% costs $4,332 in interest over 5 years but $11,180 over 10 years — nearly 3x more. Use the shortest term you can comfortably afford.',
   },
   {
-    q: 'How much can I borrow with a personal loan?',
-    a: 'Typical personal loan limits range from $1,000 to $100,000, with most lenders capping at $35,000–$50,000. Maximum amounts depend on your income and credit profile. Lenders generally want total monthly debt payments (including the new loan) to stay below 36%–43% of gross monthly income. Use this calculator to find a payment that fits comfortably in your budget.',
-  },
-  {
-    q: 'Does applying for a personal loan hurt my credit score?',
-    a: 'A hard inquiry at application temporarily drops your score by 2–5 points, typically recovering within 6 months. Pre-qualification uses a soft pull and has no impact. If you\'re rate shopping, submit all applications within a 14-45 day window — credit bureaus treat multiple loan inquiries in that period as a single inquiry. Taking out the loan itself can initially lower your average account age.',
-  },
-  {
-    q: 'What is the difference between a secured and unsecured personal loan?',
-    a: 'An unsecured personal loan requires no collateral — approval is based on creditworthiness. A secured loan requires an asset (savings account, vehicle, or other collateral) as a guarantee. Secured loans typically offer lower rates (1%–5% less) because the lender\'s risk is reduced. If you default on a secured loan, the lender can seize the collateral. Most personal loans advertised online are unsecured.',
+    q: 'Does my credit score affect my loan interest rate?',
+    a: 'Massively. Excellent credit (740+) might qualify for 7% APR. Fair credit (640–680) often gets 12–18% APR. On a $20,000 5-year loan, that\'s the difference between $4,332 and $11,800 in interest — over $7,000 difference.',
   },
 ];
 
@@ -442,7 +434,8 @@ const labelClass = 'block text-xs font-semibold text-gray-500 uppercase tracking
          FAQ
     ===================================================================== -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+      <p class="text-gray-700 mb-6">Personal loans, student loans, and consumer loans all follow the same math but have very different terms. These FAQs cover the most common questions about loan calculations, total costs, and strategies to pay off debt faster.</p>
       <div class="space-y-6">
         {faqs.map(faq => (
           <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">

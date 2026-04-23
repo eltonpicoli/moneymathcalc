@@ -28,13 +28,11 @@ const schema = JSON.stringify({
     {
       "@type": "FAQPage",
       "mainEntity": [
-        { "@type": "Question", "name": "How much do I need to retire?", "acceptedAnswer": { "@type": "Answer", "text": "A common rule: save 25× your desired annual retirement income (4% rule). For $60,000/year in retirement, you'd need approximately $1.5 million. This rule assumes a 30-year retirement and a diversified portfolio. Adjust for your expected retirement length, other income sources like Social Security, and spending needs." } },
-        { "@type": "Question", "name": "What is the 4% rule for retirement?", "acceptedAnswer": { "@type": "Answer", "text": "The 4% rule (from the 1994 Bengen study) says you can withdraw 4% of your portfolio in year 1, then adjust for inflation annually, with low risk of running out of money over 30 years. A $1 million portfolio would generate $40,000/year. Some planners now use 3.3–3.5% for longer retirements." } },
-        { "@type": "Question", "name": "How long will $500,000 last in retirement?", "acceptedAnswer": { "@type": "Answer", "text": "With $500,000, withdrawing $3,000/month, a 5% return, and 3% inflation, the money lasts approximately 16 years. Add Social Security (average $1,900/month in 2026 per SSA) and the portfolio lasts significantly longer. Use the 'How Long Will It Last?' tab in this calculator for your specific scenario." } },
-        { "@type": "Question", "name": "When should I start saving for retirement?", "acceptedAnswer": { "@type": "Answer", "text": "Yesterday. The earlier you start, the less you need to save monthly due to compound interest. Starting at 25 vs. 35 with the same monthly contribution produces roughly double the retirement balance. Contributing $300/month from age 25 to 65 at 7% return gives $1.4 million. Starting at 35 gives just $680,000." } },
-        { "@type": "Question", "name": "How much of my income should I save for retirement?", "acceptedAnswer": { "@type": "Answer", "text": "Most financial planners recommend saving 15% of gross income for retirement, including any employer match. If you're starting late, 20–25% may be needed to catch up. At minimum, contribute enough to get your full employer 401(k) match — that's an immediate 50–100% return on those dollars." } },
-        { "@type": "Question", "name": "What is the average Social Security benefit in 2026?", "acceptedAnswer": { "@type": "Answer", "text": "The average Social Security retirement benefit in 2026 is approximately $1,900/month ($22,800/year), according to the SSA. The maximum benefit for someone retiring at full retirement age is about $3,822/month. Benefits depend on your earnings history and the age you claim — delaying to 70 increases benefits by 8% per year after full retirement age." } },
-        { "@type": "Question", "name": "Can I retire on $1 million?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, $1 million can support retirement — but it depends on your spending, retirement length, and other income. The 4% rule gives $40,000/year from $1M. Add average Social Security ($22,800/year) and you have $62,800/year. In a lower cost-of-living area, that's comfortable. In a high-cost city, you may need more." } }
+        { "@type": "Question", "name": "How much should I have saved for retirement by age?", "acceptedAnswer": { "@type": "Answer", "text": "Common benchmarks: by 30, save 1× your salary. By 40, 3×. By 50, 6×. By 60, 8×. By 67, 10×. So if you earn $80,000, you'd want $240,000 saved by 40 and $800,000 by 67. These are rough targets — your number depends on lifestyle, location, and other income." } },
+        { "@type": "Question", "name": "How much should I be contributing to my 401(k) in 2026?", "acceptedAnswer": { "@type": "Answer", "text": "The 2026 contribution limit is $23,500 (or $31,000 if age 50+). At minimum, contribute enough to capture your full employer match — that's 100% free money. Most experts recommend saving 10-15% of gross income for retirement, which often requires both 401k and IRA." } },
+        { "@type": "Question", "name": "What's a safe withdrawal rate in retirement?", "acceptedAnswer": { "@type": "Answer", "text": "The classic 4% rule suggests withdrawing 4% of your nest egg in year 1, adjusting for inflation each year. So $1M = $40k/year. Recent research suggests 3.5-3.7% is safer for early retirees with longer horizons. Higher rates risk running out of money in down markets." } },
+        { "@type": "Question", "name": "How does Social Security factor into my retirement planning?", "acceptedAnswer": { "@type": "Answer", "text": "Social Security typically replaces 30-40% of pre-retirement income for average earners. The average benefit in 2026 is roughly $1,907/month. Maximum benefit at full retirement age is about $3,822/month. You can see your estimated benefit on ssa.gov." } },
+        { "@type": "Question", "name": "Should I prioritize paying off my mortgage or saving for retirement?", "acceptedAnswer": { "@type": "Answer", "text": "Generally, retirement saving wins because of compound growth and tax advantages (401k pre-tax, employer match). A 30-year-old saving instead of paying down low-interest mortgage might end up with $500k+ more at retirement. Exception: if you're behind on retirement and near retirement age." } }
       ]
     }
   ]
@@ -415,42 +413,33 @@ const schema = JSON.stringify({
 
     <!-- FAQ -->
     <section class="py-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+      <p class="text-gray-700 mb-6">Planning for retirement means modeling decades of saving, investment growth, Social Security, and withdrawal strategy. These FAQs cover the most common questions about whether you're on track and how much you really need.</p>
       <div class="space-y-4">
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">How much do I need to retire?</h3>
-          <p class="text-gray-600 text-sm">A common rule: save 25× your desired annual retirement income (4% rule). For $60,000/year in retirement, you'd need approximately $1.5 million. This assumes a 30-year retirement and a diversified portfolio. Adjust for your expected retirement length, other income sources like Social Security ($1,900/month average in 2026), and spending needs.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">How much should I have saved for retirement by age?</h3>
+          <p class="text-gray-600 text-sm">Common benchmarks: by 30, save 1× your salary. By 40, 3×. By 50, 6×. By 60, 8×. By 67, 10×. So if you earn $80,000, you'd want $240,000 saved by 40 and $800,000 by 67. These are rough targets — your number depends on lifestyle, location, and other income.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">What is the 4% rule for retirement?</h3>
-          <p class="text-gray-600 text-sm">The 4% rule (from the 1994 Bengen study) says you can withdraw 4% of your portfolio in year 1, then adjust for inflation annually, with low risk of running out over 30 years. A $1 million portfolio generates $40,000/year. Some planners now use 3.3–3.5% for longer retirements or lower expected returns.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">How much should I be contributing to my 401(k) in 2026?</h3>
+          <p class="text-gray-600 text-sm">The 2026 contribution limit is $23,500 (or $31,000 if age 50+). At minimum, contribute enough to capture your full employer match — that's 100% free money. Most experts recommend saving 10–15% of gross income for retirement, which often requires both 401k and IRA.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">How long will $500,000 last in retirement?</h3>
-          <p class="text-gray-600 text-sm">With $500,000, withdrawing $3,000/month, a 5% return, and 3% inflation, the money lasts approximately 16 years. Add Social Security (average $1,900/month in 2026 per SSA) and reduce your withdrawal to $1,100/month — then the portfolio lasts well over 30 years. Use the "How Long Will It Last?" tab for your specific numbers.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">What's a safe withdrawal rate in retirement?</h3>
+          <p class="text-gray-600 text-sm">The classic 4% rule suggests withdrawing 4% of your nest egg in year 1, adjusting for inflation each year. So $1M = $40k/year. Recent research suggests 3.5–3.7% is safer for early retirees with longer horizons. Higher rates risk running out of money in down markets.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">When should I start saving for retirement?</h3>
-          <p class="text-gray-600 text-sm">The earlier the better. Contributing $300/month from age 25 to 65 at 7% return yields approximately $1.4 million. Starting at 35 yields just $680,000 — half as much for the same monthly contribution. The difference isn't just 10 years of contributions; it's 10 fewer years of compounding on every dollar already saved.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">How does Social Security factor into my retirement planning?</h3>
+          <p class="text-gray-600 text-sm">Social Security typically replaces 30–40% of pre-retirement income for average earners. The average benefit in 2026 is roughly $1,907/month. Maximum benefit at full retirement age is about $3,822/month. You can see your estimated benefit on ssa.gov.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">How much of my income should I save for retirement?</h3>
-          <p class="text-gray-600 text-sm">Most financial planners recommend 15% of gross income, including any employer match. If you start late, 20–25% may be needed to catch up. At minimum, contribute enough to get your full employer 401(k) match — that's an immediate 50–100% return on those dollars, better than any investment you can make.</p>
-        </div>
-
-        <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">What is the average Social Security benefit in 2026?</h3>
-          <p class="text-gray-600 text-sm">The average Social Security retirement benefit in 2026 is approximately $1,900/month ($22,800/year), according to the SSA. The maximum benefit for someone retiring at full retirement age is about $3,822/month. Delaying benefits past full retirement age increases payments by 8% per year up to age 70.</p>
-        </div>
-
-        <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">Can I retire on $1 million?</h3>
-          <p class="text-gray-600 text-sm">Yes — $1 million can support retirement. The 4% rule yields $40,000/year. Add average Social Security ($22,800/year) for $62,800 total annual income. In many parts of the US, that's comfortable. In high cost-of-living cities like NYC or San Francisco, you may need $2–3 million. Your specific location and lifestyle determine the right number.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">Should I prioritize paying off my mortgage or saving for retirement?</h3>
+          <p class="text-gray-600 text-sm">Generally, retirement saving wins because of compound growth and tax advantages (401k pre-tax, employer match). A 30-year-old saving instead of paying down low-interest mortgage might end up with $500k+ more at retirement. Exception: if you're behind on retirement and near retirement age.</p>
         </div>
 
       </div>

@@ -32,37 +32,27 @@ const schemaMarkup = JSON.stringify({
         {
           "@type": "Question",
           "name": "What are the 2026 federal income tax brackets?",
-          "acceptedAnswer": { "@type": "Answer", "text": "For 2026, the federal tax brackets for a single filer are: 10% on income up to $11,925; 12% from $11,926–$48,475; 22% from $48,476–$103,350; 24% from $103,351–$197,300; 32% from $197,301–$250,525; 35% from $250,526–$626,350; 37% over $626,350. These are applied progressively after the standard deduction." }
+          "acceptedAnswer": { "@type": "Answer", "text": "For single filers in 2026: 10% up to $11,600, 12% up to $47,150, 22% up to $100,525, 24% up to $191,950, 32% up to $243,725, 35% up to $609,350, 37% above $609,350. Brackets are doubled for married filing jointly. These adjust annually for inflation." }
         },
         {
           "@type": "Question",
-          "name": "What is the standard deduction for 2026?",
-          "acceptedAnswer": { "@type": "Answer", "text": "The 2026 standard deduction is $15,000 for single filers, $30,000 for married filing jointly, and $22,500 for head of household. These amounts reflect IRS inflation adjustments from the 2026 tax year." }
+          "name": "What's the standard deduction for 2026?",
+          "acceptedAnswer": { "@type": "Answer", "text": "For 2026: Single = $15,000, Married Filing Jointly = $30,000, Head of Household = $22,500. Most people take the standard deduction since the 2017 tax law raised it significantly. You'd only itemize if your deductible expenses (mortgage interest, charity, state taxes) exceed these amounts." }
         },
         {
           "@type": "Question",
-          "name": "How is FICA tax calculated?",
-          "acceptedAnswer": { "@type": "Answer", "text": "FICA consists of Social Security (6.2% on wages up to $176,100 in 2026) and Medicare (1.45% on all wages, plus an additional 0.9% on wages exceeding $200,000 for single filers). Your employer pays a matching 6.2% + 1.45% on their end." }
+          "name": "How is FICA tax calculated and is there a cap?",
+          "acceptedAnswer": { "@type": "Answer", "text": "FICA = 7.65% of wages: 6.2% Social Security + 1.45% Medicare. Social Security tax stops at $168,600 (2026 wage base). Medicare has no cap, plus an additional 0.9% on wages above $200,000 (single) or $250,000 (married). Self-employed pay double (15.3%) but deduct half." }
         },
         {
           "@type": "Question",
-          "name": "Does a 401k contribution reduce my taxable income?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Traditional 401k contributions (up to $23,500 in 2026) reduce your federal and state taxable income dollar-for-dollar. This means if you're in the 22% bracket, a $5,000 contribution saves $1,100 in federal tax. HSA contributions also reduce taxable income and are triple-tax advantaged." }
+          "name": "How do tax brackets actually work? Am I taxed at one rate?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No — that's the most misunderstood thing about taxes. Brackets are marginal: only income within each bracket gets taxed at that rate. So at $80,000 single income in 2026: first $11,600 taxed at 10%, next $35,550 at 12%, next $32,850 at 22%. Effective rate is much lower than top marginal rate." }
         },
         {
           "@type": "Question",
-          "name": "Which states have no income tax?",
-          "acceptedAnswer": { "@type": "Answer", "text": "As of 2026, nine states have no state income tax: Alaska, Florida, Nevada, New Hampshire (taxes only investment income), South Dakota, Tennessee, Texas, Washington (taxes capital gains over $262,000), and Wyoming." }
-        },
-        {
-          "@type": "Question",
-          "name": "What is the effective tax rate vs marginal tax rate?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Your marginal rate is the rate applied to your last dollar of income — your top bracket. Your effective rate is total taxes paid divided by total income. At $60,000 single, you might be in the 22% marginal bracket but only pay an 11–12% effective federal rate because lower brackets apply to the first portions of income." }
-        },
-        {
-          "@type": "Question",
-          "name": "How much should I withhold from each paycheck for taxes?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Your employer withholds based on your W-4 form. To avoid a large bill or refund, your total withholding should equal your total annual tax liability. Use this calculator to find your annual tax, then divide by your pay periods to verify your per-paycheck withholding matches." }
+          "name": "Can I lower my taxable income with 401(k) contributions?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — traditional 401(k) contributions reduce your taxable income dollar-for-dollar. Contributing the 2026 max of $23,500 saves $5,170 in federal tax if you're in the 22% bracket, plus state tax savings. HSA contributions ($4,150 single) also reduce taxable income." }
         }
       ]
     }
@@ -406,41 +396,32 @@ const schemaMarkup = JSON.stringify({
         <!-- FAQs -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
           <h2 class="text-xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+          <p class="text-gray-700 mb-5">Federal and state income taxes are calculated through brackets, deductions, and FICA. Understanding how the tax system works helps you make better decisions about deductions, contributions, and withholdings throughout the year.</p>
           <div class="space-y-5">
 
             <div>
               <h3 class="font-semibold text-gray-900 mb-1">What are the 2026 federal income tax brackets?</h3>
-              <p class="text-gray-600 text-sm">For single filers: 10% up to $11,925; 12% to $48,475; 22% to $103,350; 24% to $197,300; 32% to $250,525; 35% to $626,350; 37% above that. Applied progressively after the $15,000 standard deduction.</p>
+              <p class="text-gray-600 text-sm">For single filers in 2026: 10% up to $11,600, 12% up to $47,150, 22% up to $100,525, 24% up to $191,950, 32% up to $243,725, 35% up to $609,350, 37% above $609,350. Brackets are doubled for married filing jointly. These adjust annually for inflation.</p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-1">What is the standard deduction for 2026?</h3>
-              <p class="text-gray-600 text-sm">$15,000 for single filers, $30,000 for married filing jointly, and $22,500 for head of household. These are the IRS-projected inflation-adjusted amounts for tax year 2026.</p>
+              <h3 class="font-semibold text-gray-900 mb-1">What's the standard deduction for 2026?</h3>
+              <p class="text-gray-600 text-sm">For 2026: Single = $15,000, Married Filing Jointly = $30,000, Head of Household = $22,500. Most people take the standard deduction since the 2017 tax law raised it significantly. You'd only itemize if your deductible expenses (mortgage interest, charity, state taxes) exceed these amounts.</p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-1">How is FICA tax calculated?</h3>
-              <p class="text-gray-600 text-sm">Social Security at 6.2% on wages up to $176,100, plus Medicare at 1.45% on all wages (plus 0.9% on wages over $200,000 for single filers). Your employer pays the same amounts on their end.</p>
+              <h3 class="font-semibold text-gray-900 mb-1">How is FICA tax calculated and is there a cap?</h3>
+              <p class="text-gray-600 text-sm">FICA = 7.65% of wages: 6.2% Social Security + 1.45% Medicare. Social Security tax stops at $168,600 (2026 wage base). Medicare has no cap, plus an additional 0.9% on wages above $200,000 (single) or $250,000 (married). Self-employed pay double (15.3%) but deduct half.</p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-1">Does a 401k contribution reduce my taxable income?</h3>
-              <p class="text-gray-600 text-sm">Yes. Traditional 401k contributions (up to $23,500 in 2026) reduce federal and state taxable income dollar-for-dollar. A $5,000 contribution in the 22% bracket saves $1,100 in federal taxes alone.</p>
+              <h3 class="font-semibold text-gray-900 mb-1">How do tax brackets actually work? Am I taxed at one rate?</h3>
+              <p class="text-gray-600 text-sm">No — that's the most misunderstood thing about taxes. Brackets are marginal: only income within each bracket gets taxed at that rate. So at $80,000 single income in 2026: first $11,600 taxed at 10%, next $35,550 at 12%, next $32,850 at 22%. Effective rate is much lower than top marginal rate.</p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-1">Which states have no income tax?</h3>
-              <p class="text-gray-600 text-sm">Alaska, Florida, Nevada, New Hampshire (investment income only), South Dakota, Tennessee, Texas, Washington (capital gains tax only), and Wyoming levy no broad-based income tax as of 2026.</p>
-            </div>
-
-            <div>
-              <h3 class="font-semibold text-gray-900 mb-1">What is effective vs. marginal tax rate?</h3>
-              <p class="text-gray-600 text-sm">Your marginal rate is the tax rate on your last dollar earned — your top bracket. Your effective rate is total tax divided by total income. At $60,000 single, you may be in the 22% bracket but only pay ~11% effective federal rate.</p>
-            </div>
-
-            <div>
-              <h3 class="font-semibold text-gray-900 mb-1">How much should I withhold per paycheck?</h3>
-              <p class="text-gray-600 text-sm">Divide your annual tax liability by your number of pay periods. If you owe $12,000/year and get paid biweekly (26×), withhold about $462 per paycheck. Adjust your W-4 if you're significantly over or under-withholding.</p>
+              <h3 class="font-semibold text-gray-900 mb-1">Can I lower my taxable income with 401(k) contributions?</h3>
+              <p class="text-gray-600 text-sm">Yes — traditional 401(k) contributions reduce your taxable income dollar-for-dollar. Contributing the 2026 max of $23,500 saves $5,170 in federal tax if you're in the 22% bracket, plus state tax savings. HSA contributions ($4,150 single) also reduce taxable income.</p>
             </div>
           </div>
         </div>

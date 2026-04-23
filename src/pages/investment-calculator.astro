@@ -28,13 +28,11 @@ const schema = JSON.stringify({
     {
       "@type": "FAQPage",
       "mainEntity": [
-        { "@type": "Question", "name": "What is a realistic investment return rate?", "acceptedAnswer": { "@type": "Answer", "text": "The S&P 500 has averaged about 10% annually before inflation over the long term. After inflation (averaging 3%), the real return is closer to 7%. For diversified portfolios with bonds, 5–7% nominal is a reasonable planning assumption. No return is guaranteed." } },
-        { "@type": "Question", "name": "How does inflation affect investment returns?", "acceptedAnswer": { "@type": "Answer", "text": "Inflation erodes purchasing power. A 8% nominal return with 3% inflation gives a 4.85% real return (Fisher equation: (1.08/1.03) − 1). Over 10 years, $135,805 in nominal terms might only buy what $108,720 buys today. Always check inflation-adjusted numbers for retirement planning." } },
-        { "@type": "Question", "name": "How are investment gains taxed?", "acceptedAnswer": { "@type": "Answer", "text": "Long-term capital gains (assets held over 1 year) are taxed at 0%, 15%, or 20% depending on income. Most middle-income investors pay 15%. Short-term gains (under 1 year) are taxed as ordinary income. In tax-advantaged accounts (401k, IRA), gains grow tax-deferred or tax-free." } },
-        { "@type": "Question", "name": "What is the difference between nominal and real returns?", "acceptedAnswer": { "@type": "Answer", "text": "Nominal returns are raw investment growth before inflation. Real returns are what you actually gain in purchasing power. If your investment grows 8% but inflation is 3%, your real return is about 4.85%. Real returns matter more for long-term planning — a million-dollar portfolio in 30 years isn't the same as a million today." } },
-        { "@type": "Question", "name": "Should I invest a lump sum or monthly contributions?", "acceptedAnswer": { "@type": "Answer", "text": "Research shows lump sum investing outperforms dollar-cost averaging about two-thirds of the time since markets trend upward. However, monthly contributions reduce timing risk and are more realistic for most people. The most important factor is investing consistently rather than waiting for the 'perfect' moment." } },
-        { "@type": "Question", "name": "How much do I need to invest to reach $1 million?", "acceptedAnswer": { "@type": "Answer", "text": "To reach $1 million in 30 years at 7% return: starting with $0 and contributing monthly requires about $888/month. Starting with $100,000 and contributing $300/month gets you there. The earlier you start, the less monthly contribution you need — compounding does the heavy lifting over long periods." } },
-        { "@type": "Question", "name": "What is dollar-cost averaging?", "acceptedAnswer": { "@type": "Answer", "text": "Dollar-cost averaging means investing a fixed amount regularly (e.g., $500/month) regardless of market conditions. When prices are low you buy more shares; when high, fewer. It removes the emotion of trying to time the market and is the default strategy of 401(k) contributions. It's simple, disciplined, and effective." } }
+        { "@type": "Question", "name": "What's a realistic annual return to expect from investing?", "acceptedAnswer": { "@type": "Answer", "text": "Historically, the S&P 500 has averaged about 10% annual returns (7% after inflation) over long periods. Conservative portfolios (more bonds) typically return 4-6%. Aggressive portfolios (more stocks) can hit 8-10% but with more volatility. For planning, most experts use 7-8%." } },
+        { "@type": "Question", "name": "How much should I invest each month to retire with $1 million?", "acceptedAnswer": { "@type": "Answer", "text": "Depends on time horizon and return. At 8% annual return: 30 years = $670/month, 25 years = $1,050/month, 20 years = $1,700/month, 15 years = $2,890/month. Starting earlier dramatically reduces required monthly contribution." } },
+        { "@type": "Question", "name": "Should I invest a lump sum or spread it out (dollar-cost averaging)?", "acceptedAnswer": { "@type": "Answer", "text": "Statistically, lump-sum investing wins about 67% of the time over long periods (markets trend up). However, dollar-cost averaging (regular monthly investments) reduces emotional stress and is what most people do automatically through 401k contributions." } },
+        { "@type": "Question", "name": "How do investment fees affect my returns over time?", "acceptedAnswer": { "@type": "Answer", "text": "Massively. A 1% annual fee on a $100k investment over 30 years at 8% gross return reduces your final balance by about $200,000. Index funds typically charge 0.03-0.20% while actively managed funds charge 0.50-1.50%. Low fees + time = huge difference." } },
+        { "@type": "Question", "name": "What's the difference between simple investment growth and compound growth?", "acceptedAnswer": { "@type": "Answer", "text": "Simple growth means earning the same dollar amount each year (linear). Compound growth means earning interest on previous interest (exponential). $10,000 at 8% simple growth becomes $34,000 in 30 years. Same money at 8% compound growth becomes $100,627. Compounding wins by 3x." } }
       ]
     }
   ]
@@ -280,42 +278,33 @@ const schema = JSON.stringify({
 
     <!-- FAQ -->
     <section class="py-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+      <p class="text-gray-700 mb-6">Investing turns money into more money through compounding returns. Whether you're saving for retirement, a house, or financial independence, understanding investment growth helps you set realistic goals and stay on track.</p>
       <div class="space-y-4">
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">What is a realistic investment return rate?</h3>
-          <p class="text-gray-600 text-sm">The S&P 500 has averaged about 10% annually before inflation over the long term (Vanguard, Morningstar data). After inflation averaging 3%, real return is closer to 7%. For diversified portfolios with bonds, 5–7% nominal is a reasonable planning assumption. Bonds average 3–4%. No return is guaranteed — past performance doesn't predict future results.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">What's a realistic annual return to expect from investing?</h3>
+          <p class="text-gray-600 text-sm">Historically, the S&P 500 has averaged about 10% annual returns (7% after inflation) over long periods. Conservative portfolios (more bonds) typically return 4–6%. Aggressive portfolios (more stocks) can hit 8–10% but with more volatility. For planning, most experts use 7–8%.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">How does inflation affect investment returns?</h3>
-          <p class="text-gray-600 text-sm">Inflation erodes purchasing power over time. A 8% nominal return with 3% inflation gives a 4.85% real return (Fisher equation). Over 10 years, $135,805 in nominal terms buys roughly what $108,720 buys today. Always check inflation-adjusted numbers for retirement planning, where purchasing power in future years is what truly matters.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">How much should I invest each month to retire with $1 million?</h3>
+          <p class="text-gray-600 text-sm">Depends on time horizon and return. At 8% annual return: 30 years = $670/month, 25 years = $1,050/month, 20 years = $1,700/month, 15 years = $2,890/month. Starting earlier dramatically reduces required monthly contribution.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">How are investment gains taxed?</h3>
-          <p class="text-gray-600 text-sm">Long-term capital gains (held over 1 year) are taxed at 0%, 15%, or 20% depending on income. Most middle-income investors pay 15%. Short-term gains (under 1 year) are taxed as ordinary income up to 37%. In tax-advantaged accounts — 401(k), Traditional IRA, Roth IRA — gains grow tax-deferred or completely tax-free.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">Should I invest a lump sum or spread it out (dollar-cost averaging)?</h3>
+          <p class="text-gray-600 text-sm">Statistically, lump-sum investing wins about 67% of the time over long periods (markets trend up). However, dollar-cost averaging (regular monthly investments) reduces emotional stress and is what most people do automatically through 401k contributions.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">What is the difference between nominal and real returns?</h3>
-          <p class="text-gray-600 text-sm">Nominal returns are raw investment growth before inflation. Real returns are what you actually gain in purchasing power. If your investment grows 8% but inflation is 3%, your real return is about 4.85%. For retirement planning, real returns matter more — $1 million in 30 years won't have the same purchasing power as $1 million today.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">How do investment fees affect my returns over time?</h3>
+          <p class="text-gray-600 text-sm">Massively. A 1% annual fee on a $100k investment over 30 years at 8% gross return reduces your final balance by about $200,000. Index funds typically charge 0.03–0.20% while actively managed funds charge 0.50–1.50%. Low fees + time = huge difference.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">Should I invest a lump sum or monthly contributions?</h3>
-          <p class="text-gray-600 text-sm">Research shows lump sum investing outperforms dollar-cost averaging about 67% of the time since markets trend upward (Vanguard study). However, monthly contributions are more realistic for most people and reduce timing risk. The most important factor is investing consistently rather than waiting for the "perfect" moment — time in the market beats timing the market.</p>
-        </div>
-
-        <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">How much do I need to invest to reach $1 million?</h3>
-          <p class="text-gray-600 text-sm">To reach $1 million in 30 years at 7% return: starting with $0 requires about $888/month in contributions. Starting with $100,000 and contributing $300/month also gets you there. The earlier you start, the less monthly contribution you need — compounding does the heavy lifting over 30+ year periods. A $0 start at 25 beats a $100k start at 45.</p>
-        </div>
-
-        <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">What is dollar-cost averaging?</h3>
-          <p class="text-gray-600 text-sm">Dollar-cost averaging means investing a fixed amount regularly (e.g., $500/month) regardless of market conditions. When prices are low you buy more shares; when high, fewer shares. It removes emotion from timing decisions and is the default strategy of most 401(k) contributions. It's simple, disciplined, and consistently effective for long-term investors.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">What's the difference between simple investment growth and compound growth?</h3>
+          <p class="text-gray-600 text-sm">Simple growth means earning the same dollar amount each year (linear). Compound growth means earning interest on previous interest (exponential). $10,000 at 8% simple growth becomes $34,000 in 30 years. Same money at 8% compound growth becomes $100,627. Compounding wins by 3x.</p>
         </div>
 
       </div>

@@ -28,13 +28,11 @@ const schema = JSON.stringify({
     {
       "@type": "FAQPage",
       "mainEntity": [
-        { "@type": "Question", "name": "What is compound interest?", "acceptedAnswer": { "@type": "Answer", "text": "Compound interest is interest calculated on both the principal and previously earned interest. Unlike simple interest, it grows exponentially over time because your gains generate their own gains — often called 'interest on interest.'" } },
-        { "@type": "Question", "name": "How much will $10,000 grow in 20 years at 7%?", "acceptedAnswer": { "@type": "Answer", "text": "With $10,000 initial investment, $200/month contributions, and 7% annual return compounded monthly, you'd have approximately $144,626 after 20 years — with $58,000 contributed and $86,626 earned in interest." } },
-        { "@type": "Question", "name": "What is the Rule of 72?", "acceptedAnswer": { "@type": "Answer", "text": "The Rule of 72 estimates how long it takes money to double: divide 72 by the annual interest rate. At 7%, money doubles approximately every 10.3 years (72 ÷ 7 = 10.3). It's a quick mental math shortcut — not exact but very close." } },
-        { "@type": "Question", "name": "Does compounding frequency really matter?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, but less than most people think at typical rates. Daily compounding yields slightly more than monthly, which yields more than annual. On $10,000 at 7% over 20 years: daily = $40,088 vs monthly = $40,025 vs annually = $38,697. The rate matters far more than frequency." } },
-        { "@type": "Question", "name": "What is the best compounding frequency?", "acceptedAnswer": { "@type": "Answer", "text": "Daily compounding gives the highest return, but the difference is small. Most high-yield savings accounts and money market funds compound daily. Most long-term investments like index funds and 401(k)s compound based on price appreciation, effectively daily." } },
-        { "@type": "Question", "name": "How do monthly contributions affect compound growth?", "acceptedAnswer": { "@type": "Answer", "text": "Monthly contributions dramatically accelerate growth. Adding $200/month to a $10,000 investment at 7% over 20 years triples the final balance (from ~$40,000 to ~$144,600). Consistency matters more than the contribution amount — small amounts added early beat large amounts added late." } },
-        { "@type": "Question", "name": "What rate of return should I use for long-term investing?", "acceptedAnswer": { "@type": "Answer", "text": "The S&P 500 has historically returned about 10% annually before inflation, or roughly 7% after inflation. For conservative planning, financial planners often use 6–7% for diversified equity portfolios. Bonds average 3–4%. Always account for inflation when projecting purchasing power." } }
+        { "@type": "Question", "name": "How does compound interest actually build wealth?", "acceptedAnswer": { "@type": "Answer", "text": "Compound interest means you earn returns on your previous returns. If you invest $10,000 at 8% annual return, after year 1 you have $10,800. In year 2, you earn 8% on $10,800 (not just $10,000), so you grow to $11,664. Over 30 years, that initial $10,000 becomes $100,627 — without adding another cent." } },
+        { "@type": "Question", "name": "How much will $100/month grow into over 30 years?", "acceptedAnswer": { "@type": "Answer", "text": "At an 8% average annual return (typical S&P 500), $100/month becomes $149,036 in 30 years. Of that, you only contributed $36,000 — the other $113,036 is pure compound growth. At $500/month, you'd have $745,180 from $180,000 contributed." } },
+        { "@type": "Question", "name": "Daily, monthly, or annual compounding — does it really matter?", "acceptedAnswer": { "@type": "Answer", "text": "Less than you'd think. On $10,000 at 8% over 30 years: annual compounding = $100,627, monthly compounding = $109,357, daily compounding = $110,176. Compounding frequency matters more for short timeframes than long ones." } },
+        { "@type": "Question", "name": "When should I start investing to maximize compound interest?", "acceptedAnswer": { "@type": "Answer", "text": "As early as possible. Starting at 25 with $300/month at 8% gives you $1.05M by 65. Starting at 35 (10 years later) requires $700/month to reach the same goal. Starting at 45 requires $1,700/month. Time matters far more than amount." } },
+        { "@type": "Question", "name": "What's the rule of 72 and how do I use it?", "acceptedAnswer": { "@type": "Answer", "text": "The rule of 72 is a quick mental shortcut: divide 72 by your annual return rate to find how long until your money doubles. At 8% return, money doubles every 9 years. At 6%, every 12 years. At 12%, every 6 years. It's not perfectly precise but very close." } }
       ]
     }
   ]
@@ -282,42 +280,33 @@ const schema = JSON.stringify({
 
     <!-- FAQ -->
     <section class="py-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+      <p class="text-gray-700 mb-6">Compound interest is often called 'the eighth wonder of the world' because it makes your money grow exponentially over time. The earlier you start saving and investing, the more dramatically compound interest builds wealth.</p>
       <div class="space-y-4">
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">What is compound interest?</h3>
-          <p class="text-gray-600 text-sm">Compound interest is interest calculated on both the principal and previously earned interest. Unlike simple interest — which only applies to your original deposit — compound interest grows exponentially because each period's gains become the base for the next period's calculation. It's often called "interest on interest," and it's the foundation of long-term wealth building.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">How does compound interest actually build wealth?</h3>
+          <p class="text-gray-600 text-sm">Compound interest means you earn returns on your previous returns. If you invest $10,000 at 8% annual return, after year 1 you have $10,800. In year 2, you earn 8% on $10,800 (not just $10,000), so you grow to $11,664. Over 30 years, that initial $10,000 becomes $100,627 — without adding another cent.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">How much will $10,000 grow in 20 years at 7%?</h3>
-          <p class="text-gray-600 text-sm">With $10,000 initial investment, $200/month contributions, and 7% annual return compounded monthly, you'd have approximately $144,626 after 20 years — with $58,000 contributed and $86,626 earned in interest. Without contributions (just the initial $10k), it grows to about $40,025.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">How much will $100/month grow into over 30 years?</h3>
+          <p class="text-gray-600 text-sm">At an 8% average annual return (typical S&P 500), $100/month becomes $149,036 in 30 years. Of that, you only contributed $36,000 — the other $113,036 is pure compound growth. At $500/month, you'd have $745,180 from $180,000 contributed.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">What is the Rule of 72?</h3>
-          <p class="text-gray-600 text-sm">The Rule of 72 estimates how long money takes to double: divide 72 by the annual interest rate. At 7%, money doubles approximately every 10.3 years (72 ÷ 7 = 10.3). At 10%, every 7.2 years. It's a quick mental math shortcut — not mathematically exact but very accurate for rates between 6% and 10%.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">Daily, monthly, or annual compounding — does it really matter?</h3>
+          <p class="text-gray-600 text-sm">Less than you'd think. On $10,000 at 8% over 30 years: annual compounding = $100,627, monthly compounding = $109,357, daily compounding = $110,176. Compounding frequency matters more for short timeframes than long ones.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">Does compounding frequency really matter?</h3>
-          <p class="text-gray-600 text-sm">Yes, but less than most people think at typical rates. Daily compounding yields slightly more than monthly, which yields more than annual. On $10,000 at 7% over 20 years: daily = $40,088 vs monthly = $40,025 vs annually = $38,697. The difference is less than $400. The rate and time period matter far more than compounding frequency.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">When should I start investing to maximize compound interest?</h3>
+          <p class="text-gray-600 text-sm">As early as possible. Starting at 25 with $300/month at 8% gives you $1.05M by 65. Starting at 35 (10 years later) requires $700/month to reach the same goal. Starting at 45 requires $1,700/month. Time matters far more than amount.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">What is the best compounding frequency?</h3>
-          <p class="text-gray-600 text-sm">Daily compounding gives the highest return, but the difference is small at typical rates. Most high-yield savings accounts and money market funds compound daily. CDs may compound daily, monthly, or quarterly — the APY (Annual Percentage Yield) already accounts for this. When comparing accounts, use APY rather than APR for a true comparison.</p>
-        </div>
-
-        <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">How do monthly contributions affect compound growth?</h3>
-          <p class="text-gray-600 text-sm">Monthly contributions dramatically accelerate growth. Adding $200/month to a $10,000 investment at 7% over 20 years triples the final balance (from ~$40,000 to ~$144,600). Consistency matters more than the amount — $100/month started at 25 beats $300/month started at 35, because you gain 10 extra years of compounding on every early contribution.</p>
-        </div>
-
-        <div class="bg-white rounded-xl border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900 mb-2">What rate of return should I use for long-term investing?</h3>
-          <p class="text-gray-600 text-sm">The S&P 500 has historically returned about 10% annually before inflation, or roughly 7% after inflation. For conservative planning, financial planners often use 6–7% for diversified equity portfolios and 3–4% for bonds. High-yield savings accounts currently offer 4–5%. Always account for inflation to understand actual purchasing power growth.</p>
+          <h3 class="font-semibold text-gray-900 mb-2">What's the rule of 72 and how do I use it?</h3>
+          <p class="text-gray-600 text-sm">The rule of 72 is a quick mental shortcut: divide 72 by your annual return rate to find how long until your money doubles. At 8% return, money doubles every 9 years. At 6%, every 12 years. At 12%, every 6 years. It's not perfectly precise but very close.</p>
         </div>
 
       </div>

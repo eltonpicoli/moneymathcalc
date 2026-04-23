@@ -32,37 +32,27 @@ const schemaMarkup = JSON.stringify({
         {
           "@type": "Question",
           "name": "How do I convert hourly wage to annual salary?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Multiply your hourly rate by the number of hours worked per week, then multiply by 52 weeks. For a standard 40-hour week: hourly × 40 × 52. At $25/hr that equals $52,000 per year before taxes." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Annual salary = hourly rate × hours per week × 52 weeks. For 40 hours/week: $20/hour = $41,600/year, $25/hour = $52,000, $30/hour = $62,400. This is gross (before tax). Take-home is typically 70-80% of gross depending on state and benefits." }
         },
         {
           "@type": "Question",
-          "name": "What is considered a good hourly wage in the US?",
-          "acceptedAnswer": { "@type": "Answer", "text": "The US living wage for a single adult with no children is approximately $25.02/hour as of 2024 (MIT Living Wage Calculator). The federal minimum wage is $7.25/hr, though many states have higher minimums. The median US worker earns about $22.83/hr ($47,490/yr)." }
+          "name": "What are the differences between weekly, biweekly, and semi-monthly pay?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Weekly = 52 paychecks/year. Biweekly = 26 paychecks/year (every 2 weeks). Semi-monthly = 24 paychecks/year (twice per month, like 1st and 15th). Biweekly results in slightly larger paychecks but two months per year have 3 paychecks instead of 2." }
         },
         {
           "@type": "Question",
-          "name": "How much is $50,000 a year per hour?",
-          "acceptedAnswer": { "@type": "Answer", "text": "$50,000 per year equals approximately $24.04 per hour based on a standard 40-hour workweek and 52 weeks. This assumes 2,080 working hours annually with no unpaid time off." }
+          "name": "How much of my salary actually becomes take-home pay?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Typically 65-80% of gross, depending on state and elections. Federal tax (10-37%), state tax (0-13.3%), Social Security (6.2%), Medicare (1.45%), and benefits (health insurance, 401k) all reduce gross to net. A $80,000 salary in California might net $58,000. In Texas (no state tax), about $63,000." }
         },
         {
           "@type": "Question",
-          "name": "What is the difference between gross and net salary?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Gross salary is your total pay before any deductions. Net salary (take-home pay) is what remains after federal taxes, state taxes, Social Security (6.2%), Medicare (1.45%), health insurance, and retirement contributions are deducted." }
+          "name": "Is a salary or hourly position better financially?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Depends on hours worked. Salary typically means no overtime pay but more job security and benefits. Hourly typically means time-and-a-half over 40 hours/week. If you work 50+ hours weekly in a salary role, your effective hourly rate is lower than the equivalent hourly position." }
         },
         {
           "@type": "Question",
-          "name": "How many working hours are in a year?",
-          "acceptedAnswer": { "@type": "Answer", "text": "A standard work year contains 2,080 hours (40 hrs/week × 52 weeks). Excluding 10 federal holidays, the number drops to 2,000 hours. Part-time workers at 20 hrs/week log 1,040 hours annually." }
-        },
-        {
-          "@type": "Question",
-          "name": "What does biweekly pay mean?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Biweekly pay means you receive a paycheck every two weeks — 26 paychecks per year. Semi-monthly pay (24 paychecks/year) is different: it comes twice per month on fixed dates like the 1st and 15th." }
-        },
-        {
-          "@type": "Question",
-          "name": "How is overtime pay calculated?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Federal law (FLSA) requires overtime pay at 1.5× your regular hourly rate for hours worked beyond 40 in a workweek. Some states (like California) also mandate daily overtime after 8 hours. Salaried exempt employees are typically not eligible for overtime." }
+          "name": "How does my salary compare to others in the US?",
+          "acceptedAnswer": { "@type": "Answer", "text": "2024 US median individual income is about $42,200/year ($20.30/hour). Top 10% earners make above $130,000. Top 1% above $360,000. Median household income (combined) is about $80,610. Cost of living varies enormously by state and city." }
         }
       ]
     }
@@ -379,41 +369,32 @@ const dailyCalc = weeklyCalc / defaultDays;
         <!-- FAQs -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
           <h2 class="text-xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+          <p class="text-gray-700 mb-5">Salary calculations involve more than just hourly to annual conversion. They factor in pay periods, taxes, deductions, and benefits. These FAQs help you understand your true take-home pay and compare offers across different pay structures.</p>
           <div class="space-y-5">
 
             <div>
               <h3 class="font-semibold text-gray-900 mb-1">How do I convert hourly wage to annual salary?</h3>
-              <p class="text-gray-600 text-sm">Multiply your hourly rate by hours per week, then by 52 weeks. For a standard 40-hour week: hourly × 40 × 52. At $25/hr that equals $52,000 per year before taxes.</p>
+              <p class="text-gray-600 text-sm">Annual salary = hourly rate × hours per week × 52 weeks. For 40 hours/week: $20/hour = $41,600/year, $25/hour = $52,000, $30/hour = $62,400. This is gross (before tax). Take-home is typically 70–80% of gross depending on state and benefits.</p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-1">What is considered a good hourly wage in the US?</h3>
-              <p class="text-gray-600 text-sm">The US living wage for a single adult is approximately $25.02/hour (MIT, 2024). The federal minimum is $7.25/hr. The median US worker earns about $22.83/hr ($47,490/yr) according to BLS data.</p>
+              <h3 class="font-semibold text-gray-900 mb-1">What are the differences between weekly, biweekly, and semi-monthly pay?</h3>
+              <p class="text-gray-600 text-sm">Weekly = 52 paychecks/year. Biweekly = 26 paychecks/year (every 2 weeks). Semi-monthly = 24 paychecks/year (twice per month, like 1st and 15th). Biweekly results in slightly larger paychecks but two months per year have 3 paychecks instead of 2.</p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-1">How much is $50,000 a year per hour?</h3>
-              <p class="text-gray-600 text-sm">$50,000 per year equals approximately $24.04 per hour based on a standard 40-hour workweek and 52 weeks. This assumes 2,080 working hours annually with no unpaid time off.</p>
+              <h3 class="font-semibold text-gray-900 mb-1">How much of my salary actually becomes take-home pay?</h3>
+              <p class="text-gray-600 text-sm">Typically 65–80% of gross, depending on state and elections. Federal tax (10–37%), state tax (0–13.3%), Social Security (6.2%), Medicare (1.45%), and benefits (health insurance, 401k) all reduce gross to net. A $80,000 salary in California might net $58,000. In Texas (no state tax), about $63,000.</p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-1">What is the difference between gross and net salary?</h3>
-              <p class="text-gray-600 text-sm">Gross salary is total pay before deductions. Net salary is take-home pay after federal taxes, state taxes, Social Security (6.2%), Medicare (1.45%), and benefit deductions.</p>
+              <h3 class="font-semibold text-gray-900 mb-1">Is a salary or hourly position better financially?</h3>
+              <p class="text-gray-600 text-sm">Depends on hours worked. Salary typically means no overtime pay but more job security and benefits. Hourly typically means time-and-a-half over 40 hours/week. If you work 50+ hours weekly in a salary role, your effective hourly rate is lower than the equivalent hourly position.</p>
             </div>
 
             <div>
-              <h3 class="font-semibold text-gray-900 mb-1">How many working hours are in a year?</h3>
-              <p class="text-gray-600 text-sm">A standard work year has 2,080 hours (40 hrs/week × 52 weeks). Excluding 10 federal holidays, it's 2,000 hours. Part-time at 20 hrs/week yields 1,040 hours annually.</p>
-            </div>
-
-            <div>
-              <h3 class="font-semibold text-gray-900 mb-1">What does biweekly pay mean?</h3>
-              <p class="text-gray-600 text-sm">Biweekly means every two weeks — 26 paychecks per year. Semi-monthly (24/year) arrives on fixed dates like the 1st and 15th. They sound similar but can create budgeting differences.</p>
-            </div>
-
-            <div>
-              <h3 class="font-semibold text-gray-900 mb-1">How is overtime pay calculated?</h3>
-              <p class="text-gray-600 text-sm">Federal law (FLSA) requires overtime at 1.5× your regular rate for hours beyond 40/week. California also requires daily overtime after 8 hours. Salaried exempt employees typically don't qualify.</p>
+              <h3 class="font-semibold text-gray-900 mb-1">How does my salary compare to others in the US?</h3>
+              <p class="text-gray-600 text-sm">2024 US median individual income is about $42,200/year ($20.30/hour). Top 10% earners make above $130,000. Top 1% above $360,000. Median household income (combined) is about $80,610. Cost of living varies enormously by state and city.</p>
             </div>
           </div>
         </div>

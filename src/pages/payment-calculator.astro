@@ -42,32 +42,24 @@ const description = 'Calculate your monthly payment for any loan, or find the ma
 
 const faqs = [
   {
-    q: 'When should I use "How much will my payment be?" vs "How much can I borrow?"',
-    a: 'Use Mode A when you already know the loan amount and want to confirm the payment fits your budget — for example, after a lender quotes you a loan. Use Mode B when you\'re shopping and know your ceiling: "I can afford $400/month — how much can I borrow?" Mode B is especially useful for car and personal loan shopping, letting you set a budget before you find the product.',
+    q: 'What can a payment calculator solve for?',
+    a: 'Our payment calculator works in any direction: enter loan amount, rate, and term to find the monthly payment. Or enter what payment you can afford to find the maximum loan amount. Or enter loan amount and target payment to find the rate you need.',
   },
   {
-    q: 'What debt-to-income ratio do lenders use for loan approval?',
-    a: 'Most lenders look at your back-end DTI: total monthly debt payments divided by gross monthly income. The threshold varies by loan type: conventional mortgages allow up to 43–45%, FHA mortgages up to 50% with compensating factors, personal and auto loans typically 36–43%. A DTI above 43% signals to most lenders that you\'re overleveraged. If your DTI is high, Mode B can help you find a loan amount that keeps you within the threshold.',
+    q: 'How do I figure out how much loan I can afford with my monthly budget?',
+    a: 'Decide what monthly payment fits your budget, then enter it along with the current interest rate and your desired loan term. The calculator shows the maximum loan amount that produces that payment. Most lenders also recommend total debt payments stay below 36% of gross monthly income.',
   },
   {
-    q: 'What is the difference between APR and interest rate?',
-    a: 'The interest rate is the base cost of borrowing — what this calculator uses to determine your payment. APR (Annual Percentage Rate) includes the interest rate plus fees (origination, closing costs, etc.) amortized over the loan. APR is always higher than or equal to the interest rate, and it\'s the number to compare across lenders. When entering a rate here, use the APR if you want to see the true effective cost including fees.',
+    q: 'What interest rate would make a loan fit my budget?',
+    a: 'Enter the loan amount, your target monthly payment, and the loan term. The calculator solves for the interest rate that makes those numbers work. This is useful for evaluating refinancing options — if rates drop below this number, refinancing might save you money.',
   },
   {
-    q: 'Does getting pre-qualified or pre-approved affect my credit score?',
-    a: 'Pre-qualification uses a soft inquiry — no credit score impact. Pre-approval uses a hard inquiry, which typically drops your score 2–5 points temporarily. For shopping purposes, FICO treats multiple hard inquiries for the same loan type within 14–45 days as a single inquiry. So rate-shopping with 3–4 lenders in a two-week window causes no more score damage than applying once. Use this calculator to filter to realistic offers before any hard inquiries.',
+    q: 'Should I focus on lowering my payment or paying off debt faster?',
+    a: 'Depends on your priority. Lower payments improve cash flow but increase total cost. Faster payoff saves on interest but stresses monthly budget. Most experts suggest paying just enough extra to be comfortable while building emergency savings — typically $100–300 above minimum.',
   },
   {
-    q: 'How do I compare loan offers from different lenders?',
-    a: 'Compare three numbers: APR (total cost including fees), monthly payment, and total of payments. A lower monthly payment often means a longer term — which can cost more total. A slightly higher rate with no origination fee can be cheaper overall than a lower rate with a 2–3% origination fee. Use Mode A to calculate the payment for each lender\'s quoted rate and term, then compare total payments side by side.',
-  },
-  {
-    q: 'What happens if I can only make minimum payments on a loan?',
-    a: 'With installment loans (personal, auto, mortgage), your minimum payment IS the calculated payment — there\'s no "minimum payment trap" like with credit cards. You must pay the full amount each period. Missing payments triggers late fees and credit score damage. If you\'re concerned about affordability, use Mode B to back-calculate a loan amount that produces a payment you\'re certain you can make even in a lean month.',
-  },
-  {
-    q: 'Can I use this calculator for any type of fixed-rate loan?',
-    a: 'Yes — mortgages, personal loans, auto loans, student loans, home equity loans, and any other fixed-rate installment debt. The underlying formula is identical across all fixed-rate loan types. Variable-rate loans are different: the payment adjusts when the rate changes, so this calculator only shows the payment at the initial rate. For variable loans, use the initial rate to estimate your starting payment.',
+    q: 'How accurate is this payment calculation compared to what a lender will offer?',
+    a: 'The math is identical to what lenders use. However, lender quotes may include PMI, taxes, insurance, and fees that aren\'t part of the basic loan payment. The pure principal-and-interest calculation here matches what\'s quoted as your "P&I" by lenders.',
   },
 ];
 
@@ -388,7 +380,8 @@ const labelClass = 'block text-xs font-semibold text-gray-500 uppercase tracking
 
     <!-- FAQ -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+      <p class="text-gray-700 mb-6">Sometimes you don't know your payment amount — sometimes you don't know how much you can borrow, or what interest rate fits your budget. A payment calculator solves for any unknown variable in the loan equation.</p>
       <div class="space-y-6">
         {faqs.map(faq => (
           <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">

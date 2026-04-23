@@ -56,32 +56,24 @@ const description = 'Calculate your monthly car payment including sales tax, fee
 
 const faqs = [
   {
-    q: 'How much car can I afford based on my income?',
-    a: 'Most financial experts recommend keeping your monthly car payment below 10% of your take-home pay. If you bring home $5,000/month after taxes, that\'s $500/month maximum for the car payment alone — before insurance, fuel, and maintenance. A broader rule is keeping total transportation costs (payment + insurance + gas) below 20% of take-home. At $500/month, 7.5% for 60 months, you could finance roughly $24,700.',
+    q: 'How does a car loan actually cost with interest over 5 years?',
+    a: 'A typical $30,000 car loan at 7% APR over 5 years means monthly payments of $594 — but total cost is $35,635, meaning you pay $5,635 just in interest. Add taxes, fees, insurance, and depreciation, and the true cost of ownership is often 30–40% above sticker price.',
   },
   {
-    q: 'What is the average auto loan interest rate in 2026?',
-    a: 'According to Experian, the average new car loan rate in 2026 is around 7%–8% for well-qualified buyers (720+ credit score), and 10%–14% for near-prime borrowers (620–719). Used car loans run 2%–3% higher on average. Credit unions consistently offer rates 1%–2% below banks. The difference between 6% and 10% on a $32,000 loan over 60 months is about $65/month and over $3,900 in total interest.',
+    q: 'How much does a trade-in reduce my monthly car payment?',
+    a: 'A trade-in works like a down payment, reducing your loan principal. A $5,000 trade on a $30,000 car drops your loan to $25,000, which on a 5-year 7% loan saves about $99/month and $939 in total interest.',
   },
   {
-    q: 'How does a trade-in affect my auto loan and taxes?',
-    a: 'In most U.S. states, sales tax is applied to the vehicle price minus the trade-in value — not the full purchase price. On a $35,000 car with a $5,000 trade-in and 6% sales tax, you pay tax on $30,000 ($1,800) instead of the full $35,000 ($2,100) — saving $300 in tax. A few states (like Michigan and Virginia) don\'t offer the trade-in sales tax credit, so rules vary. This calculator assumes the common trade-in tax credit.',
+    q: 'Should I finance through the dealer or my bank?',
+    a: 'Banks and credit unions typically offer rates 1–2% lower than dealer financing. However, dealers sometimes offer manufacturer-subsidized rates (like 0% APR promotions) that beat bank rates. Always get pre-approved by your bank first, then compare.',
   },
   {
-    q: 'Is a 72-month or 84-month auto loan a bad idea?',
-    a: 'Longer terms lower monthly payments but significantly increase total cost and risk. A $32,000 loan at 7.5% for 60 months costs $3,900 in interest; at 84 months, the same loan costs $5,600 — nearly $1,700 more. Worse, you\'ll be underwater (owe more than the car is worth) for most of the loan. If you can\'t afford a vehicle on a 60-month loan, it\'s usually a sign the vehicle is out of budget, not that you need a longer term.',
+    q: 'Is a longer auto loan term (72 or 84 months) a bad idea?',
+    a: 'Generally yes. Longer terms mean you\'ll likely owe more than the car is worth (called being "underwater") for years. They also dramatically increase total interest paid. A $30,000 loan at 7% costs $5,635 in interest over 60 months but $9,235 over 84 months.',
   },
   {
-    q: 'What is gap insurance and do I need it?',
-    a: 'GAP (Guaranteed Asset Protection) insurance pays the difference between what you owe on your loan and what your car is worth if it\'s totaled or stolen. New cars lose 15%–20% of value in year one, but your loan balance drops more slowly — so early in the loan you\'re typically "underwater." GAP coverage costs $20–$40/month through a dealer, or $5–$10/month added to your auto insurance policy. It\'s worth considering for long-term loans or low down payments.',
-  },
-  {
-    q: 'Can I refinance my auto loan to get a lower payment?',
-    a: 'Yes — and auto refinancing is often underused. If your credit score has improved since you bought the car, or market rates have dropped, refinancing can save real money. On a $25,000 balance at 10%, refinancing to 7% saves about $75/month and $1,800 total over a remaining 24-month term. The process is simple: most lenders offer refinancing in minutes online, with no prepayment penalty on the original loan. Best results come in the first 2 years of the loan.',
-  },
-  {
-    q: 'Should I lease or buy a car?',
-    a: 'Leasing offers lower monthly payments — typically 20%–30% less than buying — but you\'re paying to use the car, not own it. At lease end, you have no asset and start the payment cycle again. Buying costs more monthly but builds equity and ends with no payment. The math generally favors buying if you keep the car 5+ years. Leasing makes sense if you want a new car every 3 years, drive under 12,000 miles/year, and value the lower payment over long-term ownership.',
+    q: 'How do I know if I\'m paying too much for a car loan?',
+    a: 'As of 2026, average auto loan rates for excellent credit are 6–7%, good credit 7–9%, fair credit 10–15%, and poor credit 18–22%. If you\'re being offered significantly higher than the range for your credit tier, shop around with credit unions.',
   },
 ];
 
@@ -516,7 +508,8 @@ const labelClass = 'block text-xs font-semibold text-gray-500 uppercase tracking
 
     <!-- FAQ -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+      <p class="text-gray-700 mb-6">Auto loans are one of the most common forms of consumer debt, but most people don't realize how much their car actually costs over the loan term. These FAQs help you understand the true cost of financing a vehicle in 2026.</p>
       <div class="space-y-6">
         {faqs.map(faq => (
           <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">

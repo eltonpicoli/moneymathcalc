@@ -48,32 +48,24 @@ const description = 'Calculate your monthly mortgage payment with taxes, insuran
 
 const faqs = [
   {
-    q: 'What is a good monthly mortgage payment for a $400,000 home?',
-    a: 'With 20% down, a 30-year loan at 6.4%, the P&I payment is roughly $2,000/month. Add property taxes and insurance and the total runs $2,400–$2,700 for most buyers. A common guideline is keeping total housing costs below 28% of gross monthly income — so you\'d need roughly $100,000 in annual income.',
+    q: 'How is a mortgage payment calculated?',
+    a: 'A mortgage payment uses the standard amortization formula: M = P × [r(1+r)^n] / [(1+r)^n - 1], where M is monthly payment, P is principal, r is monthly interest rate, and n is total payments. Our calculator does this math instantly and breaks down principal vs. interest for each payment.',
   },
   {
-    q: 'How much income do I need to afford a $400,000 house?',
-    a: 'Using the 28% rule: if total housing costs (P&I, taxes, insurance) are around $2,500/month, you\'d need roughly $8,929/month in gross income — or about $107,000 per year. Lenders also look at your debt-to-income ratio; total monthly debt payments should generally stay below 36% of gross income.',
+    q: 'What\'s the difference between my mortgage calculator estimate and what the lender quotes?',
+    a: 'Lender quotes often include PMI (private mortgage insurance), property taxes, and homeowners insurance bundled into your monthly payment (called PITI). Our calculator separates these so you see the true loan payment versus total monthly housing cost.',
   },
   {
-    q: 'What happens if I make one extra mortgage payment per year?',
-    a: 'On a $320,000 loan at 6.4% for 30 years, making one extra payment annually saves approximately $62,000 in interest and cuts nearly 5 years off the loan. Every extra dollar applied to principal reduces future interest because interest is calculated on the remaining balance each month.',
+    q: 'How does my down payment affect my mortgage payment?',
+    a: 'A larger down payment reduces your loan principal, lowering monthly payments. Putting down 20% or more also eliminates PMI, saving you typically $100–300/month. On a $400,000 home, going from 5% to 20% down saves roughly $400–500/month total.',
   },
   {
-    q: 'Is PMI worth paying to buy a home sooner?',
-    a: 'It depends on your market and situation. PMI typically costs 0.5%–1.5% of the loan per year — about $133–$400/month on a $320,000 loan. If home prices are rising faster than PMI costs, buying sooner can make sense. PMI is cancelable once you reach 20% equity, usually within 5–7 years of on-time payments.',
+    q: 'Should I get a 15-year or 30-year mortgage?',
+    a: 'A 15-year mortgage has higher monthly payments but you pay roughly half the total interest and own your home in half the time. A 30-year offers lower payments and more flexibility. Use this calculator to compare both side-by-side using your real numbers.',
   },
   {
-    q: 'What credit score do I need for the best mortgage rates?',
-    a: 'Most conventional lenders offer the lowest rates to borrowers with scores of 740 or higher. You can qualify with a 620, but the rate will be meaningfully higher. According to Bankrate, the difference between a 680 and 760 score on a $320,000 mortgage can add $100–$200/month to your payment — roughly $36,000–$72,000 over 30 years.',
-  },
-  {
-    q: 'Should I choose a 15-year or 30-year mortgage?',
-    a: 'A 15-year loan costs more each month but saves enormous interest. On $320,000 at 6.4%, the 30-year P&I is ~$2,000/month; the 15-year runs ~$2,770/month. The extra $770/month buys you the loan paid off 15 years sooner and roughly $220,000 less in total interest. Choose 30 years only if you\'ll reliably invest the difference.',
-  },
-  {
-    q: 'Can I use this calculator for a refinance?',
-    a: 'Yes. Enter your remaining loan balance as the home price, set down payment to $0 (or your equity amount for cash-out), then enter the new rate and term. The results show your new monthly payment and total cost of the refinanced loan — making it easy to compare against your current payment.',
+    q: 'What credit score do I need for the best mortgage rate in 2026?',
+    a: 'For conventional loans in 2026, scores of 760+ typically get the best rates. Scores of 620–639 may add 1–1.5% to your rate, costing tens of thousands over the loan term. FHA loans allow scores as low as 580 with 3.5% down.',
   },
 ];
 
@@ -510,7 +502,8 @@ const labelClass = 'block text-xs font-semibold text-gray-500 uppercase tracking
          FAQ
     ===================================================================== -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-8 p-6 lg:p-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+      <p class="text-gray-700 mb-6">Understanding how mortgage payments work is crucial before signing on the dotted line. Below are the most common questions homebuyers ask about mortgage calculations, payments, and what affects your monthly costs.</p>
       <div class="space-y-6">
         {faqs.map(faq => (
           <div class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
