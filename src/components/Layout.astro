@@ -130,5 +130,161 @@ const globalSchema = JSON.stringify({
   </main>
 
   <slot name="footer" />
+
+  <div id="chart-tooltip" role="tooltip" aria-hidden="true"></div>
+
+  <style>
+    #chart-tooltip {
+      position: fixed;
+      z-index: 9999;
+      background: #1F2937;
+      color: #F9FAFB;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.1s ease;
+      white-space: nowrap;
+    }
+    .ct-tt-label { font-weight: 600; color: #F9FAFB; margin-bottom: 2px; }
+    .ct-tt-value { color: #34D399; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px; }
+    .ct-tt-pct { color: #9CA3AF; font-size: 11px; }
+    .ct-tt-row { display: flex; justify-content: space-between; gap: 12px; }
+    .ct-tt-row span:first-child { color: #9CA3AF; }
+    .ct-tt-row span:last-child { color: #D1FAE5; font-family: 'JetBrains Mono', monospace; }
+    .ct-pie-slice {
+      transform-box: view-box;
+      transform-origin: 50% 50%;
+      transition: transform 0.15s ease;
+      cursor: pointer;
+    }
+    .ct-pie-slice:hover { transform: scale(1.05); }
+  </style>
+
+  <script is:inline>
+  (function () {
+    var tooltip = document.getElementById('chart-tooltip');
+    if (!tooltip) return;
+
+    function show(html, cx, cy) {
+      tooltip.innerHTML = html;
+      tooltip.style.opacity = '1';
+      move(cx, cy);
+    }
+
+    function hide() {
+      tooltip.style.opacity = '0';
+    }
+
+    function move(cx, cy) {
+      requestAnimationFrame(function () {
+        var tw = tooltip.offsetWidth;
+        var th = tooltip.offsetHeight;
+        var vw = window.innerWidth;
+        var vh = window.innerHeight;
+        var left = cx + 14;
+        var top = cy - 10;
+        if (left + tw > vw - 10) left = cx - tw - 14;
+        if (top + th > vh - 10) top = vh - th - 10;
+        if (top < 10) top = 10;
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+      });
+    }
+
+    // PIE CHART — hover on .ct-pie-slice paths
+    document.addEventListener('mouseover', function (e) {
+      var el = e.target;
+      if (!el || !el.classList || !el.classList.contains('ct-pie-slice')) return;
+      var label = el.getAttribute('data-label') || '';
+      var value = parseFloat(el.getAttribute('data-value') || '0');
+      var pct = el.getAttribute('data-pct') || '0';
+      var fmt = '$' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      show(
+        '<div class="ct-tt-label">' + label + '</div>' +
+        '<div class="ct-tt-value">' + fmt + '</div>' +
+        '<div class="ct-tt-pct">' + pct + '%</div>',
+        e.clientX, e.clientY
+      );
+    });
+
+    document.addEventListener('mousemove', function (e) {
+      var el = e.target;
+      if (el && el.classList && el.classList.contains('ct-pie-slice')) move(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('mouseout', function (e) {
+      var el = e.target;
+      if (el && el.classList && el.classList.contains('ct-pie-slice')) hide();
+    });
+
+    // LINE CHART — hover on .ct-line-overlay transparent rect
+    document.addEventListener('mousemove', function (e) {
+      var el = e.target;
+      if (!el || !el.classList || !el.classList.contains('ct-line-overlay')) return;
+
+      var svg = el.closest ? el.closest('svg') : null;
+      if (!svg) return;
+
+      var ptsRaw = el.getAttribute('data-points');
+      if (!ptsRaw) return;
+      var pts;
+      try { pts = JSON.parse(ptsRaw); } catch (_) { return; }
+      if (!pts || !pts.length) return;
+
+      var bbox = svg.getBoundingClientRect();
+      var vb = svg.viewBox.baseVal;
+      if (!vb || !bbox.width) return;
+      var scaleX = vb.width / bbox.width;
+      var cursorSvgX = (e.clientX - bbox.left) * scaleX;
+
+      // Nearest point by SVG-X distance
+      var nearest = pts[0];
+      var minDist = Math.abs(pts[0].svgX - cursorSvgX);
+      for (var i = 1; i < pts.length; i++) {
+        var d = Math.abs(pts[i].svgX - cursorSvgX);
+        if (d < minDist) { minDist = d; nearest = pts[i]; }
+      }
+
+      // Update guide elements
+      var guide = svg.querySelector('.ct-guide');
+      if (guide) {
+        guide.setAttribute('visibility', 'visible');
+        var gl = guide.querySelector('.ct-guide-line');
+        if (gl) { gl.setAttribute('x1', nearest.svgX); gl.setAttribute('x2', nearest.svgX); }
+        var gd = guide.querySelector('.ct-guide-dot');
+        if (gd) { gd.setAttribute('cx', nearest.svgX); gd.setAttribute('cy', nearest.svgY); }
+        var gd1 = guide.querySelector('.ct-guide-dot-1');
+        if (gd1) { gd1.setAttribute('cx', nearest.svgX); gd1.setAttribute('cy', nearest.svgY1); }
+        var gd2 = guide.querySelector('.ct-guide-dot-2');
+        if (gd2) { gd2.setAttribute('cx', nearest.svgX); gd2.setAttribute('cy', nearest.svgY2); }
+      }
+
+      // Build tooltip HTML
+      var html = '<div class="ct-tt-label">Year ' + nearest.x + '</div>';
+      if (nearest.formatted !== undefined) {
+        html += '<div class="ct-tt-value">' + nearest.formatted + '</div>';
+      }
+      if (nearest.formatted1 !== undefined && nearest.formatted2 !== undefined) {
+        html += '<div class="ct-tt-row"><span>' + (nearest.label1 || '') + ':</span><span>' + nearest.formatted1 + '</span></div>';
+        html += '<div class="ct-tt-row"><span>' + (nearest.label2 || '') + ':</span><span>' + nearest.formatted2 + '</span></div>';
+      }
+      show(html, e.clientX, e.clientY);
+    });
+
+    document.addEventListener('mouseout', function (e) {
+      var el = e.target;
+      if (!el || !el.classList || !el.classList.contains('ct-line-overlay')) return;
+      var svg = el.closest ? el.closest('svg') : null;
+      if (svg && e.relatedTarget && svg.contains(e.relatedTarget)) return;
+      var guide = svg ? svg.querySelector('.ct-guide') : null;
+      if (guide) guide.setAttribute('visibility', 'hidden');
+      hide();
+    });
+  })();
+  </script>
 </body>
 </html>

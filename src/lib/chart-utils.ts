@@ -40,7 +40,8 @@ export function generatePieChart(segments: PieSegment[]): string {
     const x2 = cx + r * Math.cos(endAngle);
     const y2 = cy + r * Math.sin(endAngle);
     const largeArc = slice > Math.PI ? 1 : 0;
-    paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z" fill="${seg.color}" stroke="white" stroke-width="2"/>`;
+    const pct = ((seg.value / total) * 100).toFixed(1);
+    paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z" fill="${seg.color}" stroke="white" stroke-width="2" class="ct-pie-slice" data-label="${seg.label}" data-value="${seg.value}" data-pct="${pct}" data-total="${total}"/>`;
     startAngle = endAngle;
   }
 
@@ -102,12 +103,25 @@ export function generateLineChart(
     .map(p => `<text x="${toSvgX(p.x)}" y="${height - 8}" text-anchor="middle" font-size="11" fill="#6B7280">${p.x}</text>`)
     .join('');
 
+  const dataPoints = points.map(p => ({
+    x: p.x,
+    svgX: Math.round(toSvgX(p.x) * 10) / 10,
+    svgY: Math.round(toSvgY(p.y) * 10) / 10,
+    formatted: formatY(p.y),
+  }));
+  const dataAttr = JSON.stringify(dataPoints).replace(/'/g, '&#39;');
+
   return `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Balance over time chart">
   <style>polyline { fill: none; stroke: #0052CC; stroke-width: 2.5; stroke-linejoin: round; }</style>
   ${yAxisLines}
   <line x1="${padLeft}" y1="${padTop}" x2="${padLeft}" y2="${padTop + chartH}" stroke="#E5E7EB" stroke-width="1"/>
   <polyline points="${polyline}"/>
   ${xAxisLabels}
+  <g class="ct-guide" visibility="hidden">
+    <line class="ct-guide-line" x1="0" x2="0" y1="${padTop}" y2="${padTop + chartH}" stroke="#374151" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+    <circle class="ct-guide-dot" cx="0" cy="0" r="4" fill="#0052CC" stroke="white" stroke-width="2"/>
+  </g>
+  <rect class="ct-line-overlay" x="${padLeft}" y="${padTop}" width="${chartW}" height="${chartH}" fill="transparent" data-points='${dataAttr}'/>
 </svg>`;
 }
 
@@ -190,6 +204,21 @@ export function generateDualLineChart(
     <rect x="${padLeft + 110}" y="${legendY - 9}" width="18" height="3" fill="${color2}" rx="1"/>
     <text x="${padLeft + 132}" y="${legendY}" font-size="11" fill="#374151">${label2}</text>`;
 
+  const dataPoints = line2.map((p2, i) => {
+    const p1 = line1[i] !== undefined ? line1[i] : line1[line1.length - 1];
+    return {
+      x: p2.x,
+      svgX: Math.round(toSvgX(p2.x) * 10) / 10,
+      svgY1: Math.round(toSvgY(p1.y) * 10) / 10,
+      svgY2: Math.round(toSvgY(p2.y) * 10) / 10,
+      formatted1: formatY(p1.y),
+      formatted2: formatY(p2.y),
+      label1,
+      label2,
+    };
+  });
+  const dataAttr = JSON.stringify(dataPoints).replace(/'/g, '&#39;');
+
   return `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Investment growth chart">
   ${yAxisLines}
   <line x1="${padLeft}" y1="${padTop}" x2="${padLeft}" y2="${padTop + chartH}" stroke="#E5E7EB" stroke-width="1"/>
@@ -199,6 +228,12 @@ export function generateDualLineChart(
   <polyline points="${line2Pts}" fill="none" stroke="${color2}" stroke-width="2.5" stroke-linejoin="round"/>
   ${xAxisLabels}
   ${legend}
+  <g class="ct-guide" visibility="hidden">
+    <line class="ct-guide-line" x1="0" x2="0" y1="${padTop}" y2="${padTop + chartH}" stroke="#374151" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+    <circle class="ct-guide-dot-1" cx="0" cy="0" r="4" fill="${color1}" stroke="white" stroke-width="2"/>
+    <circle class="ct-guide-dot-2" cx="0" cy="0" r="4" fill="${color2}" stroke="white" stroke-width="2"/>
+  </g>
+  <rect class="ct-line-overlay" x="${padLeft}" y="${padTop}" width="${chartW}" height="${chartH}" fill="transparent" data-points='${dataAttr}'/>
 </svg>`;
 }
 
