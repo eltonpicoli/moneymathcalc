@@ -19,7 +19,8 @@ const {
 
 const siteUrl = 'https://moneymathcalc.com';
 const siteName = 'MoneyMathCalc';
-const fullCanonical = canonical || new URL(Astro.url.pathname, siteUrl).toString();
+const cleanPath = Astro.url.pathname.replace(/\.html$/, '');
+const fullCanonical = canonical || new URL(cleanPath, siteUrl).toString();
 const fullOgImage = ogImage.startsWith('http') ? ogImage : new URL(ogImage, siteUrl).toString();
 
 const globalSchema = JSON.stringify({
