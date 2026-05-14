@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import BlogPost from '../../layouts/BlogPost.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+const canonical = `https://moneymathcalc.com/blog/${post.slug}`;
+---
+
+<BlogPost
+  title={post.data.title}
+  description={post.data.description}
+  canonical={canonical}
+  publishDate={post.data.publishDate}
+  updatedDate={post.data.updatedDate}
+>
+  <Content />
+</BlogPost>

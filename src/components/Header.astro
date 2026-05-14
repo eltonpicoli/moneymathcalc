@@ -111,6 +111,13 @@ const isCalcActive = [...loanCalcs, ...savingsCalcs, ...incomeCalcs]
         </div>
 
         <a
+          href="/blog"
+          class={`px-4 py-2 rounded-md text-sm font-medium transition ${isActive('/blog') ? 'bg-primary-50 text-primary-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'}`}
+        >
+          Blog
+        </a>
+
+        <a
           href="/about"
           class={`px-4 py-2 rounded-md text-sm font-medium transition ${isActive('/about') ? 'bg-primary-50 text-primary-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'}`}
         >
@@ -157,6 +164,7 @@ const isCalcActive = [...loanCalcs, ...savingsCalcs, ...incomeCalcs]
       ))}
 
       <div class="border-t border-gray-200 mt-2 pt-2">
+        <a href="/blog" class={`block px-4 py-2 rounded-md text-base font-medium ${isActive('/blog') ? 'bg-primary-50 text-primary-700' : 'text-gray-700 hover:bg-gray-50'}`}>Blog</a>
         <a href="/about" class={`block px-4 py-2 rounded-md text-base font-medium ${isActive('/about') ? 'bg-primary-50 text-primary-700' : 'text-gray-700 hover:bg-gray-50'}`}>About</a>
       </div>
     </div>
