@@ -2,6 +2,7 @@
 title: "What Is PMI and How to Avoid It"
 description: "What is PMI? Learn how private mortgage insurance works, what it costs in 2026, how to avoid it, and the fastest ways to remove it from your mortgage."
 publishDate: 2026-05-14
+updatedDate: 2026-05-15
 ---
 
 PMI — private mortgage insurance — is an extra monthly fee you pay when you take out a conventional mortgage with a down payment of less than 20%. It protects your lender, not you, and it can quietly add hundreds of dollars to your house payment every month. The good news: it's not permanent, and there are several ways to avoid it entirely or get rid of it faster than you might think.
@@ -26,7 +27,16 @@ PMI typically runs between **0.5% and 1.5% of your loan amount per year**. The e
 
 To put real numbers on it: on a $300,000 loan, PMI usually adds somewhere between **$115 and $375 per month**. On a smaller $200,000 loan, expect roughly **$83 to $250 per month**. That's money leaving your pocket every single month on top of your principal, interest, taxes, and homeowners insurance.
 
-One more thing worth knowing for 2026: there is currently **no tax deduction for PMI**. Congress allowed a deduction for some taxpayers through the 2021 tax year, but it was not renewed. So PMI is a pure cost with no tax break to soften it — which makes avoiding or removing it even more worthwhile.
+**The PMI tax deduction is back for 2026.** This is a major change worth knowing. After expiring at the end of 2021, the PMI deduction was permanently restored by the **One Big Beautiful Bill Act**, signed into law on July 4, 2025. Starting with the **2026 tax year** (returns filed in spring 2027), PMI premiums are once again deductible as qualified residence interest on Schedule A — alongside your regular mortgage interest.
+
+A few important conditions:
+
+- **You have to itemize.** The deduction is on Schedule A, so it only helps if your total itemized deductions exceed the standard deduction ($15,750 single / $31,500 married filing jointly for 2025).
+- **Income limits apply.** The full deduction is available if your Adjusted Gross Income (AGI) is **$100,000 or less** ($50,000 if married filing separately). It phases out between **$100,000 and $109,000** AGI and disappears completely above that.
+- **It covers more than just PMI.** The same rule also applies to **FHA mortgage insurance (MIP)**, VA funding fees, and USDA guarantee fees — all treated as deductible mortgage interest.
+- **It's permanent.** Unlike the original deduction (which had to be renewed by Congress every couple of years), this one is now a permanent part of the tax code.
+
+Practical effect: if you pay $200/month in PMI and qualify for the full deduction, that's $2,400 a year added to your deductible mortgage interest. Whether that actually saves you money depends on whether itemizing beats your standard deduction — but for homeowners who already itemize because of significant mortgage interest, property taxes, or charitable giving, this is real money back. Plug your numbers into our [income tax calculator](/income-tax-calculator) to see how the additional deduction affects your bottom line.
 
 If you want to see how PMI changes your actual monthly payment, you can plug your numbers into our [mortgage calculator](/mortgage-calculator) — it includes a PMI field so you can see the real all-in cost before you commit to a loan.
 
@@ -67,7 +77,7 @@ Waiting for your balance to naturally fall to 80% can take a long time. Because 
 ## Key Takeaways
 
 - PMI is insurance that protects your **lender**, not you — required on conventional loans with less than 20% down.
-- In 2026 it typically costs **0.5%–1.5% of the loan per year**, often $100–$375 a month, with no tax deduction.
+- In 2026 it typically costs **0.5%–1.5% of the loan per year**, often $100–$375 a month. It's also **tax-deductible again** starting in 2026 (with income limits) under the One Big Beautiful Bill Act.
 - You can avoid it with a **20% down payment**, a **piggyback loan**, or lender-paid PMI (which trades the fee for a higher rate and can't be cancelled).
 - Federal law lets you **request cancellation at 80% equity** and requires **automatic removal at 78%**.
 - **Extra payments, a new appraisal, or refinancing** can remove PMI years earlier than waiting.
